@@ -27,6 +27,19 @@ import {
   createDocumentChunks,
   getDocumentChunks,
   searchDocumentChunks,
+  createCharacter,
+  getUserCharacters,
+  getPublicCharacters,
+  getCharacterById,
+  updateCharacter,
+  deleteCharacter,
+  incrementCharacterUsage,
+  createSharedLink,
+  getSharedLinkByShareId,
+  getUserSharedLinks,
+  incrementShareLinkViews,
+  deactivateSharedLink,
+  deleteSharedLink,
 } from "./db";
 import { invokeLLM } from "./_core/llm";
 import { generateImage } from "./_core/imageGeneration";
@@ -44,7 +57,7 @@ import {
   PROMPT_TEMPLATES,
   getTemplatesByCategory,
   getTemplateById,
-  applyTemplate,
+  applyTemplate as buildPromptFromTemplate,
   type RoutingMode,
   type ModelDefinition,
 } from "./modelRouter";
@@ -182,7 +195,7 @@ export const appRouter = router({
         return template;
       }),
     
-    applyToPrompt: publicProcedure
+    useForPrompt: publicProcedure
       .input(z.object({
         templateId: z.string(),
         variables: z.record(z.string(), z.string()),
@@ -193,7 +206,7 @@ export const appRouter = router({
           throw new TRPCError({ code: "NOT_FOUND", message: "Template not found" });
         }
         return {
-          prompt: applyTemplate(template, input.variables as Record<string, string>),
+          prompt: buildPromptFromTemplate(template, input.variables as Record<string, string>),
           template,
         };
       }),
@@ -288,6 +301,9 @@ export const appRouter = router({
         model: z.string().optional(),
         routingMode: z.enum(["auto", "free", "manual"]).optional(),
         useCache: z.boolean().optional(),
+        temperature: z.number().min(0).max(1).optional(),
+        topP: z.number().min(0.1).max(1).optional(),
+        webSearch: z.boolean().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const startTime = Date.now();
@@ -383,6 +399,7 @@ export const appRouter = router({
             cached: false,
             complexity,
             cost,
+            webSearchUsed: input.webSearch || false,
             tokens: {
               input: inputTokens,
               output: outputTokens,
@@ -421,7 +438,12 @@ export const appRouter = router({
     generate: protectedProcedure
       .input(z.object({
         prompt: z.string().min(1).max(2000),
+        negativePrompt: z.string().max(1000).optional(),
         model: z.string().optional(),
+        aspectRatio: z.string().optional(),
+        seed: z.number().optional(),
+        steps: z.number().min(10).max(50).optional(),
+        cfgScale: z.number().min(1).max(20).optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const startTime = Date.now();
@@ -689,6 +711,157 @@ ${context}`,
             message: "Failed to process document question",
           });
         }
+      }),
+  }),
+
+  // AI Characters
+  characters: router({
+    list: protectedProcedure.query(async ({ ctx }) => {
+      return await getUserCharacters(ctx.user.id);
+    }),
+
+    listPublic: publicProcedure
+      .input(z.object({ limit: z.number().min(1).max(100).optional() }).optional())
+      .query(async ({ input }) => {
+        return await getPublicCharacters(input?.limit || 50);
+      }),
+
+    get: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const character = await getCharacterById(input.id, ctx.user?.id);
+        if (!character) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Character not found" });
+        }
+        return character;
+      }),
+
+    create: protectedProcedure
+      .input(z.object({
+        name: z.string().min(1).max(100),
+        description: z.string().max(1000).optional(),
+        systemPrompt: z.string().min(1).max(5000),
+        avatarUrl: z.string().url().optional(),
+        personality: z.string().optional(),
+        isPublic: z.boolean().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const characterId = await createCharacter({
+          userId: ctx.user.id,
+          name: input.name,
+          description: input.description || null,
+          systemPrompt: input.systemPrompt,
+          avatarUrl: input.avatarUrl || null,
+          personality: input.personality || null,
+          isPublic: input.isPublic || false,
+        });
+        return { id: characterId, success: true };
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().min(1).max(100).optional(),
+        description: z.string().max(1000).optional(),
+        systemPrompt: z.string().min(1).max(5000).optional(),
+        avatarUrl: z.string().url().optional().nullable(),
+        personality: z.string().optional(),
+        isPublic: z.boolean().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { id, ...updates } = input;
+        await updateCharacter(id, ctx.user.id, updates);
+        return { success: true };
+      }),
+
+    remove: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await deleteCharacter(input.id, ctx.user.id);
+        return { success: true };
+      }),
+
+    use: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const character = await getCharacterById(input.id, ctx.user.id);
+        if (!character) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Character not found" });
+        }
+        await incrementCharacterUsage(input.id);
+        return { systemPrompt: character.systemPrompt, name: character.name };
+      }),
+  }),
+
+  // Shared Links
+  shareLinks: router({
+    list: protectedProcedure.query(async ({ ctx }) => {
+      return await getUserSharedLinks(ctx.user.id);
+    }),
+
+    create: protectedProcedure
+      .input(z.object({
+        encryptedData: z.string(),
+        title: z.string().max(255).optional(),
+        expiresInHours: z.number().min(1).max(720).optional(),
+        maxViews: z.number().min(1).max(1000).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const shareId = crypto.randomBytes(16).toString("hex");
+        const expiresAt = input.expiresInHours 
+          ? new Date(Date.now() + input.expiresInHours * 60 * 60 * 1000)
+          : null;
+
+        await createSharedLink({
+          userId: ctx.user.id,
+          shareId,
+          encryptedData: input.encryptedData,
+          title: input.title || null,
+          expiresAt,
+          maxViews: input.maxViews || null,
+        });
+
+        return { shareId, success: true };
+      }),
+
+    get: publicProcedure
+      .input(z.object({ shareId: z.string() }))
+      .query(async ({ input }) => {
+        const link = await getSharedLinkByShareId(input.shareId);
+        if (!link) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Share link not found" });
+        }
+        if (!link.isActive) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "This link has been deactivated" });
+        }
+        if (link.expiresAt && new Date(link.expiresAt) < new Date()) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "This link has expired" });
+        }
+        if (link.maxViews && link.viewCount >= link.maxViews) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "This link has reached its view limit" });
+        }
+
+        await incrementShareLinkViews(input.shareId);
+
+        return {
+          encryptedData: link.encryptedData,
+          title: link.title,
+          createdAt: link.createdAt,
+        };
+      }),
+
+    deactivate: protectedProcedure
+      .input(z.object({ shareId: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+        await deactivateSharedLink(input.shareId, ctx.user.id);
+        return { success: true };
+      }),
+
+    remove: protectedProcedure
+      .input(z.object({ shareId: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+        await deleteSharedLink(input.shareId, ctx.user.id);
+        return { success: true };
       }),
   }),
 

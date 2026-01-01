@@ -1,7 +1,11 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Slider } from "@/components/ui/slider";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -9,6 +13,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { trpc } from "@/lib/trpc";
 import { getLoginUrl } from "@/const";
 import { Link, useLocation } from "wouter";
@@ -23,6 +45,16 @@ import {
   Trash2,
   MessageSquare,
   Settings,
+  ChevronDown,
+  ChevronUp,
+  Sliders,
+  Copy,
+  RefreshCw,
+  Shuffle,
+  Square,
+  RectangleHorizontal,
+  RectangleVertical,
+  Users,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -30,16 +62,37 @@ interface GeneratedImage {
   id: string;
   url: string;
   prompt: string;
+  negativePrompt?: string;
+  aspectRatio?: string;
+  seed?: number;
+  steps?: number;
+  cfgScale?: number;
   timestamp: number;
 }
 
 const STORAGE_KEY = "libre-ai-generated-images";
 
+const ASPECT_RATIOS = [
+  { id: "1:1", name: "Square", icon: Square, width: 1024, height: 1024 },
+  { id: "16:9", name: "Landscape", icon: RectangleHorizontal, width: 1344, height: 768 },
+  { id: "9:16", name: "Portrait", icon: RectangleVertical, width: 768, height: 1344 },
+  { id: "4:3", name: "Standard", icon: RectangleHorizontal, width: 1152, height: 896 },
+  { id: "3:4", name: "Portrait 4:3", icon: RectangleVertical, width: 896, height: 1152 },
+  { id: "21:9", name: "Ultrawide", icon: RectangleHorizontal, width: 1536, height: 640 },
+];
+
 export default function ImageGen() {
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
   const [prompt, setPrompt] = useState("");
+  const [negativePrompt, setNegativePrompt] = useState("");
   const [model, setModel] = useState("flux");
+  const [aspectRatio, setAspectRatio] = useState("1:1");
+  const [seed, setSeed] = useState<number | undefined>(undefined);
+  const [useSeed, setUseSeed] = useState(false);
+  const [steps, setSteps] = useState(30);
+  const [cfgScale, setCfgScale] = useState(7);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const [images, setImages] = useState<GeneratedImage[]>([]);
   const [selectedImage, setSelectedImage] = useState<GeneratedImage | null>(null);
 
@@ -71,19 +124,40 @@ export default function ImageGen() {
     }
   }, [authLoading, isAuthenticated, setLocation]);
 
+  const generateRandomSeed = () => {
+    const newSeed = Math.floor(Math.random() * 2147483647);
+    setSeed(newSeed);
+    setUseSeed(true);
+  };
+
   const handleGenerate = async () => {
     if (!prompt.trim() || generateMutation.isPending) return;
+
+    const currentSeed = useSeed ? (seed || Math.floor(Math.random() * 2147483647)) : undefined;
+    if (useSeed && !seed) {
+      setSeed(currentSeed);
+    }
 
     try {
       const result = await generateMutation.mutateAsync({
         prompt: prompt.trim(),
+        negativePrompt: negativePrompt.trim() || undefined,
         model,
+        aspectRatio,
+        seed: currentSeed,
+        steps,
+        cfgScale,
       });
 
       const newImage: GeneratedImage = {
         id: crypto.randomUUID(),
         url: result.url!,
         prompt: prompt.trim(),
+        negativePrompt: negativePrompt.trim() || undefined,
+        aspectRatio,
+        seed: currentSeed,
+        steps,
+        cfgScale,
         timestamp: Date.now(),
       };
 
@@ -123,8 +197,33 @@ export default function ImageGen() {
     }
   };
 
+  const handleUseSettings = (image: GeneratedImage) => {
+    setPrompt(image.prompt);
+    if (image.negativePrompt) setNegativePrompt(image.negativePrompt);
+    if (image.aspectRatio) setAspectRatio(image.aspectRatio);
+    if (image.seed) {
+      setSeed(image.seed);
+      setUseSeed(true);
+    }
+    if (image.steps) setSteps(image.steps);
+    if (image.cfgScale) setCfgScale(image.cfgScale);
+    toast.success("Settings loaded from image");
+  };
+
+  const handleCopyPrompt = (image: GeneratedImage) => {
+    let text = image.prompt;
+    if (image.negativePrompt) {
+      text += `\n\nNegative: ${image.negativePrompt}`;
+    }
+    if (image.seed) {
+      text += `\nSeed: ${image.seed}`;
+    }
+    navigator.clipboard.writeText(text);
+    toast.success("Prompt copied to clipboard");
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey && e.target instanceof HTMLInputElement) {
       e.preventDefault();
       handleGenerate();
     }
@@ -220,6 +319,12 @@ export default function ImageGen() {
               AI Chat
             </Button>
           </Link>
+          <Link href="/characters">
+            <Button variant="ghost" className="w-full justify-start gap-2">
+              <Users className="w-4 h-4" />
+              AI Characters
+            </Button>
+          </Link>
           {user?.role === "admin" && (
             <Link href="/admin">
               <Button variant="ghost" className="w-full justify-start gap-2">
@@ -252,18 +357,20 @@ export default function ImageGen() {
             </Link>
             <h1 className="font-semibold">Image Generation</h1>
           </div>
-          <Select value={model} onValueChange={setModel}>
-            <SelectTrigger className="w-32">
-              <SelectValue placeholder="Model" />
-            </SelectTrigger>
-            <SelectContent>
-              {models?.map((m) => (
-                <SelectItem key={m.id} value={m.id}>
-                  {m.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-2">
+            <Select value={model} onValueChange={setModel}>
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="Model" />
+              </SelectTrigger>
+              <SelectContent>
+                {models?.map((m) => (
+                  <SelectItem key={m.id} value={m.id}>
+                    {m.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </header>
 
         {/* Image Display */}
@@ -278,11 +385,38 @@ export default function ImageGen() {
                     className="w-full h-auto"
                   />
                 </div>
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-muted-foreground flex-1 truncate">
+                <div className="space-y-3">
+                  <p className="text-sm text-muted-foreground">
                     {selectedImage.prompt}
                   </p>
-                  <div className="flex gap-2 ml-4">
+                  {selectedImage.negativePrompt && (
+                    <p className="text-xs text-muted-foreground">
+                      <span className="text-red-400">Negative:</span> {selectedImage.negativePrompt}
+                    </p>
+                  )}
+                  <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                    {selectedImage.aspectRatio && (
+                      <span className="px-2 py-1 bg-muted rounded">
+                        {selectedImage.aspectRatio}
+                      </span>
+                    )}
+                    {selectedImage.seed && (
+                      <span className="px-2 py-1 bg-muted rounded">
+                        Seed: {selectedImage.seed}
+                      </span>
+                    )}
+                    {selectedImage.steps && (
+                      <span className="px-2 py-1 bg-muted rounded">
+                        Steps: {selectedImage.steps}
+                      </span>
+                    )}
+                    {selectedImage.cfgScale && (
+                      <span className="px-2 py-1 bg-muted rounded">
+                        CFG: {selectedImage.cfgScale}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
                     <Button
                       variant="outline"
                       size="sm"
@@ -294,10 +428,18 @@ export default function ImageGen() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setPrompt(selectedImage.prompt)}
+                      onClick={() => handleUseSettings(selectedImage)}
                     >
-                      <Wand2 className="w-4 h-4 mr-2" />
-                      Use Prompt
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Use Settings
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleCopyPrompt(selectedImage)}
+                    >
+                      <Copy className="w-4 h-4 mr-2" />
+                      Copy Prompt
                     </Button>
                   </div>
                 </div>
@@ -345,8 +487,9 @@ export default function ImageGen() {
         )}
 
         {/* Input Area */}
-        <div className="p-4 border-t border-border">
-          <div className="max-w-4xl mx-auto">
+        <div className="border-t border-border p-4">
+          <div className="max-w-4xl mx-auto space-y-4">
+            {/* Main Prompt */}
             <div className="flex gap-2">
               <Input
                 value={prompt}
@@ -370,7 +513,126 @@ export default function ImageGen() {
                 )}
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground/50 text-center mt-2">
+
+            {/* Advanced Settings Collapsible */}
+            <Collapsible open={showAdvanced} onOpenChange={setShowAdvanced}>
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" size="sm" className="w-full gap-2">
+                  <Sliders className="w-4 h-4" />
+                  Advanced Settings
+                  {showAdvanced ? (
+                    <ChevronUp className="w-4 h-4" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4" />
+                  )}
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-4 pt-4">
+                {/* Negative Prompt */}
+                <div className="space-y-2">
+                  <Label htmlFor="negative-prompt">Negative Prompt</Label>
+                  <Textarea
+                    id="negative-prompt"
+                    value={negativePrompt}
+                    onChange={(e) => setNegativePrompt(e.target.value)}
+                    placeholder="What to avoid in the image (e.g., blurry, distorted, low quality)"
+                    className="min-h-[60px]"
+                  />
+                </div>
+
+                {/* Aspect Ratio */}
+                <div className="space-y-2">
+                  <Label>Aspect Ratio</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {ASPECT_RATIOS.map((ratio) => {
+                      const Icon = ratio.icon;
+                      return (
+                        <Tooltip key={ratio.id}>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant={aspectRatio === ratio.id ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setAspectRatio(ratio.id)}
+                              className="gap-2"
+                            >
+                              <Icon className="w-4 h-4" />
+                              {ratio.id}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {ratio.name} ({ratio.width}x{ratio.height})
+                          </TooltipContent>
+                        </Tooltip>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Seed */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label>Seed (for reproducibility)</Label>
+                    <Switch
+                      checked={useSeed}
+                      onCheckedChange={setUseSeed}
+                    />
+                  </div>
+                  {useSeed && (
+                    <div className="flex gap-2">
+                      <Input
+                        type="number"
+                        value={seed || ""}
+                        onChange={(e) => setSeed(e.target.value ? parseInt(e.target.value) : undefined)}
+                        placeholder="Random seed"
+                        className="flex-1"
+                      />
+                      <Button variant="outline" size="icon" onClick={generateRandomSeed}>
+                        <Shuffle className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Steps */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label>Steps: {steps}</Label>
+                    <span className="text-xs text-muted-foreground">
+                      {steps < 20 ? "Fast" : steps > 40 ? "High Quality" : "Balanced"}
+                    </span>
+                  </div>
+                  <Slider
+                    value={[steps]}
+                    onValueChange={([v]) => setSteps(v)}
+                    min={10}
+                    max={50}
+                    step={5}
+                  />
+                </div>
+
+                {/* CFG Scale */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label>CFG Scale: {cfgScale}</Label>
+                    <span className="text-xs text-muted-foreground">
+                      {cfgScale < 5 ? "Creative" : cfgScale > 10 ? "Strict" : "Balanced"}
+                    </span>
+                  </div>
+                  <Slider
+                    value={[cfgScale]}
+                    onValueChange={([v]) => setCfgScale(v)}
+                    min={1}
+                    max={20}
+                    step={0.5}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    How closely the image follows your prompt
+                  </p>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+
+            <p className="text-xs text-muted-foreground/50 text-center">
               Create without limits
             </p>
           </div>

@@ -13,6 +13,8 @@ import Terms from "./pages/Terms";
 import Settings from "./pages/Settings";
 import Documents from "./pages/Documents";
 import Usage from "./pages/Usage";
+import Characters from "./pages/Characters";
+import SharedChat from "./pages/SharedChat";
 
 function Router() {
   return (
@@ -26,6 +28,8 @@ function Router() {
       <Route path="/settings" component={Settings} />
       <Route path="/documents" component={Documents} />
       <Route path="/usage" component={Usage} />
+      <Route path="/characters" component={Characters} />
+      <Route path="/share/:shareId" component={SharedChat} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

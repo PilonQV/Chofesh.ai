@@ -132,3 +132,45 @@ export const documentChunks = mysqlTable("document_chunks", {
 
 export type DocumentChunk = typeof documentChunks.$inferSelect;
 export type InsertDocumentChunk = typeof documentChunks.$inferInsert;
+
+
+/**
+ * AI Characters/Personas table.
+ * Users can create custom AI personalities with backstories.
+ */
+export const aiCharacters = mysqlTable("ai_characters", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").references(() => users.id).notNull(),
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description"),
+  systemPrompt: text("systemPrompt").notNull(),
+  avatarUrl: text("avatarUrl"),
+  personality: text("personality"), // JSON string of personality traits
+  isPublic: boolean("isPublic").default(false).notNull(),
+  usageCount: int("usageCount").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AiCharacter = typeof aiCharacters.$inferSelect;
+export type InsertAiCharacter = typeof aiCharacters.$inferInsert;
+
+/**
+ * Shared conversation links table.
+ * Allows users to share encrypted conversations via secure links.
+ */
+export const sharedLinks = mysqlTable("shared_links", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").references(() => users.id).notNull(),
+  shareId: varchar("shareId", { length: 32 }).notNull().unique(),
+  encryptedData: text("encryptedData").notNull(), // Encrypted conversation data
+  title: varchar("title", { length: 255 }),
+  expiresAt: timestamp("expiresAt"),
+  viewCount: int("viewCount").default(0).notNull(),
+  maxViews: int("maxViews"), // Optional limit on views
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type SharedLink = typeof sharedLinks.$inferSelect;
+export type InsertSharedLink = typeof sharedLinks.$inferInsert;
