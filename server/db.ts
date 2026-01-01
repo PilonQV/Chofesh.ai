@@ -1,6 +1,9 @@
 import { eq, desc, and, gte, lte, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, auditLogs, InsertAuditLog, userSettings, InsertUserSettings } from "../drizzle/schema";
+import { 
+  InsertUser, users, auditLogs, InsertAuditLog, userSettings, InsertUserSettings,
+  aiCharacters, InsertAiCharacter, sharedLinks, InsertSharedLink
+} from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -518,4 +521,150 @@ export async function searchDocumentChunks(userId: number, query: string, limit:
       sql`LOWER(${documentChunks.content}) LIKE LOWER(${'%' + query + '%'})`
     ))
     .limit(limit);
+}
+
+
+// ============ AI CHARACTERS FUNCTIONS ============
+
+export async function createCharacter(character: InsertAiCharacter) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(aiCharacters).values(character);
+  return result[0].insertId;
+}
+
+export async function getUserCharacters(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select()
+    .from(aiCharacters)
+    .where(eq(aiCharacters.userId, userId))
+    .orderBy(desc(aiCharacters.updatedAt));
+}
+
+export async function getPublicCharacters(limit: number = 50) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select()
+    .from(aiCharacters)
+    .where(eq(aiCharacters.isPublic, true))
+    .orderBy(desc(aiCharacters.usageCount))
+    .limit(limit);
+}
+
+export async function getCharacterById(characterId: number, userId?: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const results = await db.select()
+    .from(aiCharacters)
+    .where(eq(aiCharacters.id, characterId))
+    .limit(1);
+
+  const character = results[0];
+  if (!character) return undefined;
+
+  // Check access: either owner or public
+  if (character.userId !== userId && !character.isPublic) {
+    return undefined;
+  }
+
+  return character;
+}
+
+export async function updateCharacter(characterId: number, userId: number, updates: Partial<InsertAiCharacter>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(aiCharacters)
+    .set(updates)
+    .where(and(
+      eq(aiCharacters.id, characterId),
+      eq(aiCharacters.userId, userId)
+    ));
+}
+
+export async function deleteCharacter(characterId: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.delete(aiCharacters).where(and(
+    eq(aiCharacters.id, characterId),
+    eq(aiCharacters.userId, userId)
+  ));
+}
+
+export async function incrementCharacterUsage(characterId: number) {
+  const db = await getDb();
+  if (!db) return;
+
+  await db.update(aiCharacters)
+    .set({ usageCount: sql`${aiCharacters.usageCount} + 1` })
+    .where(eq(aiCharacters.id, characterId));
+}
+
+// ============ SHARED LINKS FUNCTIONS ============
+
+export async function createSharedLink(link: InsertSharedLink) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.insert(sharedLinks).values(link);
+  return link.shareId;
+}
+
+export async function getSharedLinkByShareId(shareId: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const results = await db.select()
+    .from(sharedLinks)
+    .where(eq(sharedLinks.shareId, shareId))
+    .limit(1);
+
+  return results[0];
+}
+
+export async function getUserSharedLinks(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select()
+    .from(sharedLinks)
+    .where(eq(sharedLinks.userId, userId))
+    .orderBy(desc(sharedLinks.createdAt));
+}
+
+export async function incrementShareLinkViews(shareId: string) {
+  const db = await getDb();
+  if (!db) return;
+
+  await db.update(sharedLinks)
+    .set({ viewCount: sql`${sharedLinks.viewCount} + 1` })
+    .where(eq(sharedLinks.shareId, shareId));
+}
+
+export async function deactivateSharedLink(shareId: string, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(sharedLinks)
+    .set({ isActive: false })
+    .where(and(
+      eq(sharedLinks.shareId, shareId),
+      eq(sharedLinks.userId, userId)
+    ));
+}
+
+export async function deleteSharedLink(shareId: string, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.delete(sharedLinks).where(and(
+    eq(sharedLinks.shareId, shareId),
+    eq(sharedLinks.userId, userId)
+  ));
 }

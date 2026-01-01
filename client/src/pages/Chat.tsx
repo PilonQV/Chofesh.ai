@@ -1,7 +1,11 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -18,16 +22,29 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
 import { useConversations } from "@/hooks/useConversations";
 import { getLoginUrl } from "@/const";
 import { Link, useLocation } from "wouter";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Streamdown } from "streamdown";
 import {
   Sparkles,
@@ -46,13 +63,66 @@ import {
   DollarSign,
   Gauge,
   ChevronDown,
+  ChevronUp,
   Bot,
   Crown,
   Rocket,
+  Mic,
+  MicOff,
+  Volume2,
+  VolumeX,
+  Globe,
+  Sliders,
+  Copy,
+  Share2,
+  Users,
 } from "lucide-react";
 import { toast } from "sonner";
 
 type RoutingMode = "auto" | "free" | "manual";
+
+// Web Speech API types
+interface SpeechRecognitionEvent extends Event {
+  results: SpeechRecognitionResultList;
+  resultIndex: number;
+}
+
+interface SpeechRecognitionResultList {
+  length: number;
+  item(index: number): SpeechRecognitionResult;
+  [index: number]: SpeechRecognitionResult;
+}
+
+interface SpeechRecognitionResult {
+  isFinal: boolean;
+  length: number;
+  item(index: number): SpeechRecognitionAlternative;
+  [index: number]: SpeechRecognitionAlternative;
+}
+
+interface SpeechRecognitionAlternative {
+  transcript: string;
+  confidence: number;
+}
+
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start(): void;
+  stop(): void;
+  abort(): void;
+  onresult: ((event: SpeechRecognitionEvent) => void) | null;
+  onerror: ((event: Event) => void) | null;
+  onend: (() => void) | null;
+}
+
+declare global {
+  interface Window {
+    SpeechRecognition: new () => SpeechRecognition;
+    webkitSpeechRecognition: new () => SpeechRecognition;
+  }
+}
 
 export default function Chat() {
   const { user, loading: authLoading, isAuthenticated } = useAuth();
@@ -60,8 +130,21 @@ export default function Chat() {
   const [input, setInput] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [routingMode, setRoutingMode] = useState<RoutingMode>("auto");
   const [selectedModel, setSelectedModel] = useState<string>("auto");
+  
+  // Advanced settings
+  const [systemPrompt, setSystemPrompt] = useState("");
+  const [temperature, setTemperature] = useState(0.7);
+  const [topP, setTopP] = useState(0.9);
+  const [webSearchEnabled, setWebSearchEnabled] = useState(false);
+  
+  // Voice features
+  const [isListening, setIsListening] = useState(false);
+  const [voiceOutputEnabled, setVoiceOutputEnabled] = useState(false);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  
   const [lastResponse, setLastResponse] = useState<{
     model: string;
     modelName: string;
@@ -69,6 +152,7 @@ export default function Chat() {
     cost: number;
     cached: boolean;
     tokens?: { input: number; output: number; total: number };
+    webSearchUsed?: boolean;
   } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -86,7 +170,46 @@ export default function Chat() {
 
   const { data: models } = trpc.models.listText.useQuery();
   const { data: templates } = trpc.templates.list.useQuery();
+  const { data: myCharacters } = trpc.characters.list.useQuery(undefined, { enabled: isAuthenticated });
+  const { data: publicCharacters } = trpc.characters.listPublic.useQuery();
+  const characters = [...(myCharacters || []), ...(publicCharacters || []).filter(c => !myCharacters?.some(m => m.id === c.id))];
   const chatMutation = trpc.chat.send.useMutation();
+  const createShareMutation = trpc.shareLinks.create.useMutation();
+
+  // Initialize speech recognition
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SpeechRecognitionAPI) {
+        recognitionRef.current = new SpeechRecognitionAPI();
+        recognitionRef.current.continuous = false;
+        recognitionRef.current.interimResults = true;
+        recognitionRef.current.lang = "en-US";
+        
+        recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
+          const transcript = Array.from(event.results)
+            .map(result => result[0].transcript)
+            .join("");
+          setInput(transcript);
+        };
+        
+        recognitionRef.current.onerror = () => {
+          setIsListening(false);
+          toast.error("Voice recognition error. Please try again.");
+        };
+        
+        recognitionRef.current.onend = () => {
+          setIsListening(false);
+        };
+      }
+    }
+    
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.abort();
+      }
+    };
+  }, []);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -107,6 +230,32 @@ export default function Chat() {
     inputRef.current?.focus();
   }, [currentConversation?.id]);
 
+  // Voice output function
+  const speakText = useCallback((text: string) => {
+    if (!voiceOutputEnabled || typeof window === "undefined") return;
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1;
+    utterance.pitch = 1;
+    window.speechSynthesis.speak(utterance);
+  }, [voiceOutputEnabled]);
+
+  const toggleVoiceInput = () => {
+    if (!recognitionRef.current) {
+      toast.error("Voice recognition not supported in this browser");
+      return;
+    }
+    
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      recognitionRef.current.start();
+      setIsListening(true);
+      toast.info("Listening... Speak now");
+    }
+  };
+
   const handleSend = async () => {
     if (!input.trim() || isGenerating) return;
 
@@ -121,20 +270,35 @@ export default function Chat() {
     setIsGenerating(true);
 
     try {
-      const messages = [
+      // Build messages array with system prompt if provided
+      const messages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [];
+      
+      if (systemPrompt.trim()) {
+        messages.push({ role: "system", content: systemPrompt.trim() });
+      }
+      
+      messages.push(
         ...conv.messages.map((m) => ({ role: m.role as "system" | "user" | "assistant", content: m.content })),
-        { role: "user" as const, content: userMessage },
-      ];
+        { role: "user" as const, content: userMessage }
+      );
 
       const response = await chatMutation.mutateAsync({
         messages,
         model: routingMode === "manual" ? selectedModel : undefined,
         routingMode,
         useCache: true,
+        temperature,
+        topP,
+        webSearch: webSearchEnabled,
       });
 
       const content = typeof response.content === 'string' ? response.content : JSON.stringify(response.content);
       addMessage(conv.id, "assistant", content);
+      
+      // Voice output
+      if (voiceOutputEnabled) {
+        speakText(content);
+      }
       
       // Store response metadata for display
       setLastResponse({
@@ -144,6 +308,7 @@ export default function Chat() {
         cost: response.cost || 0,
         cached: response.cached || false,
         tokens: response.tokens,
+        webSearchUsed: response.webSearchUsed,
       });
     } catch (error) {
       toast.error("Failed to generate response. Please try again.");
@@ -174,6 +339,80 @@ export default function Chat() {
   const handleTemplateSelect = (templatePrompt: string) => {
     setInput(templatePrompt);
     inputRef.current?.focus();
+  };
+
+  const handleCopyConversation = () => {
+    if (!currentConversation?.messages.length) return;
+    
+    const text = currentConversation.messages
+      .map(m => `${m.role === "user" ? "You" : "AI"}: ${m.content}`)
+      .join("\n\n");
+    
+    navigator.clipboard.writeText(text);
+    toast.success("Conversation copied to clipboard");
+  };
+
+  const handleShareConversation = async () => {
+    if (!currentConversation?.messages.length) {
+      toast.error("No messages to share");
+      return;
+    }
+
+    try {
+      // Generate a random encryption key
+      const encryptionKey = crypto.getRandomValues(new Uint8Array(32));
+      const keyHex = Array.from(encryptionKey).map(b => b.toString(16).padStart(2, '0')).join('');
+
+      // Encrypt the conversation
+      const encoder = new TextEncoder();
+      const data = encoder.encode(JSON.stringify(currentConversation.messages));
+      
+      const keyMaterial = await crypto.subtle.importKey(
+        "raw",
+        encoder.encode(keyHex),
+        "PBKDF2",
+        false,
+        ["deriveKey"]
+      );
+
+      const key = await crypto.subtle.deriveKey(
+        {
+          name: "PBKDF2",
+          salt: encoder.encode("libreai-share-salt"),
+          iterations: 100000,
+          hash: "SHA-256",
+        },
+        keyMaterial,
+        { name: "AES-GCM", length: 256 },
+        false,
+        ["encrypt"]
+      );
+
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const encrypted = await crypto.subtle.encrypt(
+        { name: "AES-GCM", iv },
+        key,
+        data
+      );
+
+      const ivHex = Array.from(iv).map(b => b.toString(16).padStart(2, '0')).join('');
+      const encryptedHex = Array.from(new Uint8Array(encrypted)).map(b => b.toString(16).padStart(2, '0')).join('');
+      const encryptedData = `${ivHex}:${encryptedHex}`;
+
+      // Create share link
+      const result = await createShareMutation.mutateAsync({
+        encryptedData,
+        title: currentConversation.title || "Shared Conversation",
+        expiresInHours: 168, // 7 days
+      });
+
+      const shareUrl = `${window.location.origin}/share/${result.shareId}#${keyHex}`;
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success("Share link copied to clipboard! Link expires in 7 days.");
+    } catch (error) {
+      console.error("Share error:", error);
+      toast.error("Failed to create share link");
+    }
   };
 
   const getTierIcon = (tier: string) => {
@@ -318,6 +557,12 @@ export default function Chat() {
 
           {/* Sidebar Footer */}
           <div className="p-4 border-t border-border space-y-2">
+            <Link href="/characters">
+              <Button variant="ghost" className="w-full justify-start gap-2">
+                <Users className="w-4 h-4" />
+                AI Characters
+              </Button>
+            </Link>
             <Link href="/image">
               <Button variant="ghost" className="w-full justify-start gap-2">
                 <Image className="w-4 h-4" />
@@ -358,8 +603,107 @@ export default function Chat() {
             </h1>
           </div>
 
-          {/* Model Routing Controls */}
+          {/* Header Controls */}
           <div className="flex items-center gap-2">
+            {/* Advanced Settings Button */}
+            <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Sliders className="w-4 h-4" />
+                  <span className="hidden sm:inline">Settings</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-lg">
+                <DialogHeader>
+                  <DialogTitle>Chat Settings</DialogTitle>
+                  <DialogDescription>
+                    Customize AI behavior for this conversation
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-6 py-4">
+                  {/* System Prompt */}
+                  <div className="space-y-2">
+                    <Label htmlFor="system-prompt">System Prompt</Label>
+                    <Textarea
+                      id="system-prompt"
+                      placeholder="You are a helpful assistant that..."
+                      value={systemPrompt}
+                      onChange={(e) => setSystemPrompt(e.target.value)}
+                      className="min-h-[100px]"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Custom instructions that shape how the AI responds
+                    </p>
+                  </div>
+
+                  {/* Temperature */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label>Temperature: {temperature.toFixed(1)}</Label>
+                      <span className="text-xs text-muted-foreground">
+                        {temperature < 0.3 ? "Focused" : temperature > 0.7 ? "Creative" : "Balanced"}
+                      </span>
+                    </div>
+                    <Slider
+                      value={[temperature]}
+                      onValueChange={([v]) => setTemperature(v)}
+                      min={0}
+                      max={1}
+                      step={0.1}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Lower = more focused, Higher = more creative
+                    </p>
+                  </div>
+
+                  {/* Top P */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label>Top P: {topP.toFixed(1)}</Label>
+                    </div>
+                    <Slider
+                      value={[topP]}
+                      onValueChange={([v]) => setTopP(v)}
+                      min={0.1}
+                      max={1}
+                      step={0.1}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Controls response diversity
+                    </p>
+                  </div>
+
+                  {/* Web Search Toggle */}
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Web Search</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Include real-time web results
+                      </p>
+                    </div>
+                    <Switch
+                      checked={webSearchEnabled}
+                      onCheckedChange={setWebSearchEnabled}
+                    />
+                  </div>
+
+                  {/* Voice Output Toggle */}
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Voice Output</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Read responses aloud
+                      </p>
+                    </div>
+                    <Switch
+                      checked={voiceOutputEnabled}
+                      onCheckedChange={setVoiceOutputEnabled}
+                    />
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+
             {/* Routing Mode Selector */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -434,6 +778,37 @@ export default function Chat() {
               </Select>
             )}
 
+            {/* Copy Conversation */}
+            {currentConversation?.messages.length ? (
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" onClick={handleCopyConversation}>
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Copy conversation</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={handleShareConversation}
+                      disabled={createShareMutation.isPending}
+                    >
+                      {createShareMutation.isPending ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Share2 className="w-4 h-4" />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Share conversation</TooltipContent>
+                </Tooltip>
+              </>
+            ) : null}
+
             {/* Last Response Info */}
             {lastResponse && (
               <Tooltip>
@@ -441,6 +816,9 @@ export default function Chat() {
                   <div className="hidden md:flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded">
                     {getTierIcon(lastResponse.tier)}
                     <span>{lastResponse.modelName}</span>
+                    {lastResponse.webSearchUsed && (
+                      <Globe className="w-3 h-3 text-blue-400" />
+                    )}
                     {lastResponse.cached && (
                       <Badge variant="outline" className="text-[10px] px-1">cached</Badge>
                     )}
@@ -457,6 +835,7 @@ export default function Chat() {
                       <div>Tokens: {lastResponse.tokens.total} ({lastResponse.tokens.input} in / {lastResponse.tokens.output} out)</div>
                     )}
                     <div>Cost: ${lastResponse.cost.toFixed(6)}</div>
+                    {lastResponse.webSearchUsed && <div className="text-blue-400">Web search used</div>}
                     {lastResponse.cached && <div className="text-green-400">Served from cache</div>}
                   </div>
                 </TooltipContent>
@@ -464,6 +843,29 @@ export default function Chat() {
             )}
           </div>
         </header>
+
+        {/* Active Settings Indicators */}
+        {(systemPrompt || webSearchEnabled || temperature !== 0.7) && (
+          <div className="px-4 py-2 border-b border-border bg-muted/30 flex items-center gap-2 text-xs">
+            <span className="text-muted-foreground">Active:</span>
+            {systemPrompt && (
+              <Badge variant="outline" className="text-xs">
+                System Prompt
+              </Badge>
+            )}
+            {webSearchEnabled && (
+              <Badge variant="outline" className="text-xs bg-blue-500/10 text-blue-400 border-blue-500/30">
+                <Globe className="w-3 h-3 mr-1" />
+                Web Search
+              </Badge>
+            )}
+            {temperature !== 0.7 && (
+              <Badge variant="outline" className="text-xs">
+                Temp: {temperature.toFixed(1)}
+              </Badge>
+            )}
+          </div>
+        )}
 
         {/* Messages Area */}
         <ScrollArea ref={scrollRef} className="flex-1 p-4">
@@ -559,7 +961,8 @@ export default function Chat() {
                   <div className="flex items-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin" />
                     <span className="text-sm text-muted-foreground">
-                      {routingMode === "auto" ? "Selecting best model..." : "Generating..."}
+                      {webSearchEnabled ? "Searching & generating..." : 
+                       routingMode === "auto" ? "Selecting best model..." : "Generating..."}
                     </span>
                   </div>
                 </div>
@@ -572,12 +975,33 @@ export default function Chat() {
         <div className="border-t border-border p-4">
           <div className="max-w-3xl mx-auto">
             <div className="flex gap-2">
+              {/* Voice Input Button */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={isListening ? "default" : "outline"}
+                    size="icon"
+                    onClick={toggleVoiceInput}
+                    className={isListening ? "bg-red-500 hover:bg-red-600" : ""}
+                  >
+                    {isListening ? (
+                      <MicOff className="w-4 h-4" />
+                    ) : (
+                      <Mic className="w-4 h-4" />
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {isListening ? "Stop listening" : "Voice input"}
+                </TooltipContent>
+              </Tooltip>
+
               <Input
                 ref={inputRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Type your message..."
+                placeholder={isListening ? "Listening..." : "Type your message..."}
                 disabled={isGenerating}
                 className="flex-1"
               />

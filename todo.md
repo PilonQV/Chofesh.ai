@@ -133,3 +133,41 @@
 - [x] Categories: Writing, Coding, Analysis, Creative
 - [x] One-click template insertion
 - [ ] User can save custom templates (future enhancement)
+
+
+---
+## Phase 4: Venice.ai Feature Parity
+
+### Chat Enhancements
+- [x] System Prompt field (custom AI instructions)
+- [x] Temperature slider (creativity control)
+- [x] Top P slider (response diversity)
+- [x] Web Search toggle (real-time info)
+
+### Image Generation Enhancements
+- [x] Negative prompt field
+- [x] Aspect ratio selector (1:1, 16:9, 9:16, 4:3, 3:4)
+- [x] Seed input for reproducibility
+- [x] Steps/Quality slider
+- [x] CFG Scale/Adherence slider
+
+### Voice Features
+- [x] Voice input using Web Speech API
+- [x] Voice output using Speech Synthesis API
+
+### AI Characters/Personas
+- [x] Characters database table
+- [x] Create custom AI persona
+- [x] Auto-generate character option
+- [x] Rich backstory editor
+- [x] Duplicate and evolve characters
+- [x] Use character in chat
+
+### Secure Sharing
+- [x] Generate encrypted share links
+- [x] View shared conversations
+- [x] Share link expiration options
+
+### Additional Models
+- [ ] DeepSeek R1 integration (reasoning) - future
+- [x] More Groq models (Mixtral, Llama)
