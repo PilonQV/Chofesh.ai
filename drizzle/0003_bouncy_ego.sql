@@ -1,0 +1,1 @@
+ALTER TABLE `user_api_keys` MODIFY COLUMN `provider` enum('openai','anthropic','google','groq') NOT NULL;

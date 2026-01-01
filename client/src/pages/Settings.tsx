@@ -45,7 +45,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-type ApiProvider = "openai" | "anthropic" | "google";
+type ApiProvider = "openai" | "anthropic" | "google" | "groq";
 
 interface ApiKeyDisplay {
   id: number;
@@ -125,6 +125,11 @@ export default function Settings() {
       return;
     }
 
+    if (newKeyProvider === "groq" && !newKeyValue.startsWith("gsk_")) {
+      toast.error("Groq API keys should start with 'gsk_'");
+      return;
+    }
+
     setValidating(true);
     try {
       await addKeyMutation.mutateAsync({
@@ -144,6 +149,8 @@ export default function Settings() {
         return "Anthropic";
       case "google":
         return "Google AI";
+      case "groq":
+        return "Groq (Free Tier)";
       default:
         return provider;
     }
@@ -157,6 +164,8 @@ export default function Settings() {
         return "bg-orange-500/20 text-orange-500";
       case "google":
         return "bg-blue-500/20 text-blue-500";
+      case "groq":
+        return "bg-purple-500/20 text-purple-500";
       default:
         return "bg-primary/20 text-primary";
     }
@@ -248,6 +257,7 @@ export default function Settings() {
                             <SelectItem value="openai">OpenAI</SelectItem>
                             <SelectItem value="anthropic">Anthropic</SelectItem>
                             <SelectItem value="google">Google AI</SelectItem>
+                            <SelectItem value="groq">Groq (Free Tier)</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -263,6 +273,8 @@ export default function Settings() {
                                 ? "sk-..."
                                 : newKeyProvider === "anthropic"
                                 ? "sk-ant-..."
+                                : newKeyProvider === "groq"
+                                ? "gsk_..."
                                 : "AIza..."
                             }
                             className="pr-10"
@@ -290,6 +302,9 @@ export default function Settings() {
                           )}
                           {newKeyProvider === "google" && (
                             <>Get your API key from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Google AI Studio</a></>
+                          )}
+                          {newKeyProvider === "groq" && (
+                            <>Get your FREE API key from <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Groq Console</a> - unlimited free tier!</>
                           )}
                         </p>
                       </div>
