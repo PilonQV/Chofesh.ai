@@ -370,8 +370,8 @@ export default function ImageGen() {
                 )}
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground text-center mt-2">
-              Images are stored locally. Only prompts are logged for compliance.
+            <p className="text-xs text-muted-foreground/50 text-center mt-2">
+              Create without limits
             </p>
           </div>
         </div>

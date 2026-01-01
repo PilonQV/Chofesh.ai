@@ -312,8 +312,8 @@ export default function Chat() {
                 </div>
                 <h2 className="text-2xl font-bold mb-2">Start a Conversation</h2>
                 <p className="text-muted-foreground max-w-md mx-auto">
-                  Ask anything. Your conversations are encrypted and stored locally
-                  on your device for complete privacy.
+                  Ask anything freely. No filters, no limits, just honest answers.
+                  Your conversations stay on your device.
                 </p>
               </div>
             )}
@@ -377,8 +377,8 @@ export default function Chat() {
                 )}
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground text-center mt-2">
-              Your conversations are encrypted and stored locally. Only metadata is logged.
+            <p className="text-xs text-muted-foreground/50 text-center mt-2">
+              Powered by your choice of AI models
             </p>
           </div>
         </div>

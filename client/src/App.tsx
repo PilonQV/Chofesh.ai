@@ -8,6 +8,11 @@ import Home from "./pages/Home";
 import Chat from "./pages/Chat";
 import ImageGen from "./pages/ImageGen";
 import AdminDashboard from "./pages/AdminDashboard";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
+import Settings from "./pages/Settings";
+import Documents from "./pages/Documents";
+import Usage from "./pages/Usage";
 
 function Router() {
   return (
@@ -16,6 +21,11 @@ function Router() {
       <Route path="/chat" component={Chat} />
       <Route path="/image" component={ImageGen} />
       <Route path="/admin" component={AdminDashboard} />
+      <Route path="/privacy" component={Privacy} />
+      <Route path="/terms" component={Terms} />
+      <Route path="/settings" component={Settings} />
+      <Route path="/documents" component={Documents} />
+      <Route path="/usage" component={Usage} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

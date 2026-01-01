@@ -15,6 +15,13 @@
       "when": 1767296812043,
       "tag": "0001_soft_lord_hawal",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1767300516111,
+      "tag": "0002_equal_darkstar",
+      "breakpoints": true
     }
   ]
 }

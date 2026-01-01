@@ -1,0 +1,233 @@
+import { Button } from "@/components/ui/button";
+import { Link } from "wouter";
+import { ArrowLeft, Sparkles, FileText } from "lucide-react";
+
+export default function Terms() {
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Navigation */}
+      <nav className="fixed top-0 left-0 right-0 z-50 glass">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-primary-foreground" />
+            </div>
+            <span className="text-xl font-bold gradient-text">LibreAI</span>
+          </Link>
+          <Link href="/">
+            <Button variant="ghost" size="sm" className="gap-2">
+              <ArrowLeft className="w-4 h-4" />
+              Back to Home
+            </Button>
+          </Link>
+        </div>
+      </nav>
+
+      {/* Hero */}
+      <section className="pt-32 pb-12 px-4">
+        <div className="container mx-auto max-w-4xl">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-6">
+              <FileText className="w-4 h-4" />
+              <span className="text-sm font-medium">Terms of Service</span>
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+              Terms of <span className="gradient-text">Service</span>
+            </h1>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Please read these terms carefully before using LibreAI.
+            </p>
+            <p className="text-sm text-muted-foreground mt-4">
+              Last updated: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Terms Content */}
+      <section className="py-12 px-4">
+        <div className="container mx-auto max-w-4xl">
+          <div className="prose prose-invert max-w-none">
+            <TermsSection title="1. Acceptance of Terms">
+              <p>
+                By accessing or using LibreAI ("the Service"), you agree to be bound by these Terms of Service. 
+                If you do not agree to these terms, please do not use the Service.
+              </p>
+            </TermsSection>
+
+            <TermsSection title="2. Description of Service">
+              <p>
+                LibreAI provides AI-powered text and image generation services. The Service includes:
+              </p>
+              <ul>
+                <li>AI chat functionality with various language models</li>
+                <li>AI image generation from text prompts</li>
+                <li>Document analysis and chat (RAG)</li>
+                <li>Local encrypted storage of conversations</li>
+                <li>Option to use your own API keys (BYOK)</li>
+              </ul>
+            </TermsSection>
+
+            <TermsSection title="3. User Responsibilities">
+              <p>
+                You agree to:
+              </p>
+              <ul>
+                <li>Use the Service in compliance with all applicable laws</li>
+                <li>Not use the Service to generate content that is illegal, harmful, or violates others' rights</li>
+                <li>Not attempt to circumvent security measures or access unauthorized areas</li>
+                <li>Not use the Service for spam, harassment, or malicious purposes</li>
+                <li>Keep your account credentials secure</li>
+              </ul>
+            </TermsSection>
+
+            <TermsSection title="4. Prohibited Content">
+              <p>
+                While LibreAI provides creative freedom, you may not use the Service to generate:
+              </p>
+              <ul>
+                <li>Child sexual abuse material (CSAM) or any content sexualizing minors</li>
+                <li>Content that promotes terrorism or violent extremism</li>
+                <li>Content designed to harass, threaten, or harm specific individuals</li>
+                <li>Content that infringes on intellectual property rights</li>
+                <li>Malware, phishing content, or tools for cyberattacks</li>
+              </ul>
+              <p>
+                Violation of these prohibitions may result in immediate account termination and reporting to authorities.
+              </p>
+            </TermsSection>
+
+            <TermsSection title="5. Intellectual Property">
+              <p>
+                <strong>Your Content:</strong> You retain ownership of content you create using the Service. 
+                By using the Service, you grant us a limited license to process your requests.
+              </p>
+              <p>
+                <strong>AI-Generated Content:</strong> Content generated by AI models may be subject to the 
+                terms of the underlying model providers (OpenAI, Anthropic, etc.).
+              </p>
+              <p>
+                <strong>Our Service:</strong> LibreAI and its original content, features, and functionality 
+                are owned by us and protected by intellectual property laws.
+              </p>
+            </TermsSection>
+
+            <TermsSection title="6. BYOK (Bring Your Own Key)">
+              <p>
+                If you choose to use your own API keys:
+              </p>
+              <ul>
+                <li>You are responsible for compliance with the API provider's terms of service</li>
+                <li>You are responsible for any charges incurred through your API keys</li>
+                <li>We are not liable for any issues arising from your use of third-party APIs</li>
+                <li>You must not share API keys that violate the provider's terms</li>
+              </ul>
+            </TermsSection>
+
+            <TermsSection title="7. Privacy and Data">
+              <p>
+                Your use of the Service is also governed by our Privacy Policy. Key points:
+              </p>
+              <ul>
+                <li>Conversations are stored locally on your device</li>
+                <li>We maintain audit logs for legal compliance</li>
+                <li>We do not sell your data to third parties</li>
+              </ul>
+            </TermsSection>
+
+            <TermsSection title="8. Disclaimers">
+              <p>
+                THE SERVICE IS PROVIDED "AS IS" WITHOUT WARRANTIES OF ANY KIND. We do not guarantee:
+              </p>
+              <ul>
+                <li>The accuracy or reliability of AI-generated content</li>
+                <li>Uninterrupted or error-free service</li>
+                <li>That the Service will meet your specific requirements</li>
+              </ul>
+              <p>
+                AI-generated content should not be relied upon for medical, legal, financial, or other professional advice.
+              </p>
+            </TermsSection>
+
+            <TermsSection title="9. Limitation of Liability">
+              <p>
+                To the maximum extent permitted by law, we shall not be liable for any indirect, incidental, 
+                special, consequential, or punitive damages arising from your use of the Service.
+              </p>
+            </TermsSection>
+
+            <TermsSection title="10. Termination">
+              <p>
+                We may terminate or suspend your access to the Service immediately, without prior notice, for:
+              </p>
+              <ul>
+                <li>Violation of these Terms</li>
+                <li>Illegal activity</li>
+                <li>Abuse of the Service</li>
+              </ul>
+              <p>
+                You may terminate your account at any time by contacting us.
+              </p>
+            </TermsSection>
+
+            <TermsSection title="11. Changes to Terms">
+              <p>
+                We reserve the right to modify these terms at any time. We will notify users of significant 
+                changes via email or prominent notice on the Service.
+              </p>
+            </TermsSection>
+
+            <TermsSection title="12. Governing Law">
+              <p>
+                These Terms shall be governed by and construed in accordance with applicable laws, 
+                without regard to conflict of law principles.
+              </p>
+            </TermsSection>
+
+            <TermsSection title="13. Contact">
+              <p>
+                For questions about these Terms, contact us at:
+              </p>
+              <ul>
+                <li>Email: legal@libreai.com</li>
+              </ul>
+            </TermsSection>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-8 px-4 border-t border-border">
+        <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded bg-primary flex items-center justify-center">
+              <Sparkles className="w-4 h-4 text-primary-foreground" />
+            </div>
+            <span className="font-semibold">LibreAI</span>
+          </div>
+          <div className="flex gap-6 text-sm text-muted-foreground">
+            <Link href="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link>
+            <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+function TermsSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="mb-10">
+      <h3 className="text-xl font-bold mb-4 text-foreground">{title}</h3>
+      <div className="text-muted-foreground space-y-4 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:space-y-2 [&_strong]:text-foreground">
+        {children}
+      </div>
+    </div>
+  );
+}
