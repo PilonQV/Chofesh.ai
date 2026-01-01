@@ -49,10 +49,8 @@ export default function Documents() {
     enabled: isAuthenticated,
   });
 
-  const { data: selectedDoc } = trpc.documents.get.useQuery(
-    { id: selectedDocId! },
-    { enabled: !!selectedDocId }
-  );
+  // Get selected document from the list
+  const selectedDoc = documents?.find(d => d.id === selectedDocId);
 
   const uploadMutation = trpc.documents.upload.useMutation({
     onSuccess: () => {
@@ -77,7 +75,7 @@ export default function Documents() {
 
   const chatMutation = trpc.documents.chat.useMutation({
     onSuccess: (data) => {
-      setChatMessages((prev) => [...prev, { role: "assistant", content: data.content }]);
+      setChatMessages((prev) => [...prev, { role: "assistant", content: data.answer }]);
     },
     onError: (error) => {
       toast.error(error.message || "Failed to get response");
@@ -118,10 +116,9 @@ export default function Documents() {
       const textContent = await file.text();
       
       await uploadMutation.mutateAsync({
-        fileName: file.name,
-        fileType: file.type || "text/plain",
-        fileSize: file.size,
-        textContent,
+        filename: file.name,
+        mimeType: file.type || "text/plain",
+        content: textContent,
       });
     } catch (error) {
       console.error("Upload error:", error);
@@ -143,7 +140,6 @@ export default function Documents() {
     await chatMutation.mutateAsync({
       documentId: selectedDocId,
       question: userMessage,
-      history: chatMessages,
     });
   };
 

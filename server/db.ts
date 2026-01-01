@@ -267,7 +267,7 @@ function decryptApiKey(encryptedData: string): string {
   return decrypted;
 }
 
-export async function addUserApiKey(userId: number, provider: "openai" | "anthropic" | "google", apiKey: string) {
+export async function addUserApiKey(userId: number, provider: "openai" | "anthropic" | "google" | "groq", apiKey: string) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
@@ -314,7 +314,7 @@ export async function getUserApiKeys(userId: number) {
   }).from(userApiKeys).where(eq(userApiKeys.userId, userId));
 }
 
-export async function getDecryptedApiKey(userId: number, provider: "openai" | "anthropic" | "google"): Promise<string | null> {
+export async function getDecryptedApiKey(userId: number, provider: "openai" | "anthropic" | "google" | "groq"): Promise<string | null> {
   const db = await getDb();
   if (!db) return null;
 

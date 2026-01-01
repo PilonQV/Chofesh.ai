@@ -95,3 +95,41 @@
 - [x] Unit tests for usage tracking
 - [x] Unit tests for document endpoints
 - [x] Unit tests for admin endpoints
+
+
+---
+
+## Phase 3: Smart Routing & Free Tier
+
+### Smart Model Router
+- [x] Query complexity analyzer (simple/medium/complex)
+- [x] Auto-route simple queries to cheap models (GPT-4o-mini)
+- [x] Auto-route complex queries to better models (GPT-4o)
+- [x] Cost estimation before sending
+- [x] User can override auto-selection
+
+### Free Tier with Groq
+- [x] Integrate Groq API for free Llama 3.1 access
+- [x] Add Llama 3.1 8B (fast, free) option
+- [x] Add Llama 3.1 70B (powerful, free) option
+- [x] Add Mixtral 8x7B option
+- [x] Fallback to platform models if Groq unavailable
+
+### Tiered Model Selection UI
+- [x] "Auto" mode - smart routing (default for paid)
+- [x] "Free" mode - Groq models only (zero cost)
+- [x] "Manual" mode - user picks specific model
+- [x] Model tier badges (Free/Standard/Premium)
+- [x] Real-time cost indicator per message
+
+### Response Caching
+- [x] Hash-based cache for identical prompts
+- [x] Cache TTL configuration
+- [x] Cache hit indicator in UI
+- [x] User can clear their cache
+
+### Prompt Templates Library
+- [x] Pre-built templates for common tasks
+- [x] Categories: Writing, Coding, Analysis, Creative
+- [x] One-click template insertion
+- [ ] User can save custom templates (future enhancement)

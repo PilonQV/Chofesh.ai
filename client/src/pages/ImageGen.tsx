@@ -83,7 +83,7 @@ export default function ImageGen() {
       const newImage: GeneratedImage = {
         id: crypto.randomUUID(),
         url: result.url!,
-        prompt: result.prompt,
+        prompt: prompt.trim(),
         timestamp: Date.now(),
       };
 

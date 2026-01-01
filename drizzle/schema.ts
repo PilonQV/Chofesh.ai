@@ -65,7 +65,7 @@ export type InsertUserSettings = typeof userSettings.$inferInsert;
 export const userApiKeys = mysqlTable("user_api_keys", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").references(() => users.id).notNull(),
-  provider: mysqlEnum("provider", ["openai", "anthropic", "google"]).notNull(),
+  provider: mysqlEnum("provider", ["openai", "anthropic", "google", "groq"]).notNull(),
   encryptedKey: text("encryptedKey").notNull(),
   keyHint: varchar("keyHint", { length: 8 }), // Last 4 chars for display
   isActive: boolean("isActive").default(true).notNull(),
