@@ -16,6 +16,30 @@ vi.mock("./db", () => ({
   updateUserRole: vi.fn().mockResolvedValue(undefined),
   getUserSettings: vi.fn().mockResolvedValue(null),
   upsertUserSettings: vi.fn().mockResolvedValue(undefined),
+  // BYOK functions
+  addUserApiKey: vi.fn().mockResolvedValue(undefined),
+  getUserApiKeys: vi.fn().mockResolvedValue([]),
+  deleteUserApiKey: vi.fn().mockResolvedValue(undefined),
+  toggleUserApiKey: vi.fn().mockResolvedValue(undefined),
+  // Usage tracking functions
+  createUsageRecord: vi.fn().mockResolvedValue(undefined),
+  getUserUsageStats: vi.fn().mockResolvedValue({
+    totalTokens: 1000,
+    totalRequests: 50,
+    totalCost: 0.15,
+    byType: { chat: { count: 40, tokens: 800 }, image_generation: { count: 10, tokens: 0 } },
+    byDay: [],
+  }),
+  getRecentUsageRecords: vi.fn().mockResolvedValue([]),
+  // Document functions
+  createUserDocument: vi.fn().mockResolvedValue(1),
+  getUserDocuments: vi.fn().mockResolvedValue([]),
+  getDocumentById: vi.fn().mockResolvedValue(null),
+  updateDocumentStatus: vi.fn().mockResolvedValue(undefined),
+  deleteUserDocument: vi.fn().mockResolvedValue(undefined),
+  createDocumentChunks: vi.fn().mockResolvedValue(undefined),
+  getDocumentChunks: vi.fn().mockResolvedValue([]),
+  searchDocumentChunks: vi.fn().mockResolvedValue([]),
 }));
 
 // Mock LLM and image generation
