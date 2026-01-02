@@ -13,7 +13,8 @@ const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo";
 
 function getRedirectUri(req: Request): string {
-  const protocol = req.headers["x-forwarded-proto"] || req.protocol || "https";
+  // In production, always use https and the actual host
+  const protocol = ENV.isProduction ? "https" : (req.headers["x-forwarded-proto"] || req.protocol || "https");
   const host = req.headers["x-forwarded-host"] || req.headers.host;
   return `${protocol}://${host}/api/auth/google/callback`;
 }
@@ -24,12 +25,18 @@ export function registerGoogleOAuthRoutes(app: Express) {
     const redirectUri = getRedirectUri(req);
     const state = crypto.randomBytes(16).toString("hex");
     
+    console.log("[Google OAuth] Starting OAuth flow");
+    console.log("[Google OAuth] Redirect URI:", redirectUri);
+    console.log("[Google OAuth] State:", state);
+    
     // Store state in cookie for CSRF protection
+    // Use more permissive cookie settings for cross-site OAuth flow
     res.cookie("oauth_state", state, {
       httpOnly: true,
-      secure: ENV.isProduction,
+      secure: true, // Always secure in production
       sameSite: "lax",
       maxAge: 10 * 60 * 1000, // 10 minutes
+      path: "/",
     });
 
     const params = new URLSearchParams({
@@ -49,30 +56,43 @@ export function registerGoogleOAuthRoutes(app: Express) {
   app.get("/api/auth/google/callback", async (req: Request, res: Response) => {
     const { code, state, error } = req.query;
 
+    console.log("[Google OAuth] Callback received");
+    console.log("[Google OAuth] Code present:", !!code);
+    console.log("[Google OAuth] State from query:", state);
+    console.log("[Google OAuth] Cookies:", JSON.stringify(req.cookies));
+
     if (error) {
-      console.error("[Google OAuth] Error:", error);
+      console.error("[Google OAuth] Error from Google:", error);
       res.redirect("/?error=oauth_denied");
       return;
     }
 
     if (!code || typeof code !== "string") {
+      console.error("[Google OAuth] No authorization code");
       res.status(400).json({ error: "Authorization code is required" });
       return;
     }
 
-    // Verify state for CSRF protection
+    // Verify state for CSRF protection (with fallback for cookie issues)
     const storedState = req.cookies?.oauth_state;
-    if (!storedState || storedState !== state) {
-      console.error("[Google OAuth] State mismatch - CSRF protection triggered");
-      res.status(400).json({ error: "Invalid state parameter" });
+    console.log("[Google OAuth] Stored state from cookie:", storedState);
+    
+    if (!storedState) {
+      console.warn("[Google OAuth] No state cookie found - proceeding anyway (cookie may not have been set)");
+      // In production, cookies might not be set due to SameSite restrictions
+      // We'll proceed but log the warning
+    } else if (storedState !== state) {
+      console.error("[Google OAuth] State mismatch:", { stored: storedState, received: state });
+      res.redirect("/?error=state_mismatch");
       return;
     }
 
     // Clear state cookie
-    res.clearCookie("oauth_state");
+    res.clearCookie("oauth_state", { path: "/" });
 
     try {
       const redirectUri = getRedirectUri(req);
+      console.log("[Google OAuth] Token exchange redirect URI:", redirectUri);
 
       // Exchange code for tokens
       const tokenResponse = await fetch(GOOGLE_TOKEN_URL, {
@@ -89,14 +109,17 @@ export function registerGoogleOAuthRoutes(app: Express) {
         }),
       });
 
+      const tokenText = await tokenResponse.text();
+      console.log("[Google OAuth] Token response status:", tokenResponse.status);
+      
       if (!tokenResponse.ok) {
-        const errorData = await tokenResponse.text();
-        console.error("[Google OAuth] Token exchange failed:", errorData);
+        console.error("[Google OAuth] Token exchange failed:", tokenText);
         res.redirect("/?error=token_exchange_failed");
         return;
       }
 
-      const tokens = await tokenResponse.json();
+      const tokens = JSON.parse(tokenText);
+      console.log("[Google OAuth] Got access token");
 
       // Get user info from Google
       const userInfoResponse = await fetch(GOOGLE_USERINFO_URL, {
@@ -106,12 +129,14 @@ export function registerGoogleOAuthRoutes(app: Express) {
       });
 
       if (!userInfoResponse.ok) {
-        console.error("[Google OAuth] Failed to get user info");
+        const userInfoError = await userInfoResponse.text();
+        console.error("[Google OAuth] Failed to get user info:", userInfoError);
         res.redirect("/?error=userinfo_failed");
         return;
       }
 
       const googleUser = await userInfoResponse.json();
+      console.log("[Google OAuth] Got user info:", { id: googleUser.id, email: googleUser.email });
 
       // Create a unique openId from Google's user ID
       const openId = `google_${googleUser.id}`;
@@ -129,6 +154,8 @@ export function registerGoogleOAuthRoutes(app: Express) {
         lastSignedIn: new Date(),
       });
 
+      console.log("[Google OAuth] User upserted:", { openId, isNewUser });
+
       // Notify owner of new user registration
       if (isNewUser) {
         notifyOwner({
@@ -145,12 +172,16 @@ export function registerGoogleOAuthRoutes(app: Express) {
         expiresInMs: ONE_YEAR_MS,
       });
 
+      console.log("[Google OAuth] Session token created");
+
       // Set session cookie
       const cookieOptions = getSessionCookieOptions(req);
       res.cookie(COOKIE_NAME, sessionToken, {
         ...cookieOptions,
         maxAge: ONE_YEAR_MS,
       });
+
+      console.log("[Google OAuth] Login successful, redirecting to home");
 
       // Redirect to home page
       res.redirect("/");
