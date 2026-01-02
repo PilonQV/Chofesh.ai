@@ -404,9 +404,10 @@ export default function Home() {
                 "Pay only API costs",
                 "Full model access",
               ]}
-              buttonText="Get Started"
+              buttonText="Add API Keys"
               buttonVariant="outline"
               isAuthenticated={isAuthenticated}
+              isByok={true}
             />
           </div>
         </div>
@@ -582,6 +583,7 @@ function PricingCard({
   highlighted,
   tier,
   isAuthenticated,
+  isByok,
 }: {
   title: string;
   price: string;
@@ -593,6 +595,7 @@ function PricingCard({
   highlighted?: boolean;
   tier?: "starter" | "pro" | "unlimited";
   isAuthenticated?: boolean;
+  isByok?: boolean;
 }) {
   const [isLoading, setIsLoading] = useState(false);
   const [, setLocation] = useLocation();
@@ -615,7 +618,13 @@ function PricingCard({
       return;
     }
 
-    // If no tier (Free or BYOK), go to chat
+    // If BYOK, go to settings to add API keys
+    if (isByok) {
+      setLocation("/settings");
+      return;
+    }
+
+    // If no tier (Free), go to chat
     if (!tier) {
       setLocation("/chat");
       return;
