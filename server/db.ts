@@ -668,3 +668,80 @@ export async function deleteSharedLink(shareId: string, userId: number) {
     eq(sharedLinks.userId, userId)
   ));
 }
+
+
+// ============ DAILY USAGE TRACKING ============
+
+export async function incrementDailyQueries(userId: number): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Get current user data
+  const [user] = await db.select()
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  if (!user) return 0;
+
+  // Check if we need to reset daily count (new day)
+  const lastReset = user.dailyQueriesResetAt ? new Date(user.dailyQueriesResetAt) : null;
+  const shouldReset = !lastReset || lastReset < today;
+
+  const newCount = shouldReset ? 1 : (user.dailyQueries || 0) + 1;
+
+  await db.update(users)
+    .set({
+      dailyQueries: newCount,
+      dailyQueriesResetAt: shouldReset ? today : user.dailyQueriesResetAt,
+    })
+    .where(eq(users.id, userId));
+
+  return newCount;
+}
+
+export async function getDailyQueryCount(userId: number): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const [user] = await db.select()
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  if (!user) return 0;
+
+  // Check if count is from today
+  const lastReset = user.dailyQueriesResetAt ? new Date(user.dailyQueriesResetAt) : null;
+  if (!lastReset || lastReset < today) {
+    return 0; // New day, count is 0
+  }
+
+  return user.dailyQueries || 0;
+}
+
+export async function updateUserSubscription(
+  userId: number,
+  tier: "free" | "starter" | "pro" | "unlimited",
+  status: "active" | "canceled" | "past_due" | "trialing" | "none",
+  stripeCustomerId?: string,
+  stripeSubscriptionId?: string
+): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  await db.update(users)
+    .set({
+      subscriptionTier: tier,
+      subscriptionStatus: status,
+      ...(stripeCustomerId && { stripeCustomerId }),
+      ...(stripeSubscriptionId && { stripeSubscriptionId }),
+    })
+    .where(eq(users.id, userId));
+}

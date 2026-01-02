@@ -276,3 +276,32 @@
 - [ ] Investigate outdated data issue - AI returning June 2024 data instead of current
 
 - [x] Integrate DuckDuckGo Instant Answers API for web search (free, no API key)
+
+
+---
+
+## Phase 10: Monetization & Subscription System
+
+### Stripe Integration
+- [x] Add Stripe feature to project
+- [x] Configure subscription products (Free, Starter $5, Pro $15, Unlimited $30)
+- [x] Create checkout flow for upgrades
+- [x] Handle webhook events for subscription changes
+
+### Usage Tracking & Slowdown
+- [x] Add daily_queries column to users table
+- [x] Track query count per user per day
+- [x] Implement slowdown after limit (1 query/min)
+- [ ] Show upgrade prompt when slowed down
+- [ ] Reset daily counts at midnight
+
+### Grok API Integration
+- [x] Add Grok API configuration
+- [x] Create Grok model router
+- [x] Add Grok as model option in chat
+
+### Subscription Management UI
+- [x] Create subscription page showing current plan
+- [x] Add upgrade/downgrade buttons
+- [x] Show usage statistics (queries used/remaining)
+- [ ] Display billing history (future enhancement)

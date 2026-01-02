@@ -16,7 +16,7 @@ export interface ModelDefinition {
   id: string;
   name: string;
   description: string;
-  provider: "platform" | "groq" | "openai" | "anthropic";
+  provider: "platform" | "groq" | "openai" | "anthropic" | "grok";
   tier: "free" | "standard" | "premium";
   costPer1kInput: number;
   costPer1kOutput: number;
@@ -26,6 +26,31 @@ export interface ModelDefinition {
 }
 
 export const AVAILABLE_MODELS: ModelDefinition[] = [
+  // Grok - xAI (Most up-to-date, Aug 2025 training)
+  {
+    id: "grok-3-fast",
+    name: "Grok 3 Fast",
+    description: "Most up-to-date (Aug 2025), fast & affordable",
+    provider: "grok" as any,
+    tier: "standard",
+    costPer1kInput: 0.0002,
+    costPer1kOutput: 0.0005,
+    maxTokens: 131072,
+    supportsVision: true,
+    speed: "fast",
+  },
+  {
+    id: "grok-3",
+    name: "Grok 3",
+    description: "Most capable Grok model (Aug 2025 training)",
+    provider: "grok" as any,
+    tier: "premium",
+    costPer1kInput: 0.003,
+    costPer1kOutput: 0.015,
+    maxTokens: 131072,
+    supportsVision: true,
+    speed: "medium",
+  },
   // Free tier - Groq (Llama models)
   {
     id: "llama-3.1-8b",

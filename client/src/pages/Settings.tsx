@@ -45,6 +45,11 @@ import {
   Sun,
   Moon,
   Palette,
+  CreditCard,
+  Zap,
+  Crown,
+  Sparkles,
+  Clock,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -219,6 +224,103 @@ export default function Settings() {
       {/* Main Content */}
       <main className="pt-24 pb-12 px-4">
         <div className="container mx-auto max-w-4xl">
+          {/* Subscription Section */}
+          <Card className="mb-6 border-primary/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="w-5 h-5" />
+                Subscription
+              </CardTitle>
+              <CardDescription>
+                Manage your subscription plan and usage limits
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Current Plan */}
+              <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    user?.subscriptionTier === 'unlimited' ? 'bg-gradient-to-r from-purple-500 to-pink-500' :
+                    user?.subscriptionTier === 'pro' ? 'bg-gradient-to-r from-blue-500 to-cyan-500' :
+                    user?.subscriptionTier === 'starter' ? 'bg-gradient-to-r from-green-500 to-emerald-500' :
+                    'bg-muted'
+                  }`}>
+                    {user?.subscriptionTier === 'unlimited' ? <Crown className="w-5 h-5 text-white" /> :
+                     user?.subscriptionTier === 'pro' ? <Zap className="w-5 h-5 text-white" /> :
+                     user?.subscriptionTier === 'starter' ? <Sparkles className="w-5 h-5 text-white" /> :
+                     <Clock className="w-5 h-5" />}
+                  </div>
+                  <div>
+                    <p className="font-semibold capitalize">
+                      {user?.subscriptionTier || 'Free'} Plan
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {user?.subscriptionTier === 'unlimited' ? 'Unlimited queries per day' :
+                       user?.subscriptionTier === 'pro' ? '500 queries per day' :
+                       user?.subscriptionTier === 'starter' ? '100 queries per day' :
+                       '20 queries per day'}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="font-bold text-lg">
+                    {user?.subscriptionTier === 'unlimited' ? '$30' :
+                     user?.subscriptionTier === 'pro' ? '$15' :
+                     user?.subscriptionTier === 'starter' ? '$5' :
+                     'Free'}
+                    {user?.subscriptionTier && user.subscriptionTier !== 'free' && <span className="text-sm font-normal text-muted-foreground">/mo</span>}
+                  </p>
+                </div>
+              </div>
+
+              {/* Upgrade Options */}
+              {(!user?.subscriptionTier || user.subscriptionTier === 'free') && (
+                <div className="grid gap-4 md:grid-cols-3">
+                  <Card className="border-green-500/30 hover:border-green-500/50 transition-colors cursor-pointer" onClick={() => window.open('/api/stripe/checkout?tier=starter', '_blank')}>
+                    <CardContent className="pt-6">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Sparkles className="w-4 h-4 text-green-500" />
+                        <span className="font-semibold">Starter</span>
+                      </div>
+                      <p className="text-2xl font-bold">$5<span className="text-sm font-normal text-muted-foreground">/mo</span></p>
+                      <p className="text-sm text-muted-foreground mt-2">100 queries/day</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="border-blue-500/30 hover:border-blue-500/50 transition-colors cursor-pointer relative" onClick={() => window.open('/api/stripe/checkout?tier=pro', '_blank')}>
+                    <div className="absolute -top-2 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-blue-500 text-white text-xs rounded-full">Popular</div>
+                    <CardContent className="pt-6">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Zap className="w-4 h-4 text-blue-500" />
+                        <span className="font-semibold">Pro</span>
+                      </div>
+                      <p className="text-2xl font-bold">$15<span className="text-sm font-normal text-muted-foreground">/mo</span></p>
+                      <p className="text-sm text-muted-foreground mt-2">500 queries/day</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="border-purple-500/30 hover:border-purple-500/50 transition-colors cursor-pointer" onClick={() => window.open('/api/stripe/checkout?tier=unlimited', '_blank')}>
+                    <CardContent className="pt-6">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Crown className="w-4 h-4 text-purple-500" />
+                        <span className="font-semibold">Unlimited</span>
+                      </div>
+                      <p className="text-2xl font-bold">$30<span className="text-sm font-normal text-muted-foreground">/mo</span></p>
+                      <p className="text-sm text-muted-foreground mt-2">Unlimited queries</p>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {/* Manage Subscription */}
+              {user?.subscriptionTier && user.subscriptionTier !== 'free' && (
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => window.open('/api/stripe/portal', '_blank')}>
+                    Manage Subscription
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Appearance Section */}
           <Card className="mb-6">
             <CardHeader>

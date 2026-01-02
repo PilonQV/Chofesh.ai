@@ -40,14 +40,19 @@ import {
   incrementShareLinkViews,
   deactivateSharedLink,
   deleteSharedLink,
+  incrementDailyQueries,
+  getDailyQueryCount,
 } from "./db";
 import { invokeLLM } from "./_core/llm";
+import { invokeGrok, isGrokAvailable } from "./_core/grok";
 import { generateImage } from "./_core/imageGeneration";
 import { transcribeAudio } from "./_core/voiceTranscription";
 import { callDataApi } from "./_core/dataApi";
 import { searchDuckDuckGo } from "./_core/duckduckgo";
 import { notifyOwner } from "./_core/notification";
 import { storagePut } from "./storage";
+import Stripe from "stripe";
+import { SUBSCRIPTION_TIERS, getDailyLimit, isOverLimit, getSlowdownDelay, type SubscriptionTier } from "./stripe/products";
 import crypto from "crypto";
 import {
   AVAILABLE_MODELS,
@@ -314,6 +319,20 @@ export const appRouter = router({
         const startTime = Date.now();
         const routingMode = (input.routingMode || "auto") as RoutingMode;
         
+        // Check usage limits and apply slowdown
+        const tier = (ctx.user.subscriptionTier || "free") as SubscriptionTier;
+        const currentQueries = await getDailyQueryCount(ctx.user.id);
+        const dailyLimit = getDailyLimit(tier);
+        const slowdownDelay = getSlowdownDelay(tier, currentQueries);
+        
+        // Apply slowdown delay if over limit
+        if (slowdownDelay > 0) {
+          await new Promise(resolve => setTimeout(resolve, slowdownDelay));
+        }
+        
+        // Increment daily query count
+        await incrementDailyQueries(ctx.user.id);
+        
         // Analyze complexity and select model
         const complexity = analyzeQueryComplexity(input.messages);
         const selectedModel = input.model 
@@ -386,10 +405,25 @@ export const appRouter = router({
         const inputTokens = messagesWithSearch.reduce((acc, m) => acc + estimateTokens(m.content), 0);
         
         try {
-          // Call LLM with potentially search-augmented messages
-          const response = await invokeLLM({
-            messages: messagesWithSearch,
-          });
+          // Call appropriate LLM based on selected model provider
+          let response;
+          
+          if (selectedModel.provider === "grok" && isGrokAvailable()) {
+            // Use Grok API for xAI models
+            response = await invokeGrok({
+              messages: messagesWithSearch.map(m => ({
+                role: m.role as "system" | "user" | "assistant",
+                content: m.content,
+              })),
+              model: selectedModel.id,
+              temperature: input.temperature,
+            });
+          } else {
+            // Use default LLM (Manus Forge API)
+            response = await invokeLLM({
+              messages: messagesWithSearch,
+            });
+          }
 
           const rawContent = response.choices[0]?.message?.content;
           const assistantContent = typeof rawContent === 'string' ? rawContent : '';
@@ -1232,6 +1266,127 @@ export const appRouter = router({
           });
         }
       }),
+  }),
+
+  // Subscription Management
+  subscription: router({
+    // Get current user's subscription info
+    current: protectedProcedure.query(async ({ ctx }) => {
+      const tier = (ctx.user.subscriptionTier || "free") as SubscriptionTier;
+      const tierInfo = SUBSCRIPTION_TIERS[tier];
+      const dailyLimit = getDailyLimit(tier);
+      const dailyQueries = ctx.user.dailyQueries || 0;
+      const isSlowedDown = isOverLimit(tier, dailyQueries);
+      const slowdownDelay = getSlowdownDelay(tier, dailyQueries);
+      
+      return {
+        tier,
+        tierInfo,
+        dailyLimit,
+        dailyQueries,
+        queriesRemaining: dailyLimit === Infinity ? Infinity : Math.max(0, dailyLimit - dailyQueries),
+        isSlowedDown,
+        slowdownDelay,
+        subscriptionStatus: ctx.user.subscriptionStatus || "none",
+        stripeCustomerId: ctx.user.stripeCustomerId,
+      };
+    }),
+
+    // Get all available tiers
+    tiers: publicProcedure.query(() => {
+      return Object.entries(SUBSCRIPTION_TIERS).map(([key, value]) => ({
+        id: key,
+        ...value,
+        price: value.price / 100, // Convert cents to dollars
+      }));
+    }),
+
+    // Create checkout session for upgrade
+    createCheckout: protectedProcedure
+      .input(z.object({
+        tier: z.enum(["starter", "pro", "unlimited"]),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+          apiVersion: "2025-12-15.clover",
+        });
+
+        const tierConfig = SUBSCRIPTION_TIERS[input.tier];
+        if (!tierConfig || !("priceId" in tierConfig) || !tierConfig.priceId) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Invalid tier or price not configured",
+          });
+        }
+
+        const origin = ctx.req.headers.origin || "https://chofesh.manus.space";
+
+        const session = await stripe.checkout.sessions.create({
+          mode: "subscription",
+          payment_method_types: ["card"],
+          line_items: [
+            {
+              price: tierConfig.priceId,
+              quantity: 1,
+            },
+          ],
+          success_url: `${origin}/settings?subscription=success`,
+          cancel_url: `${origin}/settings?subscription=canceled`,
+          customer_email: ctx.user.email || undefined,
+          client_reference_id: ctx.user.id.toString(),
+          allow_promotion_codes: true,
+          metadata: {
+            user_id: ctx.user.id.toString(),
+            customer_email: ctx.user.email || "",
+            customer_name: ctx.user.name || "",
+          },
+        });
+
+        return { checkoutUrl: session.url };
+      }),
+
+    // Cancel subscription
+    cancel: protectedProcedure.mutation(async ({ ctx }) => {
+      if (!ctx.user.stripeSubscriptionId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No active subscription to cancel",
+        });
+      }
+
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+        apiVersion: "2025-12-15.clover",
+      });
+
+      await stripe.subscriptions.update(ctx.user.stripeSubscriptionId, {
+        cancel_at_period_end: true,
+      });
+
+      return { success: true, message: "Subscription will be canceled at end of billing period" };
+    }),
+
+    // Get billing portal URL
+    billingPortal: protectedProcedure.mutation(async ({ ctx }) => {
+      if (!ctx.user.stripeCustomerId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No billing account found",
+        });
+      }
+
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+        apiVersion: "2025-12-15.clover",
+      });
+
+      const origin = ctx.req.headers.origin || "https://chofesh.manus.space";
+
+      const session = await stripe.billingPortal.sessions.create({
+        customer: ctx.user.stripeCustomerId,
+        return_url: `${origin}/settings`,
+      });
+
+      return { portalUrl: session.url };
+    }),
   }),
 });
 
