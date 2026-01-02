@@ -255,3 +255,9 @@
 - [x] Fix privacy page scroll position - opens at bottom instead of top
 - [x] Rename all "Libre" references to "Chofesh" throughout codebase
 - [x] Replace all Sparkles icons with Chofesh logo image
+
+
+## Bug Fixes (User Reported - Round 2)
+
+- [x] Fix tier selection buttons (Free/Standard/Premium) not clickable in chat
+- [x] Replace loading spinner with animated Chofesh bird logo when AI is thinking

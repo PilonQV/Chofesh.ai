@@ -293,7 +293,7 @@ export function AIChatBox({
                     <img src="/chofesh-logo.png" alt="" className="size-5" />
                   </div>
                   <div className="rounded-lg bg-muted px-4 py-2.5">
-                    <Loader2 className="size-4 animate-spin text-muted-foreground" />
+                    <img src="/chofesh-logo.png" alt="" className="size-4 animate-pulse" />
                   </div>
                 </div>
               )}

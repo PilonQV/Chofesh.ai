@@ -903,27 +903,36 @@ export default function Chat() {
 
                 {/* Tier Info Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl mx-auto mt-8">
-                  <div className={`p-3 rounded-lg border ${routingMode === "free" ? "border-green-500/50 bg-green-500/10" : "border-border"}`}>
+                  <button
+                    onClick={() => setRoutingMode("free")}
+                    className={`p-3 rounded-lg border text-left transition-all hover:scale-105 cursor-pointer ${routingMode === "free" ? "border-green-500/50 bg-green-500/10" : "border-border hover:border-green-500/30 hover:bg-green-500/5"}`}
+                  >
                     <div className="flex items-center gap-2 mb-1">
                       <Zap className="w-4 h-4 text-green-400" />
                       <span className="font-medium text-sm">Free</span>
                     </div>
                     <p className="text-xs text-muted-foreground">Llama 3.1 8B - Fast & free</p>
-                  </div>
-                  <div className={`p-3 rounded-lg border ${routingMode === "auto" ? "border-blue-500/50 bg-blue-500/10" : "border-border"}`}>
+                  </button>
+                  <button
+                    onClick={() => setRoutingMode("auto")}
+                    className={`p-3 rounded-lg border text-left transition-all hover:scale-105 cursor-pointer ${routingMode === "auto" ? "border-blue-500/50 bg-blue-500/10" : "border-border hover:border-blue-500/30 hover:bg-blue-500/5"}`}
+                  >
                     <div className="flex items-center gap-2 mb-1">
                       <Rocket className="w-4 h-4 text-blue-400" />
                       <span className="font-medium text-sm">Standard</span>
                     </div>
                     <p className="text-xs text-muted-foreground">GPT-4o-mini - Best value</p>
-                  </div>
-                  <div className="p-3 rounded-lg border border-border">
+                  </button>
+                  <button
+                    onClick={() => setRoutingMode("manual")}
+                    className={`p-3 rounded-lg border text-left transition-all hover:scale-105 cursor-pointer ${routingMode === "manual" ? "border-yellow-500/50 bg-yellow-500/10" : "border-border hover:border-yellow-500/30 hover:bg-yellow-500/5"}`}
+                  >
                     <div className="flex items-center gap-2 mb-1">
                       <Crown className="w-4 h-4 text-yellow-400" />
                       <span className="font-medium text-sm">Premium</span>
                     </div>
                     <p className="text-xs text-muted-foreground">GPT-4o, Claude - Best quality</p>
-                  </div>
+                  </button>
                 </div>
               </div>
             )}
@@ -957,7 +966,11 @@ export default function Chat() {
               <div className="flex justify-start">
                 <div className="bg-muted rounded-2xl px-4 py-3">
                   <div className="flex items-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <img 
+                      src="/chofesh-logo.png" 
+                      alt="" 
+                      className="w-5 h-5 object-contain animate-pulse" 
+                    />
                     <span className="text-sm text-muted-foreground">
                       {webSearchEnabled ? "Searching & generating..." : 
                        routingMode === "auto" ? "Selecting best model..." : "Generating..."}
