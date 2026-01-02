@@ -104,14 +104,14 @@ export default function Home() {
           </div>
           
           <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-            <span className="gradient-text">Create Without</span>
+            <span className="gradient-text">Private AI</span>
             <br />
-            <span className="text-foreground">Boundaries</span>
+            <span className="text-foreground">Creative Freedom</span>
           </h1>
           
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
-            The AI platform that respects your creativity. Generate text and images freely.
-            Your conversations stay on your device, always.
+            The AI platform that respects your privacy and creativity. Chat and create images
+            with fewer restrictions. Your conversations stay encrypted on your device.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
@@ -173,19 +173,19 @@ export default function Home() {
             Everything You Need to <span className="gradient-text">Create</span>
           </h2>
           <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-12">
-            A complete AI toolkit designed for creators who value freedom and privacy.
+            A complete AI toolkit designed for creators who value privacy and creative expression.
           </p>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             <FeatureCard
               icon={<MessageSquare className="w-6 h-6" />}
               title="Intelligent Chat"
-              description="Have meaningful conversations without artificial filters. Get honest, helpful responses to any question."
+              description="Have meaningful conversations with multiple AI models. Get helpful responses with fewer content restrictions than mainstream platforms."
             />
             <FeatureCard
               icon={<Image className="w-6 h-6" />}
               title="Image Generation"
-              description="Bring your imagination to life. Create stunning visuals from simple text descriptions."
+              description="Bring your imagination to life with FLUX. Create stunning artwork, illustrations, and creative visuals from text."
             />
             <FeatureCard
               icon={<FileText className="w-6 h-6" />}
@@ -236,7 +236,7 @@ export default function Home() {
               </thead>
               <tbody>
                 <ComparisonRow feature="Local conversation storage" chofesh={true} chatgpt={false} others={false} />
-                <ComparisonRow feature="No content filtering" chofesh={true} chatgpt={false} others="Varies" />
+                <ComparisonRow feature="Fewer content restrictions" chofesh={true} chatgpt={false} others="Varies" />
                 <ComparisonRow feature="Bring your own API keys" chofesh={true} chatgpt={false} others="Varies" />
                 <ComparisonRow feature="Document chat (RAG)" chofesh={true} chatgpt={true} others="Varies" />
                 <ComparisonRow feature="Usage tracking" chofesh={true} chatgpt={false} others="Varies" />

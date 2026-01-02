@@ -536,7 +536,7 @@ export default function ImageGen() {
                 <h2 className="text-2xl font-bold mb-2">Create AI Images</h2>
                 <p className="text-muted-foreground max-w-md mx-auto">
                   Describe what you want to see and let AI bring your imagination to life.
-                  No restrictions, complete creative freedom.
+                  Create artwork, illustrations, and creative visuals with FLUX.
                 </p>
               </div>
             )}
@@ -761,7 +761,7 @@ export default function ImageGen() {
             </Collapsible>
 
             <p className="text-xs text-muted-foreground/50 text-center">
-              Create without limits
+              Your creations stay private
             </p>
           </div>
         </div>
