@@ -326,52 +326,68 @@ export default function Home() {
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
             Simple, <span className="gradient-text">Transparent</span> Pricing
           </h2>
-          <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-12">
-            Start free, upgrade when you need more.
+          <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-4">
+            Start free, upgrade when you need more. <span className="text-primary font-medium">8% cheaper than Venice.ai</span>
+          </p>
+          <p className="text-sm text-muted-foreground text-center max-w-2xl mx-auto mb-12">
+            Save 20% with annual billing
           </p>
           
-          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-4 gap-6 max-w-6xl mx-auto">
             <PricingCard
               title="Free"
               price="$0"
-              description="Perfect for trying out Chofesh"
+              description="Get started with powerful free models"
               features={[
-                "10 chat messages/day",
-                "2 image generations/day",
+                "25 queries per day",
+                "Llama 3.1 & DeepSeek R1",
+                "5 image generations/day",
                 "Local encrypted storage",
-                "Basic models",
               ]}
               buttonText="Get Started"
               buttonVariant="outline"
             />
             <PricingCard
-              title="Pro"
-              price="$15"
+              title="Starter"
+              price="$4.99"
               period="/month"
-              description="For creators who need more"
+              description="Perfect for casual users"
               features={[
-                "Unlimited chat messages",
-                "50 image generations/day",
-                "Document chat (RAG)",
-                "All AI models",
-                "Priority support",
+                "100 queries per day",
+                "+ Grok 3 Fast (Aug 2025)",
+                "20 image generations/day",
+                "Web search & voice",
               ]}
-              buttonText="Coming Soon"
+              buttonText="Subscribe"
+              buttonVariant="outline"
+            />
+            <PricingCard
+              title="Pro"
+              price="$14.99"
+              period="/month"
+              description="For power users & creators"
+              features={[
+                "500 queries per day",
+                "All models incl. GPT-4o",
+                "100 image generations/day",
+                "Document chat & AI personas",
+              ]}
+              buttonText="Subscribe"
               buttonVariant="default"
               highlighted
             />
             <PricingCard
-              title="BYOK"
-              price="$0"
-              description="Use your own API keys"
+              title="Unlimited"
+              price="$27.99"
+              period="/month"
+              description="No limits, full freedom"
               features={[
-                "Unlimited everything",
-                "Your OpenAI/Anthropic keys",
-                "Pay only API costs",
-                "Full model access",
-                "Usage dashboard",
+                "Unlimited queries",
+                "All models & features",
+                "Unlimited images",
+                "Priority support",
               ]}
-              buttonText="Get Started"
+              buttonText="Subscribe"
               buttonVariant="outline"
             />
           </div>

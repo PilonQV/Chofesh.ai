@@ -258,15 +258,15 @@ export default function Settings() {
                       {user?.subscriptionTier === 'unlimited' ? 'Unlimited queries per day' :
                        user?.subscriptionTier === 'pro' ? '500 queries per day' :
                        user?.subscriptionTier === 'starter' ? '100 queries per day' :
-                       '20 queries per day'}
+                       '25 queries per day'}
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
                   <p className="font-bold text-lg">
-                    {user?.subscriptionTier === 'unlimited' ? '$30' :
-                     user?.subscriptionTier === 'pro' ? '$15' :
-                     user?.subscriptionTier === 'starter' ? '$5' :
+                    {user?.subscriptionTier === 'unlimited' ? '$27.99' :
+                     user?.subscriptionTier === 'pro' ? '$14.99' :
+                     user?.subscriptionTier === 'starter' ? '$4.99' :
                      'Free'}
                     {user?.subscriptionTier && user.subscriptionTier !== 'free' && <span className="text-sm font-normal text-muted-foreground">/mo</span>}
                   </p>
@@ -282,19 +282,19 @@ export default function Settings() {
                         <Sparkles className="w-4 h-4 text-green-500" />
                         <span className="font-semibold">Starter</span>
                       </div>
-                      <p className="text-2xl font-bold">$5<span className="text-sm font-normal text-muted-foreground">/mo</span></p>
-                      <p className="text-sm text-muted-foreground mt-2">100 queries/day</p>
+                      <p className="text-2xl font-bold">$4.99<span className="text-sm font-normal text-muted-foreground">/mo</span></p>
+                      <p className="text-sm text-muted-foreground mt-2">100 queries/day + Grok 3</p>
                     </CardContent>
                   </Card>
                   <Card className="border-blue-500/30 hover:border-blue-500/50 transition-colors cursor-pointer relative" onClick={() => window.open('/api/stripe/checkout?tier=pro', '_blank')}>
-                    <div className="absolute -top-2 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-blue-500 text-white text-xs rounded-full">Popular</div>
+                    <div className="absolute -top-2 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-blue-500 text-white text-xs rounded-full">Most Popular</div>
                     <CardContent className="pt-6">
                       <div className="flex items-center gap-2 mb-2">
                         <Zap className="w-4 h-4 text-blue-500" />
                         <span className="font-semibold">Pro</span>
                       </div>
-                      <p className="text-2xl font-bold">$15<span className="text-sm font-normal text-muted-foreground">/mo</span></p>
-                      <p className="text-sm text-muted-foreground mt-2">500 queries/day</p>
+                      <p className="text-2xl font-bold">$14.99<span className="text-sm font-normal text-muted-foreground">/mo</span></p>
+                      <p className="text-sm text-muted-foreground mt-2">500 queries/day + GPT-4o</p>
                     </CardContent>
                   </Card>
                   <Card className="border-purple-500/30 hover:border-purple-500/50 transition-colors cursor-pointer" onClick={() => window.open('/api/stripe/checkout?tier=unlimited', '_blank')}>
@@ -303,8 +303,8 @@ export default function Settings() {
                         <Crown className="w-4 h-4 text-purple-500" />
                         <span className="font-semibold">Unlimited</span>
                       </div>
-                      <p className="text-2xl font-bold">$30<span className="text-sm font-normal text-muted-foreground">/mo</span></p>
-                      <p className="text-sm text-muted-foreground mt-2">Unlimited queries</p>
+                      <p className="text-2xl font-bold">$27.99<span className="text-sm font-normal text-muted-foreground">/mo</span></p>
+                      <p className="text-sm text-muted-foreground mt-2">Unlimited everything</p>
                     </CardContent>
                   </Card>
                 </div>
