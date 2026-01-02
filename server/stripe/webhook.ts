@@ -93,15 +93,34 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const db = await getDb();
   if (!db) return;
 
-  // Update user with Stripe customer and subscription IDs
+  // Get the subscription to determine the tier
+  let tier: "starter" | "pro" | "unlimited" | "free" = "free";
+  if (subscriptionId) {
+    try {
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+      const priceId = subscription.items.data[0]?.price.id;
+      const detectedTier = getTierFromPriceId(priceId);
+      if (detectedTier && detectedTier !== "free") {
+        tier = detectedTier as "starter" | "pro" | "unlimited";
+      }
+      console.log(`[Stripe Webhook] Detected tier from subscription: ${tier} (price: ${priceId})`);
+    } catch (err) {
+      console.error("[Stripe Webhook] Failed to retrieve subscription:", err);
+    }
+  }
+
+  // Update user with Stripe customer and subscription IDs AND tier
   await db
     .update(users)
     .set({
       stripeCustomerId: customerId,
       stripeSubscriptionId: subscriptionId,
       subscriptionStatus: "active",
+      subscriptionTier: tier,
     })
     .where(eq(users.id, parseInt(userId)));
+
+  console.log(`[Stripe Webhook] Updated user ${userId} to tier ${tier}`);
 }
 
 async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
