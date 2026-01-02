@@ -40,6 +40,11 @@ vi.mock("./db", () => ({
   createDocumentChunks: vi.fn().mockResolvedValue(undefined),
   getDocumentChunks: vi.fn().mockResolvedValue([]),
   searchDocumentChunks: vi.fn().mockResolvedValue([]),
+  // Subscription and usage limit functions
+  getDailyQueryCount: vi.fn().mockResolvedValue(0),
+  incrementDailyQueries: vi.fn().mockResolvedValue(undefined),
+  getUserSubscription: vi.fn().mockResolvedValue({ tier: 'free', dailyLimit: 20 }),
+  updateUserSubscription: vi.fn().mockResolvedValue(undefined),
 }));
 
 // Mock LLM and image generation
