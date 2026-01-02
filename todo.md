@@ -367,3 +367,10 @@
 - [x] Add xAI API key to project secrets (X_ai_key)
 - [x] Verify Grok 3 Fast integration works (8 tests passing)
 - [x] Test Smart Router with Grok model
+
+
+---
+
+## Phase 15: Add BYOK Option Back
+
+- [x] Add BYOK pricing card to Home page pricing section
