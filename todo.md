@@ -268,3 +268,11 @@
 - [x] Add dark/light theme toggle button in navigation
 - [x] Persist theme preference in localStorage
 - [x] Add theme toggle in Settings page
+
+
+## Bug Fixes (User Reported - Jan 1 2026 - Part 3)
+
+- [ ] Fix tier selection buttons (Free/Standard/Premium) - still not clickable
+- [ ] Investigate outdated data issue - AI returning June 2024 data instead of current
+
+- [x] Integrate DuckDuckGo Instant Answers API for web search (free, no API key)

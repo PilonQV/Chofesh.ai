@@ -45,6 +45,7 @@ import { invokeLLM } from "./_core/llm";
 import { generateImage } from "./_core/imageGeneration";
 import { transcribeAudio } from "./_core/voiceTranscription";
 import { callDataApi } from "./_core/dataApi";
+import { searchDuckDuckGo } from "./_core/duckduckgo";
 import { notifyOwner } from "./_core/notification";
 import { storagePut } from "./storage";
 import crypto from "crypto";
@@ -344,15 +345,10 @@ export const appRouter = router({
         
         if (input.webSearch && promptContent) {
           try {
-            // Perform web search using Data API
-            const searchResults = await callDataApi("BraveSearch/web_search", {
-              query: {
-                q: promptContent,
-                count: 5,
-              },
-            }) as any;
+            // Perform web search using DuckDuckGo Instant Answers API (free, no API key required)
+            const ddgResults = await searchDuckDuckGo(promptContent);
             
-            webSearchResults = (searchResults?.web?.results || []).slice(0, 5).map((r: any) => ({
+            webSearchResults = ddgResults.map(r => ({
               title: r.title || '',
               url: r.url || '',
               description: r.description || '',
@@ -1040,17 +1036,10 @@ export const appRouter = router({
       }))
       .mutation(async ({ ctx, input }) => {
         try {
-          // Use Brave Search API through Data API
-          const results = await callDataApi("BraveSearch/web_search", {
-            query: {
-              q: input.query,
-              count: input.limit || 5,
-            },
-          }) as any;
+          // Use DuckDuckGo Instant Answers API (free, no API key required)
+          const ddgResults = await searchDuckDuckGo(input.query);
           
-          // Extract relevant search results
-          const webResults = results?.web?.results || [];
-          const formattedResults = webResults.slice(0, input.limit || 5).map((r: any) => ({
+          const formattedResults = ddgResults.slice(0, input.limit || 5).map(r => ({
             title: r.title || '',
             url: r.url || '',
             description: r.description || '',
