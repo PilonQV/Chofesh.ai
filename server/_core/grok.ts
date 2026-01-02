@@ -46,10 +46,11 @@ export async function invokeGrok(params: {
   temperature?: number;
   maxTokens?: number;
 }): Promise<GrokResponse> {
-  const apiKey = process.env.GROK_API_KEY;
+  // Try both possible env var names
+  const apiKey = process.env.X_ai_key || process.env.GROK_API_KEY;
   
   if (!apiKey) {
-    throw new Error("GROK_API_KEY environment variable is not set");
+    throw new Error("X_ai_key or GROK_API_KEY environment variable is not set");
   }
 
   const model = params.model || "grok-3-fast";
@@ -83,5 +84,5 @@ export async function invokeGrok(params: {
  * Check if Grok API is available (API key is set)
  */
 export function isGrokAvailable(): boolean {
-  return !!process.env.GROK_API_KEY;
+  return !!(process.env.X_ai_key || process.env.GROK_API_KEY);
 }
