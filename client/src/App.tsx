@@ -4,6 +4,7 @@ import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { CookieConsent } from "./components/CookieConsent";
 import Home from "./pages/Home";
 import Chat from "./pages/Chat";
 import ImageGen from "./pages/ImageGen";
@@ -43,6 +44,7 @@ function App() {
         <TooltipProvider>
           <Toaster richColors position="top-center" />
           <Router />
+          <CookieConsent />
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>
