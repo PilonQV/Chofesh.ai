@@ -261,3 +261,10 @@
 
 - [x] Fix tier selection buttons (Free/Standard/Premium) not clickable in chat
 - [x] Replace loading spinner with animated Chofesh bird logo when AI is thinking
+
+
+## Phase 9: Theme Toggle Feature
+
+- [x] Add dark/light theme toggle button in navigation
+- [x] Persist theme preference in localStorage
+- [x] Add theme toggle in Settings page

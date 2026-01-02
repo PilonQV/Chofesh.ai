@@ -2,12 +2,12 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { getLoginUrl } from "@/const";
 import { Link } from "wouter";
+import { useTheme } from "@/contexts/ThemeContext";
 import {
   MessageSquare,
   Image,
   Shield,
   Lock,
-
   ArrowRight,
   Zap,
   Key,
@@ -15,10 +15,13 @@ import {
   BarChart3,
   Check,
   Globe,
+  Sun,
+  Moon,
 } from "lucide-react";
 
 export default function Home() {
   const { user, loading, isAuthenticated } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <div className="min-h-screen bg-background">
@@ -37,6 +40,20 @@ export default function Home() {
           </div>
           
           <div className="flex items-center gap-4">
+            {/* Theme Toggle */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              className="rounded-full"
+              title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              {theme === "dark" ? (
+                <Sun className="w-5 h-5" />
+              ) : (
+                <Moon className="w-5 h-5" />
+              )}
+            </Button>
             {loading ? (
               <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
             ) : isAuthenticated ? (
