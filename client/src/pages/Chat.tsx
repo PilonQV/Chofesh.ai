@@ -694,7 +694,7 @@ export default function Chat() {
                     <div className="space-y-0.5">
                       <Label>Web Search</Label>
                       <p className="text-xs text-muted-foreground">
-                        Include real-time web results
+                        Include instant answers from DuckDuckGo
                       </p>
                     </div>
                     <Switch
@@ -990,8 +990,7 @@ export default function Chat() {
                       className="w-5 h-5 object-contain animate-pulse" 
                     />
                     <span className="text-sm text-muted-foreground">
-                      {webSearchEnabled ? "Searching & generating..." : 
-                       routingMode === "auto" ? "Selecting best model..." : "Generating..."}
+                      {routingMode === "auto" ? "Selecting best model..." : "Generating..."}
                     </span>
                   </div>
                 </div>
