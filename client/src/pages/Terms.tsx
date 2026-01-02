@@ -12,7 +12,7 @@ export default function Terms() {
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
               <Sparkles className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold gradient-text">LibreAI</span>
+            <span className="text-xl font-bold gradient-text">Chofesh</span>
           </Link>
           <Link href="/">
             <Button variant="ghost" size="sm" className="gap-2">
@@ -35,7 +35,7 @@ export default function Terms() {
               Terms of <span className="gradient-text">Service</span>
             </h1>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Please read these terms carefully before using LibreAI.
+              Please read these terms carefully before using Chofesh.
             </p>
             <p className="text-sm text-muted-foreground mt-4">
               Last updated: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
@@ -50,14 +50,14 @@ export default function Terms() {
           <div className="prose prose-invert max-w-none">
             <TermsSection title="1. Acceptance of Terms">
               <p>
-                By accessing or using LibreAI ("the Service"), you agree to be bound by these Terms of Service. 
+                By accessing or using Chofesh ("the Service"), you agree to be bound by these Terms of Service. 
                 If you do not agree to these terms, please do not use the Service.
               </p>
             </TermsSection>
 
             <TermsSection title="2. Description of Service">
               <p>
-                LibreAI provides AI-powered text and image generation services. The Service includes:
+                Chofesh provides AI-powered text and image generation services. The Service includes:
               </p>
               <ul>
                 <li>AI chat functionality with various language models</li>
@@ -83,7 +83,7 @@ export default function Terms() {
 
             <TermsSection title="4. Prohibited Content">
               <p>
-                While LibreAI provides creative freedom, you may not use the Service to generate:
+                While Chofesh provides creative freedom, you may not use the Service to generate:
               </p>
               <ul>
                 <li>Child sexual abuse material (CSAM) or any content sexualizing minors</li>
@@ -107,7 +107,7 @@ export default function Terms() {
                 terms of the underlying model providers (OpenAI, Anthropic, etc.).
               </p>
               <p>
-                <strong>Our Service:</strong> LibreAI and its original content, features, and functionality 
+                <strong>Our Service:</strong> Chofesh and its original content, features, and functionality 
                 are owned by us and protected by intellectual property laws.
               </p>
             </TermsSection>
@@ -189,7 +189,7 @@ export default function Terms() {
                 For questions about these Terms, contact us at:
               </p>
               <ul>
-                <li>Email: legal@libreai.com</li>
+                <li>Email: legal@chofesh.ai</li>
               </ul>
             </TermsSection>
           </div>
@@ -203,7 +203,7 @@ export default function Terms() {
             <div className="w-6 h-6 rounded bg-primary flex items-center justify-center">
               <Sparkles className="w-4 h-4 text-primary-foreground" />
             </div>
-            <span className="font-semibold">LibreAI</span>
+            <span className="font-semibold">Chofesh</span>
           </div>
           <div className="flex gap-6 text-sm text-muted-foreground">
             <Link href="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link>

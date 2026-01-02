@@ -378,7 +378,7 @@ export default function Chat() {
       const key = await crypto.subtle.deriveKey(
         {
           name: "PBKDF2",
-          salt: encoder.encode("libreai-share-salt"),
+          salt: encoder.encode("chofesh-share-salt"),
           iterations: 100000,
           hash: "SHA-256",
         },
@@ -484,7 +484,7 @@ export default function Chat() {
                 <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
                   <Sparkles className="w-5 h-5 text-primary-foreground" />
                 </div>
-                <span className="text-lg font-bold gradient-text">LibreAI</span>
+                <span className="text-lg font-bold gradient-text">Chofesh</span>
               </Link>
               <Button
                 variant="ghost"

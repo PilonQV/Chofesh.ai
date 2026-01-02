@@ -12,7 +12,7 @@ export default function Privacy() {
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
               <Sparkles className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold gradient-text">LibreAI</span>
+            <span className="text-xl font-bold gradient-text">Chofesh</span>
           </Link>
           <Link href="/">
             <Button variant="ghost" size="sm" className="gap-2">
@@ -35,7 +35,7 @@ export default function Privacy() {
               Your Privacy <span className="gradient-text">Matters</span>
             </h1>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              We built LibreAI with privacy as a core principle. Here's exactly how we handle your data.
+              We built Chofesh with privacy as a core principle. Here's exactly how we handle your data.
             </p>
             <p className="text-sm text-muted-foreground mt-4">
               Last updated: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
@@ -79,7 +79,7 @@ export default function Privacy() {
           <div className="prose prose-invert max-w-none">
             <PolicySection title="1. What We Collect">
               <p>
-                LibreAI is designed to minimize data collection. Here's what we do and don't collect:
+                Chofesh is designed to minimize data collection. Here's what we do and don't collect:
               </p>
               <h4>What we DO collect:</h4>
               <ul>
@@ -157,7 +157,7 @@ export default function Privacy() {
 
             <PolicySection title="6. Third-Party Services">
               <p>
-                When you use LibreAI, your requests may be processed by:
+                When you use Chofesh, your requests may be processed by:
               </p>
               <ul>
                 <li><strong>AI Model Providers:</strong> OpenAI, Anthropic, or other providers depending on your model selection</li>
@@ -179,7 +179,7 @@ export default function Privacy() {
                 <li>Opt out of non-essential data collection</li>
               </ul>
               <p>
-                To exercise these rights, contact us at privacy@libreai.com.
+                To exercise these rights, contact us at privacy@chofesh.ai.
               </p>
             </PolicySection>
 
@@ -207,7 +207,7 @@ export default function Privacy() {
                 If you have questions about this privacy policy or our practices, contact us at:
               </p>
               <ul>
-                <li>Email: privacy@libreai.com</li>
+                <li>Email: privacy@chofesh.ai</li>
               </ul>
             </PolicySection>
           </div>
@@ -221,7 +221,7 @@ export default function Privacy() {
             <div className="w-6 h-6 rounded bg-primary flex items-center justify-center">
               <Sparkles className="w-4 h-4 text-primary-foreground" />
             </div>
-            <span className="font-semibold">LibreAI</span>
+            <span className="font-semibold">Chofesh</span>
           </div>
           <div className="flex gap-6 text-sm text-muted-foreground">
             <Link href="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link>

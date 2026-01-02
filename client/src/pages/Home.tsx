@@ -29,7 +29,7 @@ export default function Home() {
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
               <Sparkles className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold gradient-text">LibreAI</span>
+            <span className="text-xl font-bold gradient-text">Chofesh</span>
           </Link>
           
           <div className="hidden md:flex items-center gap-6">
@@ -203,7 +203,7 @@ export default function Home() {
       <section className="py-20 px-4 bg-card/50">
         <div className="container mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
-            Why <span className="gradient-text">LibreAI</span>?
+            Why <span className="gradient-text">Chofesh</span>?
           </h2>
           <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-12">
             See how we compare to other AI platforms.
@@ -214,19 +214,19 @@ export default function Home() {
               <thead>
                 <tr className="border-b border-border">
                   <th className="text-left py-4 px-4 font-semibold">Feature</th>
-                  <th className="text-center py-4 px-4 font-semibold gradient-text">LibreAI</th>
+                  <th className="text-center py-4 px-4 font-semibold gradient-text">Chofesh</th>
                   <th className="text-center py-4 px-4 font-semibold text-muted-foreground">ChatGPT</th>
                   <th className="text-center py-4 px-4 font-semibold text-muted-foreground">Others</th>
                 </tr>
               </thead>
               <tbody>
-                <ComparisonRow feature="Local conversation storage" libreai={true} chatgpt={false} others={false} />
-                <ComparisonRow feature="No content filtering" libreai={true} chatgpt={false} others="Varies" />
-                <ComparisonRow feature="Bring your own API keys" libreai={true} chatgpt={false} others="Varies" />
-                <ComparisonRow feature="Document chat (RAG)" libreai={true} chatgpt={true} others="Varies" />
-                <ComparisonRow feature="Usage tracking" libreai={true} chatgpt={false} others="Varies" />
-                <ComparisonRow feature="Image generation" libreai={true} chatgpt={true} others="Varies" />
-                <ComparisonRow feature="Free tier available" libreai={true} chatgpt={true} others="Varies" />
+                <ComparisonRow feature="Local conversation storage" chofesh={true} chatgpt={false} others={false} />
+                <ComparisonRow feature="No content filtering" chofesh={true} chatgpt={false} others="Varies" />
+                <ComparisonRow feature="Bring your own API keys" chofesh={true} chatgpt={false} others="Varies" />
+                <ComparisonRow feature="Document chat (RAG)" chofesh={true} chatgpt={true} others="Varies" />
+                <ComparisonRow feature="Usage tracking" chofesh={true} chatgpt={false} others="Varies" />
+                <ComparisonRow feature="Image generation" chofesh={true} chatgpt={true} others="Varies" />
+                <ComparisonRow feature="Free tier available" chofesh={true} chatgpt={true} others="Varies" />
               </tbody>
             </table>
           </div>
@@ -242,7 +242,7 @@ export default function Home() {
                 Your Data <span className="gradient-text">Stays Yours</span>
               </h2>
               <p className="text-muted-foreground mb-6">
-                We built LibreAI with a simple principle: your conversations belong to you.
+                We built Chofesh with a simple principle: your conversations belong to you.
                 Unlike other platforms, we can't read your chats because they never leave your browser.
               </p>
               <div className="space-y-4">
@@ -319,7 +319,7 @@ export default function Home() {
             <PricingCard
               title="Free"
               price="$0"
-              description="Perfect for trying out LibreAI"
+              description="Perfect for trying out Chofesh"
               features={[
                 "10 chat messages/day",
                 "2 image generations/day",
@@ -402,7 +402,7 @@ export default function Home() {
                 <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
                   <Sparkles className="w-5 h-5 text-primary-foreground" />
                 </div>
-                <span className="text-xl font-bold">LibreAI</span>
+                <span className="text-xl font-bold">Chofesh</span>
               </div>
               <p className="text-sm text-muted-foreground">
                 AI that respects your creativity and privacy.
@@ -427,13 +427,13 @@ export default function Home() {
               <h4 className="font-semibold mb-4">Support</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link href="/how-it-works" className="hover:text-foreground transition-colors">How It Works</Link></li>
-                <li><a href="mailto:support@libreai.com" className="hover:text-foreground transition-colors">Contact</a></li>
+                <li><a href="mailto:support@chofesh.ai" className="hover:text-foreground transition-colors">Contact</a></li>
               </ul>
             </div>
           </div>
           <div className="pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} LibreAI. All rights reserved.
+              © {new Date().getFullYear()} Chofesh. All rights reserved.
             </p>
             <p className="text-sm text-muted-foreground">
               Made for creators who value freedom.
@@ -474,12 +474,12 @@ function FeatureCard({
 
 function ComparisonRow({
   feature,
-  libreai,
+  chofesh,
   chatgpt,
   others,
 }: {
   feature: string;
-  libreai: boolean | string;
+  chofesh: boolean | string;
   chatgpt: boolean | string;
   others: boolean | string;
 }) {
@@ -497,7 +497,7 @@ function ComparisonRow({
   return (
     <tr className="border-b border-border">
       <td className="py-4 px-4 text-sm">{feature}</td>
-      <td className="py-4 px-4 text-center">{renderValue(libreai)}</td>
+      <td className="py-4 px-4 text-center">{renderValue(chofesh)}</td>
       <td className="py-4 px-4 text-center">{renderValue(chatgpt)}</td>
       <td className="py-4 px-4 text-center">{renderValue(others)}</td>
     </tr>
