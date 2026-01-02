@@ -9,6 +9,8 @@ import { getDb } from "../db";
 import { users } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { SUBSCRIPTION_TIERS } from "./products";
+import { sdk } from "../_core/sdk";
+import * as db from "../db";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
   apiVersion: "2025-04-30.basil" as any,
@@ -16,16 +18,18 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
 
 const router = Router();
 
-// Get user from session cookie
+// Use cookie parser
+router.use(cookieParser());
+
+// Get user from session cookie using SDK
 async function getUserFromRequest(req: Request) {
-  // This would need to integrate with your auth system
-  // For now, return null - the actual implementation depends on your auth setup
-  const sessionCookie = req.cookies?.session;
-  if (!sessionCookie) return null;
-  
-  // Decode JWT and get user
-  // This is a placeholder - integrate with your actual auth
-  return null;
+  try {
+    const user = await sdk.authenticateRequest(req);
+    return user;
+  } catch (error) {
+    console.log("[Stripe Routes] Auth failed:", error);
+    return null;
+  }
 }
 
 // Create checkout session
@@ -41,7 +45,13 @@ router.get("/checkout", async (req: Request, res: Response) => {
     // Get user from session
     const user = await getUserFromRequest(req);
     if (!user) {
-      return res.redirect("/api/oauth/login?redirect=/settings");
+      // Redirect to Google OAuth login
+      return res.redirect("/api/auth/google?redirect=/settings");
+    }
+
+    // Check if tier has a price ID configured
+    if (!("priceId" in tierConfig) || !tierConfig.priceId) {
+      return res.status(400).json({ error: "Price not configured for this tier" });
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -49,23 +59,19 @@ router.get("/checkout", async (req: Request, res: Response) => {
       payment_method_types: ["card"],
       line_items: [
         {
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: tierConfig.name,
-              description: `${tierConfig.dailyLimit === -1 ? "Unlimited" : tierConfig.dailyLimit} queries per day`,
-            },
-            unit_amount: tierConfig.price * 100, // Convert to cents
-            recurring: {
-              interval: "month",
-            },
-          },
+          price: tierConfig.priceId,
           quantity: 1,
         },
       ],
-      success_url: `${req.protocol}://${req.get("host")}/settings?success=true`,
-      cancel_url: `${req.protocol}://${req.get("host")}/settings?canceled=true`,
+      success_url: `${req.protocol}://${req.get("host")}/settings?subscription=success`,
+      cancel_url: `${req.protocol}://${req.get("host")}/settings?subscription=canceled`,
+      customer_email: user.email || undefined,
+      client_reference_id: user.id.toString(),
+      allow_promotion_codes: true,
       metadata: {
+        user_id: user.id.toString(),
+        customer_email: user.email || "",
+        customer_name: user.name || "",
         tier,
       },
     });
@@ -77,23 +83,28 @@ router.get("/checkout", async (req: Request, res: Response) => {
   }
 });
 
-// Customer portal
+// Customer portal - manage subscription
 router.get("/portal", async (req: Request, res: Response) => {
   try {
     const user = await getUserFromRequest(req);
     if (!user) {
-      return res.redirect("/api/oauth/login?redirect=/settings");
+      // Redirect to Google OAuth login
+      return res.redirect("/api/auth/google?redirect=/settings");
     }
 
-    // Get user's Stripe customer ID from database
-    const db = await getDb();
-    if (!db) {
-      return res.status(500).json({ error: "Database not available" });
+    // Check if user has a Stripe customer ID
+    if (!user.stripeCustomerId) {
+      console.log("[Stripe Portal] User has no Stripe customer ID");
+      return res.redirect("/settings?error=no_subscription");
     }
 
-    // This would need the actual user ID from auth
-    // For now, redirect to settings
-    res.redirect("/settings");
+    // Create billing portal session
+    const portalSession = await stripe.billingPortal.sessions.create({
+      customer: user.stripeCustomerId,
+      return_url: `${req.protocol}://${req.get("host")}/settings`,
+    });
+
+    res.redirect(portalSession.url);
   } catch (error) {
     console.error("Stripe portal error:", error);
     res.status(500).json({ error: "Failed to create portal session" });
