@@ -73,7 +73,7 @@ interface GeneratedImage {
   timestamp: number;
 }
 
-const STORAGE_KEY = "libre-ai-generated-images";
+const STORAGE_KEY = "chofesh-ai-generated-images";
 
 const ASPECT_RATIOS = [
   { id: "1:1", name: "Square", icon: Square, width: 1024, height: 1024 },
@@ -260,7 +260,7 @@ export default function ImageGen() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `libre-ai-${image.id}.png`;
+      a.download = `chofesh-ai-${image.id}.png`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

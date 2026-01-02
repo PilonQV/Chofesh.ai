@@ -47,7 +47,7 @@ import { Link, useLocation } from "wouter";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Streamdown } from "streamdown";
 import {
-  Sparkles,
+
   Send,
   Plus,
   Trash2,
@@ -872,7 +872,7 @@ export default function Chat() {
             {!currentConversation?.messages.length && (
               <div className="text-center py-12 space-y-6">
                 <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
-                  <Sparkles className="w-8 h-8 text-primary" />
+                  <img src="/chofesh-logo.png" alt="" className="w-10 h-10 object-contain" />
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold mb-2">Start a conversation</h2>

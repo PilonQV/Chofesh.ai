@@ -1,4 +1,4 @@
-# LibreAI Project TODO
+# Chofesh.ai Project TODO
 
 ## Core Infrastructure
 - [x] Database schema (users, audit_logs tables)
@@ -243,3 +243,15 @@
 - [x] Add image editing UI with edit mode
 - [x] Implement edit prompt interface
 - [x] Use originalImages parameter for image-to-image
+
+
+---
+
+## Bug Fixes (User Reported)
+
+- [x] Fix logo inconsistency - sparkle icon still showing on some pages
+- [x] Fix chat API error - "Failed to generate response" (missing crypto import)
+- [x] Fix 404 page for "How It Works" link (changed to #features anchor)
+- [x] Fix privacy page scroll position - opens at bottom instead of top
+- [x] Rename all "Libre" references to "Chofesh" throughout codebase
+- [x] Replace all Sparkles icons with Chofesh logo image

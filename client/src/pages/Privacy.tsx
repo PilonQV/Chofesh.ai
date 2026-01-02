@@ -1,8 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { ArrowLeft, Sparkles, Shield, Lock, Eye, Server, Trash2 } from "lucide-react";
+import { ArrowLeft, Shield, Lock, Eye, Server, Trash2 } from "lucide-react";
+import { useEffect } from "react";
 
 export default function Privacy() {
+  // Scroll to top when page loads
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}

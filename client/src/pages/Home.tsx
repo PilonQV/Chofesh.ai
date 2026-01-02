@@ -7,7 +7,7 @@ import {
   Image,
   Shield,
   Lock,
-  Sparkles,
+
   ArrowRight,
   Zap,
   Key,
@@ -82,7 +82,7 @@ export default function Home() {
         
         <div className="container mx-auto text-center relative z-10">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-6 border border-primary/20">
-            <Sparkles className="w-4 h-4" />
+            <img src="/chofesh-logo.png" alt="" className="w-4 h-4 object-contain" />
             <span className="text-sm font-medium">Your AI, Your Rules</span>
           </div>
           
@@ -397,9 +397,7 @@ export default function Home() {
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                  <Sparkles className="w-5 h-5 text-primary-foreground" />
-                </div>
+                <img src="/chofesh-logo.png" alt="Chofesh" className="w-8 h-8 object-contain" />
                 <span className="text-xl font-bold">Chofesh</span>
               </div>
               <p className="text-sm text-muted-foreground">
@@ -424,7 +422,7 @@ export default function Home() {
             <div>
               <h4 className="font-semibold mb-4">Support</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link href="/how-it-works" className="hover:text-foreground transition-colors">How It Works</Link></li>
+                <li><a href="/#features" className="hover:text-foreground transition-colors">How It Works</a></li>
                 <li><a href="mailto:support@chofesh.ai" className="hover:text-foreground transition-colors">Contact</a></li>
               </ul>
             </div>
