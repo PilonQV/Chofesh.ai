@@ -34,7 +34,7 @@ import {
 import { trpc } from "@/lib/trpc";
 import { getLoginUrl } from "@/const";
 import { Link, useLocation } from "wouter";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Sparkles,
   Image as ImageIcon,
@@ -55,6 +55,9 @@ import {
   RectangleHorizontal,
   RectangleVertical,
   Users,
+  Edit,
+  Upload,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -98,6 +101,12 @@ export default function ImageGen() {
 
   const { data: models } = trpc.models.listImage.useQuery();
   const generateMutation = trpc.image.generate.useMutation();
+  const editMutation = trpc.imageEdit.edit.useMutation();
+  
+  // Image editing state
+  const [editMode, setEditMode] = useState(false);
+  const [editImageUrl, setEditImageUrl] = useState<string | null>(null);
+  const editFileInputRef = useRef<HTMLInputElement>(null);
 
   // Load images from localStorage
   useEffect(() => {
@@ -168,6 +177,71 @@ export default function ImageGen() {
       toast.error("Failed to generate image. Please try again.");
       console.error("Image generation error:", error);
     }
+  };
+
+  // Image editing handlers
+  const handleEditImage = async () => {
+    if (!prompt.trim() || !editImageUrl || editMutation.isPending) return;
+
+    try {
+      const result = await editMutation.mutateAsync({
+        prompt: prompt.trim(),
+        originalImageUrl: editImageUrl,
+        originalImageMimeType: 'image/png',
+      });
+
+      const newImage: GeneratedImage = {
+        id: crypto.randomUUID(),
+        url: result.url!,
+        prompt: `[Edit] ${prompt.trim()}`,
+        timestamp: Date.now(),
+      };
+
+      saveImages([newImage, ...images]);
+      setSelectedImage(newImage);
+      setEditMode(false);
+      setEditImageUrl(null);
+      toast.success("Image edited successfully!");
+    } catch (error) {
+      toast.error("Failed to edit image. Please try again.");
+      console.error("Image edit error:", error);
+    }
+  };
+
+  const handleEditFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error("Please upload an image file");
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Image must be less than 10MB");
+      return;
+    }
+
+    // Convert to data URL for preview, but we'll need to upload to S3 for the API
+    const reader = new FileReader();
+    reader.onload = () => {
+      // For now, we'll use the selected image's URL if available
+      // In a full implementation, you'd upload this to S3 first
+      toast.info("For editing, please select an existing generated image or provide a URL");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const startEditFromImage = (image: GeneratedImage) => {
+    setEditMode(true);
+    setEditImageUrl(image.url);
+    setPrompt("");
+    toast.info("Enter a prompt to describe how you want to edit this image");
+  };
+
+  const cancelEditMode = () => {
+    setEditMode(false);
+    setEditImageUrl(null);
   };
 
   const handleDelete = (id: string) => {
@@ -280,6 +354,18 @@ export default function ImageGen() {
                     className="w-full aspect-square object-cover"
                   />
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    <Button
+                      size="icon"
+                      variant="secondary"
+                      className="w-8 h-8"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        startEditFromImage(image);
+                      }}
+                      title="Edit this image"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
                     <Button
                       size="icon"
                       variant="secondary"
@@ -487,29 +573,73 @@ export default function ImageGen() {
         {/* Input Area */}
         <div className="border-t border-border p-4">
           <div className="max-w-4xl mx-auto space-y-4">
+            {/* Edit Mode Banner */}
+            {editMode && editImageUrl && (
+              <div className="flex items-center gap-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
+                <img
+                  src={editImageUrl}
+                  alt="Image being edited"
+                  className="w-12 h-12 rounded object-cover"
+                />
+                <div className="flex-1">
+                  <div className="text-sm font-medium text-primary">Edit Mode</div>
+                  <div className="text-xs text-muted-foreground">Describe how you want to modify this image</div>
+                </div>
+                <Button variant="ghost" size="icon" onClick={cancelEditMode}>
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
+            
             {/* Main Prompt */}
             <div className="flex gap-2">
               <Input
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Describe the image you want to create..."
-                disabled={generateMutation.isPending}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey && e.target instanceof HTMLInputElement) {
+                    e.preventDefault();
+                    if (editMode) {
+                      handleEditImage();
+                    } else {
+                      handleGenerate();
+                    }
+                  }
+                }}
+                placeholder={editMode ? "Describe how to edit this image..." : "Describe the image you want to create..."}
+                disabled={generateMutation.isPending || editMutation.isPending}
                 className="flex-1"
               />
-              <Button
-                onClick={handleGenerate}
-                disabled={!prompt.trim() || generateMutation.isPending}
-              >
-                {generateMutation.isPending ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <>
-                    <Wand2 className="w-4 h-4 mr-2" />
-                    Generate
-                  </>
-                )}
-              </Button>
+              {editMode ? (
+                <Button
+                  onClick={handleEditImage}
+                  disabled={!prompt.trim() || editMutation.isPending}
+                  className="bg-primary"
+                >
+                  {editMutation.isPending ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <>
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit Image
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleGenerate}
+                  disabled={!prompt.trim() || generateMutation.isPending}
+                >
+                  {generateMutation.isPending ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <>
+                      <Wand2 className="w-4 h-4 mr-2" />
+                      Generate
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
 
             {/* Advanced Settings Collapsible */}

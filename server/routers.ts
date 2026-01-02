@@ -43,6 +43,10 @@ import {
 } from "./db";
 import { invokeLLM } from "./_core/llm";
 import { generateImage } from "./_core/imageGeneration";
+import { transcribeAudio } from "./_core/voiceTranscription";
+import { callDataApi } from "./_core/dataApi";
+import { notifyOwner } from "./_core/notification";
+import { storagePut } from "./storage";
 import crypto from "crypto";
 import {
   AVAILABLE_MODELS,
@@ -334,14 +338,61 @@ export const appRouter = router({
         const lastUserMessage = input.messages.filter(m => m.role === "user").pop();
         const promptContent = lastUserMessage?.content || "";
         
+        // Web search integration
+        let webSearchResults: { title: string; url: string; description: string }[] = [];
+        let messagesWithSearch = [...input.messages];
+        
+        if (input.webSearch && promptContent) {
+          try {
+            // Perform web search using Data API
+            const searchResults = await callDataApi("BraveSearch/web_search", {
+              query: {
+                q: promptContent,
+                count: 5,
+              },
+            }) as any;
+            
+            webSearchResults = (searchResults?.web?.results || []).slice(0, 5).map((r: any) => ({
+              title: r.title || '',
+              url: r.url || '',
+              description: r.description || '',
+            }));
+            
+            // If we got search results, inject them into the system prompt
+            if (webSearchResults.length > 0) {
+              const searchContext = webSearchResults.map((r, i) => 
+                `[${i + 1}] ${r.title}\n${r.description}\nSource: ${r.url}`
+              ).join('\n\n');
+              
+              const searchSystemPrompt = `You have access to recent web search results. Use them to provide accurate, up-to-date information when relevant.\n\nWeb Search Results:\n${searchContext}\n\nWhen citing information from search results, mention the source.`;
+              
+              // Add or prepend to existing system prompt
+              const existingSystemIdx = messagesWithSearch.findIndex(m => m.role === 'system');
+              if (existingSystemIdx >= 0) {
+                messagesWithSearch[existingSystemIdx] = {
+                  ...messagesWithSearch[existingSystemIdx],
+                  content: searchSystemPrompt + '\n\n' + messagesWithSearch[existingSystemIdx].content,
+                };
+              } else {
+                messagesWithSearch.unshift({
+                  role: 'system',
+                  content: searchSystemPrompt,
+                });
+              }
+            }
+          } catch (searchError) {
+            console.error("Web search failed:", searchError);
+            // Continue without search results
+          }
+        }
+        
         // Estimate input tokens
-        const inputTokens = input.messages.reduce((acc, m) => acc + estimateTokens(m.content), 0);
+        const inputTokens = messagesWithSearch.reduce((acc, m) => acc + estimateTokens(m.content), 0);
         
         try {
-          // Call LLM (for now, all models go through platform API)
-          // In production, you'd route to different providers based on selectedModel.provider
+          // Call LLM with potentially search-augmented messages
           const response = await invokeLLM({
-            messages: input.messages,
+            messages: messagesWithSearch,
           });
 
           const rawContent = response.choices[0]?.message?.content;
@@ -399,7 +450,8 @@ export const appRouter = router({
             cached: false,
             complexity,
             cost,
-            webSearchUsed: input.webSearch || false,
+            webSearchUsed: webSearchResults.length > 0,
+            webSearchResultsCount: webSearchResults.length,
             tokens: {
               input: inputTokens,
               output: outputTokens,
@@ -553,33 +605,54 @@ export const appRouter = router({
         filename: z.string(),
         content: z.string(),
         mimeType: z.string(),
+        isBase64: z.boolean().optional(), // For PDF uploads
       }))
       .mutation(async ({ ctx, input }) => {
+        const isPdf = input.mimeType === 'application/pdf';
+        let storageUrl = "local://" + input.filename;
+        let fileSize = input.content.length;
+        
+        // For PDFs, upload to S3 and use LLM for text extraction
+        if (isPdf && input.isBase64) {
+          const buffer = Buffer.from(input.content, 'base64');
+          fileSize = buffer.length;
+          const s3Key = `documents/${ctx.user.id}/${Date.now()}-${input.filename}`;
+          const { url } = await storagePut(s3Key, buffer, 'application/pdf');
+          storageUrl = url;
+        }
+        
         // Create document record
         const docId = await createUserDocument({
           userId: ctx.user.id,
           filename: input.filename,
           originalName: input.filename,
           mimeType: input.mimeType,
-          fileSize: input.content.length,
-          storageUrl: "local://" + input.filename,
+          fileSize,
+          storageUrl,
           status: "processing",
         });
         
-        // Simple text chunking (split by paragraphs, ~500 chars each)
-        const chunkTexts: string[] = [];
-        const paragraphs = input.content.split(/\n\n+/);
-        let currentChunk = "";
+        let chunkTexts: string[] = [];
         
-        for (const para of paragraphs) {
-          if (currentChunk.length + para.length > 500) {
-            if (currentChunk) chunkTexts.push(currentChunk.trim());
-            currentChunk = para;
-          } else {
-            currentChunk += (currentChunk ? "\n\n" : "") + para;
+        if (isPdf) {
+          // For PDFs, we'll process them on-demand during chat using LLM file_url
+          // Store a single chunk indicating it's a PDF
+          chunkTexts = [`[PDF Document: ${input.filename}]\n\nThis document will be analyzed directly by the AI when you ask questions about it.`];
+        } else {
+          // Simple text chunking for text files (split by paragraphs, ~500 chars each)
+          const paragraphs = input.content.split(/\n\n+/);
+          let currentChunk = "";
+          
+          for (const para of paragraphs) {
+            if (currentChunk.length + para.length > 500) {
+              if (currentChunk) chunkTexts.push(currentChunk.trim());
+              currentChunk = para;
+            } else {
+              currentChunk += (currentChunk ? "\n\n" : "") + para;
+            }
           }
+          if (currentChunk) chunkTexts.push(currentChunk.trim());
         }
-        if (currentChunk) chunkTexts.push(currentChunk.trim());
         
         // Store chunks
         const chunksToInsert = chunkTexts.map((content, index) => ({
@@ -591,7 +664,7 @@ export const appRouter = router({
         await createDocumentChunks(chunksToInsert);
         
         // Update status
-        await updateDocumentStatus(docId, "ready", undefined, chunkTexts.length);
+        await updateDocumentStatus(docId, "ready", storageUrl, chunkTexts.length);
         
         await createAuditLog({
           userId: ctx.user.id,
@@ -601,13 +674,14 @@ export const appRouter = router({
           userAgent: ctx.req.headers["user-agent"] || null,
           metadata: JSON.stringify({
             filename: input.filename,
-            size: input.content.length,
+            size: fileSize,
             chunks: chunkTexts.length,
+            isPdf,
           }),
           timestamp: new Date(),
         });
         
-        return { id: docId, chunks: chunkTexts.length };
+        return { id: docId, chunks: chunkTexts.length, isPdf };
       }),
     
     delete: protectedProcedure
@@ -632,9 +706,7 @@ export const appRouter = router({
           throw new TRPCError({ code: "NOT_FOUND", message: "Document not found" });
         }
         
-        // Search for relevant chunks (simple keyword matching for now)
-        const chunks = await searchDocumentChunks(ctx.user.id, input.question);
-        const context = chunks.slice(0, 3).map(c => c.content).join("\n\n---\n\n");
+        const isPdf = doc.mimeType === 'application/pdf';
         
         // Determine routing
         const routingMode = (input.routingMode || "auto") as RoutingMode;
@@ -644,27 +716,62 @@ export const appRouter = router({
         const complexity = analyzeQueryComplexity(messages);
         const selectedModel = selectModel(complexity, routingMode);
         
-        // Build RAG prompt
-        const ragMessages = [
-          {
-            role: "system" as const,
-            content: `You are a helpful assistant answering questions about a document. Use the following context to answer the user's question. If the answer is not in the context, say so.
-
-Context from "${doc.filename}":
-${context}`,
-          },
-          {
-            role: "user" as const,
-            content: input.question,
-          },
-        ];
+        let ragMessages: any[];
+        let chunksUsed = 0;
+        
+        if (isPdf && doc.storageUrl && doc.storageUrl.startsWith('http')) {
+          // For PDFs, use the LLM's native file_url support
+          ragMessages = [
+            {
+              role: "system" as const,
+              content: `You are a helpful assistant answering questions about a PDF document titled "${doc.filename}". Analyze the document and answer the user's question based on its content. If the answer is not in the document, say so.`,
+            },
+            {
+              role: "user" as const,
+              content: [
+                {
+                  type: "file_url",
+                  file_url: {
+                    url: doc.storageUrl,
+                    mime_type: "application/pdf",
+                  },
+                },
+                {
+                  type: "text",
+                  text: input.question,
+                },
+              ],
+            },
+          ];
+          chunksUsed = 1; // PDF counts as 1 source
+        } else {
+          // For text files, use traditional RAG with chunks
+          const chunks = await searchDocumentChunks(ctx.user.id, input.question);
+          const context = chunks.slice(0, 3).map(c => c.content).join("\n\n---\n\n");
+          chunksUsed = chunks.length;
+          
+          ragMessages = [
+            {
+              role: "system" as const,
+              content: `You are a helpful assistant answering questions about a document. Use the following context to answer the user's question. If the answer is not in the context, say so.\n\nContext from "${doc.filename}":\n${context}`,
+            },
+            {
+              role: "user" as const,
+              content: input.question,
+            },
+          ];
+        }
         
         try {
           const response = await invokeLLM({ messages: ragMessages });
           const rawContent = response.choices[0]?.message?.content;
           const answer = typeof rawContent === 'string' ? rawContent : '';
           
-          const inputTokens = ragMessages.reduce((acc, m) => acc + estimateTokens(m.content), 0);
+          // Estimate tokens (rough for PDF since we don't know exact content)
+          const inputTokens = isPdf ? 5000 : ragMessages.reduce((acc, m) => {
+            if (typeof m.content === 'string') return acc + estimateTokens(m.content);
+            return acc + 100; // Rough estimate for file content
+          }, 0);
           const outputTokens = estimateTokens(answer);
           const cost = estimateCost(selectedModel, inputTokens, outputTokens);
           
@@ -691,7 +798,8 @@ ${context}`,
             responseLength: answer.length,
             metadata: JSON.stringify({
               documentId: input.documentId,
-              chunksUsed: chunks.length,
+              chunksUsed,
+              isPdf,
               duration: Date.now() - startTime,
             }),
             timestamp: new Date(),
@@ -702,10 +810,12 @@ ${context}`,
             model: selectedModel.id,
             modelName: selectedModel.name,
             tier: selectedModel.tier,
-            sourcesUsed: chunks.length,
+            sourcesUsed: chunksUsed,
             cost,
+            isPdf,
           };
         } catch (error) {
+          console.error("Document chat error:", error);
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
             message: "Failed to process document question",
@@ -918,6 +1028,220 @@ ${context}`,
         });
         
         return { success: true };
+      }),
+  }),
+
+  // Web Search using Data API
+  webSearch: router({
+    search: protectedProcedure
+      .input(z.object({
+        query: z.string().min(1).max(500),
+        limit: z.number().min(1).max(10).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        try {
+          // Use Brave Search API through Data API
+          const results = await callDataApi("BraveSearch/web_search", {
+            query: {
+              q: input.query,
+              count: input.limit || 5,
+            },
+          }) as any;
+          
+          // Extract relevant search results
+          const webResults = results?.web?.results || [];
+          const formattedResults = webResults.slice(0, input.limit || 5).map((r: any) => ({
+            title: r.title || '',
+            url: r.url || '',
+            description: r.description || '',
+          }));
+          
+          return {
+            results: formattedResults,
+            query: input.query,
+          };
+        } catch (error) {
+          console.error("Web search error:", error);
+          // Return empty results on error rather than failing
+          return {
+            results: [],
+            query: input.query,
+            error: "Search temporarily unavailable",
+          };
+        }
+      }),
+  }),
+
+  // Voice Transcription using Whisper API
+  voice: router({
+    transcribe: protectedProcedure
+      .input(z.object({
+        audioUrl: z.string().url(),
+        language: z.string().optional(),
+        prompt: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const result = await transcribeAudio({
+          audioUrl: input.audioUrl,
+          language: input.language,
+          prompt: input.prompt,
+        });
+        
+        // Check if it's an error
+        if ('error' in result) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: result.error,
+          });
+        }
+        
+        await createAuditLog({
+          userId: ctx.user.id,
+          userOpenId: ctx.user.openId,
+          actionType: "chat",
+          ipAddress: getClientIp(ctx.req),
+          userAgent: ctx.req.headers["user-agent"] || null,
+          metadata: JSON.stringify({
+            type: "voice_transcription",
+            duration: result.duration,
+            language: result.language,
+          }),
+          timestamp: new Date(),
+        });
+        
+        return result;
+      }),
+    
+    uploadAndTranscribe: protectedProcedure
+      .input(z.object({
+        audioBase64: z.string(),
+        mimeType: z.string(),
+        language: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Decode base64 and upload to S3
+        const buffer = Buffer.from(input.audioBase64, 'base64');
+        const filename = `audio/${ctx.user.id}/${Date.now()}.${input.mimeType.split('/')[1] || 'webm'}`;
+        
+        const { url } = await storagePut(filename, buffer, input.mimeType);
+        
+        // Transcribe the uploaded audio
+        const result = await transcribeAudio({
+          audioUrl: url,
+          language: input.language,
+        });
+        
+        if ('error' in result) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: result.error,
+          });
+        }
+        
+        return result;
+      }),
+  }),
+
+  // Owner Notifications
+  notifications: router({
+    notifyNewUser: protectedProcedure
+      .input(z.object({
+        userName: z.string(),
+        userEmail: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const success = await notifyOwner({
+          title: "New User Registration - Chofesh.ai",
+          content: `A new user has registered:\n\nName: ${input.userName}\nEmail: ${input.userEmail || 'Not provided'}\nTime: ${new Date().toISOString()}`,
+        });
+        return { success };
+      }),
+    
+    notifyMilestone: adminProcedure
+      .input(z.object({
+        milestone: z.string(),
+        details: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const success = await notifyOwner({
+          title: `Milestone Reached - ${input.milestone}`,
+          content: input.details || `Milestone: ${input.milestone}`,
+        });
+        return { success };
+      }),
+    
+    notifyError: protectedProcedure
+      .input(z.object({
+        errorType: z.string(),
+        errorMessage: z.string(),
+        context: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const success = await notifyOwner({
+          title: `Error Alert - ${input.errorType}`,
+          content: `Error: ${input.errorMessage}\n\nContext: ${input.context || 'None'}\nUser: ${ctx.user.name || ctx.user.openId}\nTime: ${new Date().toISOString()}`,
+        });
+        return { success };
+      }),
+  }),
+
+  // Image Editing
+  imageEdit: router({
+    edit: protectedProcedure
+      .input(z.object({
+        prompt: z.string().min(1).max(2000),
+        originalImageUrl: z.string().url(),
+        originalImageMimeType: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const startTime = Date.now();
+        
+        try {
+          const result = await generateImage({
+            prompt: input.prompt,
+            originalImages: [{
+              url: input.originalImageUrl,
+              mimeType: input.originalImageMimeType || 'image/png',
+            }],
+          });
+          
+          await createUsageRecord({
+            userId: ctx.user.id,
+            actionType: "image_generation",
+            model: "flux-edit",
+            inputTokens: 0,
+            outputTokens: 0,
+            totalTokens: 0,
+            estimatedCost: "0.03",
+            timestamp: new Date(),
+          });
+          
+          await createAuditLog({
+            userId: ctx.user.id,
+            userOpenId: ctx.user.openId,
+            actionType: "image_generation",
+            ipAddress: getClientIp(ctx.req),
+            userAgent: ctx.req.headers["user-agent"] || null,
+            contentHash: hashContent(input.prompt),
+            modelUsed: "flux-edit",
+            promptLength: input.prompt.length,
+            metadata: JSON.stringify({
+              type: "image_edit",
+              duration: Date.now() - startTime,
+            }),
+            timestamp: new Date(),
+          });
+          
+          return {
+            url: result.url,
+            model: "flux-edit",
+          };
+        } catch (error) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to edit image",
+          });
+        }
       }),
   }),
 });

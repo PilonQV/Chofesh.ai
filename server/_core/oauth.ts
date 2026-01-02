@@ -3,6 +3,7 @@ import type { Express, Request, Response } from "express";
 import * as db from "../db";
 import { getSessionCookieOptions } from "./cookies";
 import { sdk } from "./sdk";
+import { notifyOwner } from "./notification";
 
 function getQueryParam(req: Request, key: string): string | undefined {
   const value = req.query[key];
@@ -28,6 +29,10 @@ export function registerOAuthRoutes(app: Express) {
         return;
       }
 
+      // Check if this is a new user
+      const existingUser = await db.getUserByOpenId(userInfo.openId);
+      const isNewUser = !existingUser;
+      
       await db.upsertUser({
         openId: userInfo.openId,
         name: userInfo.name || null,
@@ -35,6 +40,14 @@ export function registerOAuthRoutes(app: Express) {
         loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
         lastSignedIn: new Date(),
       });
+      
+      // Notify owner of new user registration
+      if (isNewUser) {
+        notifyOwner({
+          title: "New User Registration - Chofesh.ai",
+          content: `A new user has registered:\n\nName: ${userInfo.name || 'Not provided'}\nEmail: ${userInfo.email || 'Not provided'}\nLogin Method: ${userInfo.loginMethod || userInfo.platform || 'Unknown'}\nTime: ${new Date().toISOString()}`,
+        }).catch(err => console.error("[OAuth] Failed to notify owner of new user:", err));
+      }
 
       const sessionToken = await sdk.createSessionToken(userInfo.openId, {
         name: userInfo.name || "",
