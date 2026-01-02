@@ -341,3 +341,20 @@
 - [x] Update Stripe products with new prices
 - [x] Update pricing display on frontend
 - [x] Test subscription flow (UI verified)
+
+
+---
+
+## Phase 13: Realistic Marketing Positioning
+
+### Marketing Copy Updates
+- [x] Update Home page hero and messaging to "private and unrestricted"
+- [x] Update feature descriptions to be more accurate
+- [x] Remove "uncensored" claims, replace with "creative freedom"
+- [x] Update comparison table to reflect realistic capabilities
+- [x] Update image generation page copy
+
+### Image Generation Clarity
+- [x] Clarify what FLUX can and cannot generate (in feature description)
+- [x] Update image generation UI messaging
+- [ ] Add helpful prompting tips (future enhancement)
