@@ -184,3 +184,21 @@
 - [x] Update Terms of Service references
 - [x] Update all UI copy mentioning LibreAI
 - [x] Update package.json name
+
+
+---
+
+## Phase 6: Production Readiness
+
+### Groq API Integration
+- [x] Request Groq API key from user
+- [x] Add Groq API key to environment secrets
+- [x] Test Groq models (Llama 3.1, Mixtral) work correctly
+- [x] Verify free tier routing to Groq models
+
+### Cookie Consent Banner (EU Compliance)
+- [x] Create CookieConsent component
+- [x] Store consent preference in localStorage
+- [x] Show banner on first visit
+- [x] Allow users to change preferences
+- [x] Add cookie policy link
