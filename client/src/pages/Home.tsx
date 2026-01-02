@@ -1,8 +1,10 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { getLoginUrl } from "@/const";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useTheme } from "@/contexts/ThemeContext";
+import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
 import {
   MessageSquare,
   Image,
@@ -17,11 +19,14 @@ import {
   Globe,
   Sun,
   Moon,
+  Loader2,
 } from "lucide-react";
+import { useState } from "react";
 
 export default function Home() {
   const { user, loading, isAuthenticated } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const [, setLocation] = useLocation();
 
   return (
     <div className="min-h-screen bg-background">
@@ -98,106 +103,98 @@ export default function Home() {
         <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-accent/20 rounded-full blur-3xl" />
         
         <div className="container mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-6 border border-primary/20">
-            <img src="/chofesh-logo.png" alt="" className="w-4 h-4 object-contain" />
-            <span className="text-sm font-medium">Your AI, Your Rules</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
+            <Shield className="w-4 h-4" />
+            Privacy-First AI Platform
           </div>
           
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-            <span className="gradient-text">Private AI</span>
-            <br />
-            <span className="text-foreground">Creative Freedom</span>
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
+            AI Without <span className="gradient-text">Limits</span>
           </h1>
           
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
-            The AI platform that respects your privacy and creativity. Chat and create images
-            with fewer restrictions. Your conversations stay encrypted on your device.
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
+            Experience creative freedom with uncensored AI. Your conversations stay on your device,
+            encrypted and private. No corporate surveillance.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             {isAuthenticated ? (
-              <>
-                <Link href="/chat">
-                  <Button size="lg" className="gap-2 glow">
-                    <MessageSquare className="w-5 h-5" />
-                    Start Creating
-                    <ArrowRight className="w-4 h-4" />
-                  </Button>
-                </Link>
-                <Link href="/image">
-                  <Button size="lg" variant="outline" className="gap-2">
-                    <Image className="w-5 h-5" />
-                    Generate Images
-                  </Button>
-                </Link>
-              </>
+              <Link href="/chat">
+                <Button size="lg" className="gap-2">
+                  Start Chatting
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              </Link>
             ) : (
-              <>
-                <a href={getLoginUrl()}>
-                  <Button size="lg" className="gap-2 glow">
-                    Start Free
-                    <ArrowRight className="w-4 h-4" />
-                  </Button>
-                </a>
-                <a href="#features">
-                  <Button size="lg" variant="outline" className="gap-2">
-                    Learn More
-                  </Button>
-                </a>
-              </>
+              <a href={getLoginUrl()}>
+                <Button size="lg" className="gap-2">
+                  Get Started Free
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              </a>
             )}
+            <a href="#features">
+              <Button size="lg" variant="outline" className="gap-2">
+                See Features
+              </Button>
+            </a>
           </div>
-
-          {/* Trust indicators */}
-          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
+          
+          {/* Trust badges */}
+          <div className="flex flex-wrap items-center justify-center gap-6 mt-12 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-green-500" />
-              <span>No credit card required</span>
+              <Lock className="w-4 h-4" />
+              <span>End-to-end encrypted</span>
             </div>
             <div className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-green-500" />
-              <span>Data stays on your device</span>
+              <Shield className="w-4 h-4" />
+              <span>No data collection</span>
             </div>
             <div className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-green-500" />
-              <span>Use your own API keys</span>
+              <Key className="w-4 h-4" />
+              <span>BYOK supported</span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features Grid */}
+      {/* Features Section */}
       <section id="features" className="py-20 px-4">
         <div className="container mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
-            Everything You Need to <span className="gradient-text">Create</span>
+            Everything You Need for <span className="gradient-text">AI Freedom</span>
           </h2>
           <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-12">
-            A complete AI toolkit designed for creators who value privacy and creative expression.
+            Powerful features designed with privacy and creative freedom in mind.
           </p>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             <FeatureCard
               icon={<MessageSquare className="w-6 h-6" />}
-              title="Intelligent Chat"
-              description="Have meaningful conversations with multiple AI models. Get helpful responses with fewer content restrictions than mainstream platforms."
+              title="Uncensored Chat"
+              description="Have real conversations without arbitrary content restrictions. Create, explore, and discuss freely."
+              badge="Popular"
             />
             <FeatureCard
               icon={<Image className="w-6 h-6" />}
               title="Image Generation"
-              description="Bring your imagination to life with FLUX. Create stunning artwork, illustrations, and creative visuals from text."
+              description="Generate stunning images with fewer restrictions. Your creativity, your rules."
+            />
+            <FeatureCard
+              icon={<Shield className="w-6 h-6" />}
+              title="Privacy First"
+              description="Your conversations are encrypted locally. We can't read them, even if we wanted to."
+            />
+            <FeatureCard
+              icon={<Key className="w-6 h-6" />}
+              title="Bring Your Keys"
+              description="Use your own API keys for unlimited access. Pay only for what you use."
+              badge="BYOK"
             />
             <FeatureCard
               icon={<FileText className="w-6 h-6" />}
               title="Document Chat"
-              description="Upload PDFs and documents, then chat with them. Extract insights instantly."
-              badge="New"
-            />
-            <FeatureCard
-              icon={<Key className="w-6 h-6" />}
-              title="Bring Your Own Keys"
-              description="Use your own OpenAI or Anthropic API keys for complete control over costs and models."
-              badge="New"
+              description="Upload PDFs and documents. Ask questions and get intelligent answers."
             />
             <FeatureCard
               icon={<BarChart3 className="w-6 h-6" />}
@@ -346,12 +343,14 @@ export default function Home() {
               ]}
               buttonText="Get Started"
               buttonVariant="outline"
+              isAuthenticated={isAuthenticated}
             />
             <PricingCard
               title="Starter"
               price="$4.99"
               period="/month"
               description="Perfect for casual users"
+              tier="starter"
               features={[
                 "100 queries per day",
                 "+ Grok 3 Fast (Aug 2025)",
@@ -360,12 +359,14 @@ export default function Home() {
               ]}
               buttonText="Subscribe"
               buttonVariant="outline"
+              isAuthenticated={isAuthenticated}
             />
             <PricingCard
               title="Pro"
               price="$14.99"
               period="/month"
               description="For power users & creators"
+              tier="pro"
               features={[
                 "500 queries per day",
                 "All models incl. GPT-4o",
@@ -375,12 +376,14 @@ export default function Home() {
               buttonText="Subscribe"
               buttonVariant="default"
               highlighted
+              isAuthenticated={isAuthenticated}
             />
             <PricingCard
               title="Unlimited"
               price="$27.99"
               period="/month"
               description="No limits, full freedom"
+              tier="unlimited"
               features={[
                 "Unlimited queries",
                 "All models & features",
@@ -389,6 +392,7 @@ export default function Home() {
               ]}
               buttonText="Subscribe"
               buttonVariant="outline"
+              isAuthenticated={isAuthenticated}
             />
             <PricingCard
               title="BYOK"
@@ -402,6 +406,7 @@ export default function Home() {
               ]}
               buttonText="Get Started"
               buttonVariant="outline"
+              isAuthenticated={isAuthenticated}
             />
           </div>
         </div>
@@ -410,30 +415,28 @@ export default function Home() {
       {/* CTA Section */}
       <section className="py-20 px-4">
         <div className="container mx-auto text-center">
-          <div className="max-w-2xl mx-auto p-8 rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/20">
-            <h2 className="text-3xl font-bold mb-4">
-              Ready to <span className="gradient-text">Create Freely</span>?
-            </h2>
-            <p className="text-muted-foreground mb-6">
-              Join creators who value both freedom and privacy.
-              No credit card required to start.
-            </p>
-            {isAuthenticated ? (
-              <Link href="/chat">
-                <Button size="lg" className="gap-2 glow">
-                  Open Dashboard
-                  <ArrowRight className="w-4 h-4" />
-                </Button>
-              </Link>
-            ) : (
-              <a href={getLoginUrl()}>
-                <Button size="lg" className="gap-2 glow">
-                  Start Creating Free
-                  <ArrowRight className="w-4 h-4" />
-                </Button>
-              </a>
-            )}
-          </div>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            Ready for <span className="gradient-text">AI Freedom</span>?
+          </h2>
+          <p className="text-muted-foreground max-w-xl mx-auto mb-8">
+            Join thousands of users who've chosen privacy-first AI.
+            Start free, no credit card required.
+          </p>
+          {isAuthenticated ? (
+            <Link href="/chat">
+              <Button size="lg" className="gap-2">
+                Go to Chat
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Link>
+          ) : (
+            <a href={getLoginUrl()}>
+              <Button size="lg" className="gap-2">
+                Get Started Free
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            </a>
+          )}
         </div>
       </section>
 
@@ -447,7 +450,7 @@ export default function Home() {
                 <span className="text-xl font-bold">Chofesh</span>
               </div>
               <p className="text-sm text-muted-foreground">
-                AI that respects your creativity and privacy.
+                AI without limits. Privacy without compromise.
               </p>
             </div>
             <div>
@@ -455,7 +458,7 @@ export default function Home() {
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link href="/chat" className="hover:text-foreground transition-colors">Chat</Link></li>
                 <li><Link href="/image" className="hover:text-foreground transition-colors">Image Generation</Link></li>
-                <li><Link href="/documents" className="hover:text-foreground transition-colors">Document Chat</Link></li>
+                <li><a href="/#pricing" className="hover:text-foreground transition-colors">Pricing</a></li>
               </ul>
             </div>
             <div>
@@ -577,6 +580,8 @@ function PricingCard({
   buttonText,
   buttonVariant,
   highlighted,
+  tier,
+  isAuthenticated,
 }: {
   title: string;
   price: string;
@@ -586,7 +591,41 @@ function PricingCard({
   buttonText: string;
   buttonVariant: "default" | "outline";
   highlighted?: boolean;
+  tier?: "starter" | "pro" | "unlimited";
+  isAuthenticated?: boolean;
 }) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [, setLocation] = useLocation();
+  const createCheckout = trpc.subscription.createCheckout.useMutation({
+    onSuccess: (data) => {
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to start checkout");
+      setIsLoading(false);
+    },
+  });
+
+  const handleClick = () => {
+    // If not authenticated, redirect to login
+    if (!isAuthenticated) {
+      window.location.href = getLoginUrl();
+      return;
+    }
+
+    // If no tier (Free or BYOK), go to chat
+    if (!tier) {
+      setLocation("/chat");
+      return;
+    }
+
+    // Start checkout for paid tiers
+    setIsLoading(true);
+    createCheckout.mutate({ tier });
+  };
+
   return (
     <div
       className={`p-6 rounded-xl border ${
@@ -617,9 +656,17 @@ function PricingCard({
       <Button
         variant={buttonVariant}
         className="w-full"
-        disabled={buttonText === "Coming Soon"}
+        disabled={isLoading}
+        onClick={handleClick}
       >
-        {buttonText}
+        {isLoading ? (
+          <>
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            Loading...
+          </>
+        ) : (
+          buttonText
+        )}
       </Button>
     </div>
   );
