@@ -20,7 +20,20 @@ import {
   Sun,
   Moon,
   Loader2,
+  Settings,
+  LogOut,
+  ChevronDown,
+  LayoutDashboard,
+  CreditCard,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useState } from "react";
 
 export default function Home() {
@@ -80,12 +93,54 @@ export default function Home() {
                     </Button>
                   </Link>
                 )}
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary">
-                  <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-xs font-medium text-primary-foreground">
-                    {user?.name?.[0]?.toUpperCase() || "U"}
-                  </div>
-                  <span className="text-sm font-medium hidden sm:block">{user?.name || "User"}</span>
-                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary hover:bg-secondary/80">
+                      <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-xs font-medium text-primary-foreground">
+                        {user?.name?.[0]?.toUpperCase() || "U"}
+                      </div>
+                      <span className="text-sm font-medium hidden sm:block">{user?.name || "User"}</span>
+                      <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel className="font-normal">
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium">{user?.name || "User"}</p>
+                        <p className="text-xs text-muted-foreground">{user?.email || ""}</p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => setLocation("/chat")}>
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
+                      Dashboard
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setLocation("/settings")}>
+                      <Settings className="mr-2 h-4 w-4" />
+                      Settings
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setLocation("/usage")}>
+                      <BarChart3 className="mr-2 h-4 w-4" />
+                      Usage
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => window.open("/api/stripe/portal", "_self")}>
+                      <CreditCard className="mr-2 h-4 w-4" />
+                      Billing
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      onClick={() => {
+                        // Clear session and redirect to home
+                        document.cookie = "session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                        window.location.href = "/";
+                      }}
+                      className="text-red-500 focus:text-red-500"
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </>
             ) : (
               <a href={getLoginUrl()}>
