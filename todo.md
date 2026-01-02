@@ -322,3 +322,22 @@
 - [x] Route medium queries → Grok 3 Fast (cheap, most up-to-date)
 - [x] Route complex reasoning → DeepSeek R1 (FREE via OpenRouter)
 - [x] Show user which model was selected and why
+
+---
+
+## Phase 12: Competitive Pricing Research & Implementation
+
+### Pricing Research
+- [x] Research Venice.ai pricing tiers
+- [x] Research ChatGPT Plus/Pro pricing
+- [x] Research Claude Pro pricing
+- [x] Research Perplexity Pro pricing
+- [x] Research other AI chat platforms pricing
+- [x] Compile pricing comparison table
+
+### Pricing Implementation
+- [x] Design 8% more affordable pricing tiers
+- [x] Update pricing constants in codebase
+- [x] Update Stripe products with new prices
+- [x] Update pricing display on frontend
+- [x] Test subscription flow (UI verified)

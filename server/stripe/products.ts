@@ -1,47 +1,64 @@
 /**
  * Stripe Products Configuration for Chofesh.ai
  * 
- * Subscription tiers with daily query limits and pricing.
+ * Competitive pricing: 8%+ more affordable than Venice.ai and other competitors
+ * 
+ * Market Reference:
+ * - Venice.ai Pro: $18/mo
+ * - ChatGPT Plus: $20/mo
+ * - Claude Pro: $20/mo
+ * - Perplexity Pro: $20/mo
+ * 
+ * Our Pricing (8%+ cheaper):
+ * - Starter: $4.99/mo (fills market gap)
+ * - Pro: $14.99/mo (17% cheaper than Venice, 25% cheaper than ChatGPT)
+ * - Unlimited: $27.99/mo (truly unlimited)
  */
 
 export const SUBSCRIPTION_TIERS = {
   free: {
     name: "Free",
     price: 0,
-    dailyLimit: 20,
-    description: "Try Chofesh.ai with basic features",
+    dailyLimit: 25,
+    imageLimit: 5,
+    description: "Get started with powerful free AI models",
     features: [
-      "20 queries per day",
-      "Access to Free tier models (Llama 3.1)",
+      "25 queries per day",
+      "Access to Llama 3.1 & DeepSeek R1 (FREE)",
+      "5 image generations per day",
       "Basic chat features",
       "Slowdown after limit (1 query/min)",
     ],
   },
   starter: {
     name: "Starter",
-    price: 500, // $5.00 in cents
+    price: 499, // $4.99 in cents
     priceId: process.env.STRIPE_STARTER_PRICE_ID || "", // Set in Stripe Dashboard
     dailyLimit: 100,
-    description: "For casual users who need more",
+    imageLimit: 20,
+    description: "Perfect for casual users who need more",
     features: [
       "100 queries per day",
-      "Access to Standard tier models (GPT-4o-mini)",
+      "All Free models + Grok 3 Fast (most up-to-date)",
+      "20 image generations per day",
       "Web search integration",
-      "Priority support",
+      "Voice input & output",
       "Slowdown after limit (1 query/min)",
     ],
   },
   pro: {
     name: "Pro",
-    price: 1500, // $15.00 in cents
+    price: 1499, // $14.99 in cents
     priceId: process.env.STRIPE_PRO_PRICE_ID || "", // Set in Stripe Dashboard
     dailyLimit: 500,
+    imageLimit: 100,
     description: "For power users and professionals",
     features: [
       "500 queries per day",
-      "Access to Premium tier models (GPT-4o, Claude)",
-      "Image generation",
-      "Document chat",
+      "All models including GPT-4o & Claude",
+      "100 image generations per day",
+      "Document chat (PDF support)",
+      "AI Characters & Personas",
       "Web search integration",
       "Priority support",
       "Slowdown after limit (1 query/min)",
@@ -49,15 +66,18 @@ export const SUBSCRIPTION_TIERS = {
   },
   unlimited: {
     name: "Unlimited",
-    price: 3000, // $30.00 in cents
+    price: 2799, // $27.99 in cents
     priceId: process.env.STRIPE_UNLIMITED_PRICE_ID || "", // Set in Stripe Dashboard
     dailyLimit: Infinity,
-    description: "No limits, full access",
+    imageLimit: Infinity,
+    description: "No limits, full creative freedom",
     features: [
       "Unlimited queries",
       "Access to all models",
-      "Image generation",
-      "Document chat",
+      "Unlimited image generations",
+      "Document chat (PDF support)",
+      "AI Characters & Personas",
+      "Image editing",
       "Web search integration",
       "Priority support",
       "No slowdown ever",
@@ -75,11 +95,26 @@ export function getDailyLimit(tier: SubscriptionTier): number {
 }
 
 /**
+ * Get the daily image limit for a subscription tier
+ */
+export function getImageLimit(tier: SubscriptionTier): number {
+  return SUBSCRIPTION_TIERS[tier].imageLimit;
+}
+
+/**
  * Check if a user is over their daily limit
  */
 export function isOverLimit(tier: SubscriptionTier, currentQueries: number): boolean {
   const limit = getDailyLimit(tier);
   return limit !== Infinity && currentQueries >= limit;
+}
+
+/**
+ * Check if a user is over their daily image limit
+ */
+export function isOverImageLimit(tier: SubscriptionTier, currentImages: number): boolean {
+  const limit = getImageLimit(tier);
+  return limit !== Infinity && currentImages >= limit;
 }
 
 /**
@@ -103,4 +138,15 @@ export function getTierFromPriceId(priceId: string): SubscriptionTier | null {
     }
   }
   return null;
+}
+
+/**
+ * Annual pricing (20% discount)
+ */
+export const ANNUAL_DISCOUNT = 0.20; // 20% off
+
+export function getAnnualPrice(tier: SubscriptionTier): number {
+  const monthlyPrice = SUBSCRIPTION_TIERS[tier].price;
+  if (monthlyPrice === 0) return 0;
+  return Math.round(monthlyPrice * 12 * (1 - ANNUAL_DISCOUNT));
 }
