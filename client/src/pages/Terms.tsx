@@ -9,9 +9,7 @@ export default function Terms() {
       <nav className="fixed top-0 left-0 right-0 z-50 glass">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-primary-foreground" />
-            </div>
+            <img src="/chofesh-logo.png" alt="Chofesh" className="w-8 h-8 object-contain" />
             <span className="text-xl font-bold gradient-text">Chofesh</span>
           </Link>
           <Link href="/">
@@ -200,9 +198,7 @@ export default function Terms() {
       <footer className="py-8 px-4 border-t border-border">
         <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded bg-primary flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-primary-foreground" />
-            </div>
+            <img src="/chofesh-logo.png" alt="Chofesh" className="w-6 h-6 object-contain" />
             <span className="font-semibold">Chofesh</span>
           </div>
           <div className="flex gap-6 text-sm text-muted-foreground">
