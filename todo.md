@@ -387,3 +387,9 @@
 - [ ] Add custom domain chofesh.ai
 - [ ] Update Cloudflare DNS records
 - [ ] Verify deployment is live
+
+---
+
+## Phase 17: User Experience Improvements
+
+- [ ] Add user dropdown menu in header with Dashboard, Settings, Usage, Logout
