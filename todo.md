@@ -305,3 +305,20 @@
 - [x] Add upgrade/downgrade buttons
 - [x] Show usage statistics (queries used/remaining)
 - [ ] Display billing history (future enhancement)
+
+
+---
+
+## Phase 11: DeepSeek R1 & Smart Router Enhancement
+
+### DeepSeek R1 Free Integration
+- [x] Add OpenRouter API helper for DeepSeek R1 Free
+- [x] Add DeepSeek R1 to available models list
+- [x] Configure as free reasoning model option
+
+### Enhanced Smart Router
+- [x] Detect complex reasoning queries (math, code, logic)
+- [x] Route simple queries → Groq Llama (FREE)
+- [x] Route medium queries → Grok 3 Fast (cheap, most up-to-date)
+- [x] Route complex reasoning → DeepSeek R1 (FREE via OpenRouter)
+- [x] Show user which model was selected and why

@@ -45,6 +45,7 @@ import {
 } from "./db";
 import { invokeLLM } from "./_core/llm";
 import { invokeGrok, isGrokAvailable } from "./_core/grok";
+import { invokeDeepSeekR1, isComplexReasoningQuery } from "./_core/openrouter";
 import { generateImage } from "./_core/imageGeneration";
 import { transcribeAudio } from "./_core/voiceTranscription";
 import { callDataApi } from "./_core/dataApi";
@@ -408,7 +409,16 @@ export const appRouter = router({
           // Call appropriate LLM based on selected model provider
           let response;
           
-          if (selectedModel.provider === "grok" && isGrokAvailable()) {
+          if (selectedModel.provider === "openrouter" && selectedModel.id === "deepseek-r1-free") {
+            // Use DeepSeek R1 via OpenRouter (FREE for complex reasoning)
+            response = await invokeDeepSeekR1({
+              messages: messagesWithSearch.map(m => ({
+                role: m.role as "system" | "user" | "assistant",
+                content: m.content,
+              })),
+              temperature: input.temperature,
+            });
+          } else if (selectedModel.provider === "grok" && isGrokAvailable()) {
             // Use Grok API for xAI models
             response = await invokeGrok({
               messages: messagesWithSearch.map(m => ({

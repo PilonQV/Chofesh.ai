@@ -16,16 +16,31 @@ export interface ModelDefinition {
   id: string;
   name: string;
   description: string;
-  provider: "platform" | "groq" | "openai" | "anthropic" | "grok";
+  provider: "platform" | "groq" | "openai" | "anthropic" | "grok" | "openrouter";
   tier: "free" | "standard" | "premium";
   costPer1kInput: number;
   costPer1kOutput: number;
   maxTokens: number;
   supportsVision: boolean;
   speed: "fast" | "medium" | "slow";
+  isReasoningModel?: boolean; // For complex reasoning tasks
 }
 
 export const AVAILABLE_MODELS: ModelDefinition[] = [
+  // DeepSeek R1 Free - Best for complex reasoning (FREE via OpenRouter)
+  {
+    id: "deepseek-r1-free",
+    name: "DeepSeek R1 (Free)",
+    description: "Best for complex reasoning, math, code - FREE",
+    provider: "openrouter",
+    tier: "free",
+    costPer1kInput: 0,
+    costPer1kOutput: 0,
+    maxTokens: 64000,
+    supportsVision: false,
+    speed: "slow",
+    isReasoningModel: true,
+  },
   // Grok - xAI (Most up-to-date, Aug 2025 training)
   {
     id: "grok-3-fast",
@@ -193,29 +208,32 @@ export function selectModel(
     if (model) return model;
   }
   
-  // Free mode - only use Groq models
+  // Free mode - only use free models (Groq + DeepSeek R1)
   if (mode === "free") {
     switch (complexity) {
       case "simple":
+        // Simple queries → Llama 3.1 8B (fast, free)
         return AVAILABLE_MODELS.find(m => m.id === "llama-3.1-8b")!;
       case "medium":
+        // Medium queries → Mixtral (good balance, free)
         return AVAILABLE_MODELS.find(m => m.id === "mixtral-8x7b")!;
       case "complex":
-        return AVAILABLE_MODELS.find(m => m.id === "llama-3.1-70b")!;
+        // Complex reasoning → DeepSeek R1 (best for reasoning, free)
+        return AVAILABLE_MODELS.find(m => m.id === "deepseek-r1-free")!;
     }
   }
   
-  // Auto mode - smart routing based on complexity
+  // Auto mode - smart routing prioritizing free tiers when appropriate
   switch (complexity) {
     case "simple":
-      // Use cheapest model for simple queries
-      return AVAILABLE_MODELS.find(m => m.id === "gpt-4o-mini")!;
+      // Simple queries → Llama 3.1 8B (FREE, fast)
+      return AVAILABLE_MODELS.find(m => m.id === "llama-3.1-8b")!;
     case "medium":
-      // Use balanced model
-      return AVAILABLE_MODELS.find(m => m.id === "gpt-4o-mini")!;
+      // Medium queries → Grok 3 Fast (cheap, most up-to-date)
+      return AVAILABLE_MODELS.find(m => m.id === "grok-3-fast")!;
     case "complex":
-      // Use most capable model
-      return AVAILABLE_MODELS.find(m => m.id === "gpt-4o")!;
+      // Complex reasoning → DeepSeek R1 (FREE, best for reasoning)
+      return AVAILABLE_MODELS.find(m => m.id === "deepseek-r1-free")!;
   }
 }
 
