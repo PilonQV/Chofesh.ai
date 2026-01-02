@@ -112,14 +112,32 @@ export default function Documents() {
 
     setUploading(true);
     try {
-      // Read file content
-      const textContent = await file.text();
+      const isPdf = file.type === 'application/pdf' || file.name.endsWith('.pdf');
       
-      await uploadMutation.mutateAsync({
-        filename: file.name,
-        mimeType: file.type || "text/plain",
-        content: textContent,
-      });
+      if (isPdf) {
+        // For PDFs, read as base64
+        const arrayBuffer = await file.arrayBuffer();
+        const base64Content = btoa(
+          new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
+        );
+        
+        await uploadMutation.mutateAsync({
+          filename: file.name,
+          mimeType: 'application/pdf',
+          content: base64Content,
+          isBase64: true,
+        });
+        toast.success("PDF uploaded! The AI will analyze it directly when you ask questions.");
+      } else {
+        // For text files, read as text
+        const textContent = await file.text();
+        
+        await uploadMutation.mutateAsync({
+          filename: file.name,
+          mimeType: file.type || "text/plain",
+          content: textContent,
+        });
+      }
     } catch (error) {
       console.error("Upload error:", error);
     } finally {
@@ -211,7 +229,7 @@ export default function Documents() {
               )}
             </Button>
             <p className="text-xs text-muted-foreground mt-2 text-center">
-              Supports .txt, .md files (max 5MB)
+              Supports .txt, .md, .pdf files (max 5MB)
             </p>
           </div>
 

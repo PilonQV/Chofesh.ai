@@ -213,3 +213,33 @@
 - [x] Generate logo variations
 - [x] Integrate logo into platform header
 - [x] Update favicon
+
+
+---
+
+## Phase 8: Manus API Expansion
+
+### PDF Document Chat
+- [x] Update document upload to accept PDF files
+- [x] Use LLM API file_url for PDF analysis
+- [x] Update Documents page UI for PDF support
+
+### Real Web Search
+- [x] Implement Data API integration for web search
+- [x] Replace placeholder Web Search toggle with real functionality
+- [x] Display search results in chat context
+
+### Server-side Voice Transcription
+- [x] Create voice transcription tRPC procedure
+- [x] Add audio file upload endpoint
+- [x] Integrate Whisper API for transcription
+
+### Owner Notifications
+- [x] Add notification on new user registration
+- [x] Add notification on usage milestones
+- [x] Add notification on critical errors
+
+### Image Editing
+- [x] Add image editing UI with edit mode
+- [x] Implement edit prompt interface
+- [x] Use originalImages parameter for image-to-image
