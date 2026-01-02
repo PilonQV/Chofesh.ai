@@ -333,7 +333,7 @@ export default function Home() {
             Save 20% with annual billing
           </p>
           
-          <div className="grid md:grid-cols-4 gap-6 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-5 gap-5 max-w-7xl mx-auto">
             <PricingCard
               title="Free"
               price="$0"
@@ -388,6 +388,19 @@ export default function Home() {
                 "Priority support",
               ]}
               buttonText="Subscribe"
+              buttonVariant="outline"
+            />
+            <PricingCard
+              title="BYOK"
+              price="$0"
+              description="Use your own API keys"
+              features={[
+                "Unlimited everything",
+                "Your OpenAI/Anthropic keys",
+                "Pay only API costs",
+                "Full model access",
+              ]}
+              buttonText="Get Started"
               buttonVariant="outline"
             />
           </div>
