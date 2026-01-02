@@ -1,8 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { ArrowLeft, Sparkles, FileText } from "lucide-react";
+import { ArrowLeft, FileText } from "lucide-react";
+import { useEffect } from "react";
 
 export default function Terms() {
+  // Scroll to top when page loads
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}

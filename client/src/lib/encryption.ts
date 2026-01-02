@@ -3,7 +3,7 @@
  * Uses Web Crypto API for secure AES-GCM encryption.
  */
 
-const ENCRYPTION_KEY_NAME = "libre-ai-encryption-key";
+const ENCRYPTION_KEY_NAME = "chofesh-ai-encryption-key";
 
 // Generate a random encryption key
 async function generateKey(): Promise<CryptoKey> {
@@ -103,7 +103,7 @@ export interface Conversation {
   updatedAt: number;
 }
 
-const CONVERSATIONS_KEY = "libre-ai-conversations";
+const CONVERSATIONS_KEY = "chofesh-ai-conversations";
 
 export async function saveConversations(conversations: Conversation[]): Promise<void> {
   const encrypted = await encrypt(JSON.stringify(conversations));

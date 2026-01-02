@@ -9,6 +9,7 @@
  */
 
 import { ENV } from "./_core/env";
+import crypto from "crypto";
 
 // Model definitions with tiers and costs
 export interface ModelDefinition {
@@ -229,7 +230,7 @@ const CACHE_TTL = 1000 * 60 * 60; // 1 hour
 
 export function getCacheKey(messages: { role: string; content: string }[], model: string): string {
   const content = JSON.stringify(messages) + model;
-  return require("crypto").createHash("sha256").update(content).digest("hex");
+  return crypto.createHash("sha256").update(content).digest("hex");
 }
 
 export function getCachedResponse(cacheKey: string): { response: string; model: string } | null {
