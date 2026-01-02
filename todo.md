@@ -171,3 +171,16 @@
 ### Additional Models
 - [ ] DeepSeek R1 integration (reasoning) - future
 - [x] More Groq models (Mixtral, Llama)
+
+
+---
+
+## Phase 5: Rebranding to Chofesh.ai
+
+- [x] Update site title and logo text
+- [x] Update landing page branding
+- [x] Update navigation references
+- [x] Update Privacy Policy references
+- [x] Update Terms of Service references
+- [x] Update all UI copy mentioning LibreAI
+- [x] Update package.json name

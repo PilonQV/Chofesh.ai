@@ -79,7 +79,7 @@ export default function SharedChat() {
       const key = await crypto.subtle.deriveKey(
         {
           name: "PBKDF2",
-          salt: encoder.encode("libreai-share-salt"),
+          salt: encoder.encode("chofesh-share-salt"),
           iterations: 100000,
           hash: "SHA-256",
         },
@@ -136,7 +136,7 @@ export default function SharedChat() {
             <Link href="/">
               <Button>
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Go to LibreAI
+                Go to Chofesh
               </Button>
             </Link>
           </CardContent>
@@ -155,7 +155,7 @@ export default function SharedChat() {
               <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-primary-foreground" />
               </div>
-              <span className="text-lg font-bold gradient-text">LibreAI</span>
+              <span className="text-lg font-bold gradient-text">Chofesh</span>
             </div>
           </Link>
           <span className="text-muted-foreground">|</span>
@@ -275,7 +275,7 @@ export default function SharedChat() {
           <p>
             This conversation was shared via{" "}
             <Link href="/" className="text-primary hover:underline">
-              LibreAI
+              Chofesh
             </Link>
             . Create your own private AI conversations.
           </p>
