@@ -374,3 +374,16 @@
 ## Phase 15: Add BYOK Option Back
 
 - [x] Add BYOK pricing card to Home page pricing section
+
+
+---
+
+## Phase 16: Vercel Deployment with Custom Domain
+
+- [ ] Install and configure Vercel CLI
+- [ ] Authenticate with Vercel
+- [ ] Configure project for Vercel deployment
+- [ ] Deploy to Vercel
+- [ ] Add custom domain chofesh.ai
+- [ ] Update Cloudflare DNS records
+- [ ] Verify deployment is live
