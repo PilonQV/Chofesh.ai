@@ -1,9 +1,11 @@
 import "dotenv/config";
 import express from "express";
+import cookieParser from "cookie-parser";
 import { createServer } from "http";
 import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
+import { registerGoogleOAuthRoutes } from "./googleOAuth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
@@ -39,11 +41,16 @@ async function startServer() {
   // Stripe checkout and portal routes
   app.use("/api/stripe", stripeRoutes);
   
+  // Cookie parser for OAuth state verification
+  app.use(cookieParser());
+  
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
-  // OAuth callback under /api/oauth/callback
+  // OAuth callback under /api/oauth/callback (legacy Manus OAuth)
   registerOAuthRoutes(app);
+  // Google OAuth routes
+  registerGoogleOAuthRoutes(app);
   // tRPC API
   app.use(
     "/api/trpc",
