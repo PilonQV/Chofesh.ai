@@ -358,3 +358,12 @@
 - [x] Clarify what FLUX can and cannot generate (in feature description)
 - [x] Update image generation UI messaging
 - [ ] Add helpful prompting tips (future enhancement)
+
+
+---
+
+## Phase 14: xAI/Grok Integration
+
+- [x] Add xAI API key to project secrets (X_ai_key)
+- [x] Verify Grok 3 Fast integration works (8 tests passing)
+- [x] Test Smart Router with Grok model
