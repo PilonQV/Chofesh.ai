@@ -526,7 +526,7 @@ export default function Home() {
               </p>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Product</h4>
+              <h3 className="font-semibold mb-4 text-base">Product</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link href="/chat" className="hover:text-foreground transition-colors">Chat</Link></li>
                 <li><Link href="/image" className="hover:text-foreground transition-colors">Image Generation</Link></li>
@@ -534,14 +534,14 @@ export default function Home() {
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Legal</h4>
+              <h3 className="font-semibold mb-4 text-base">Legal</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link></li>
                 <li><Link href="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Support</h4>
+              <h3 className="font-semibold mb-4 text-base">Support</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><a href="/#features" className="hover:text-foreground transition-colors">How It Works</a></li>
                 <li><a href="mailto:support@chofesh.ai" className="hover:text-foreground transition-colors">Contact</a></li>
@@ -636,7 +636,7 @@ function PrivacyItem({
         {icon}
       </div>
       <div>
-        <h4 className="font-medium">{title}</h4>
+        <p className="font-medium">{title}</p>
         <p className="text-sm text-muted-foreground">{text}</p>
       </div>
     </div>

@@ -202,7 +202,7 @@ export function AIChatBox({
           <div className="flex h-full flex-col p-4">
             <div className="flex flex-1 flex-col items-center justify-center gap-6 text-muted-foreground">
               <div className="flex flex-col items-center gap-3">
-                <img src="/chofesh-logo.png" alt="" className="size-12 opacity-20" />
+                <img src="/chofesh-logo.png" alt="Chofesh AI Logo" className="size-12 opacity-20" />
                 <p className="text-sm">{emptyStateMessage}</p>
               </div>
 
@@ -248,7 +248,7 @@ export function AIChatBox({
                   >
                     {message.role === "assistant" && (
                       <div className="size-8 shrink-0 mt-1 rounded-full bg-primary/10 flex items-center justify-center">
-                        <img src="/chofesh-logo.png" alt="" className="size-5" />
+                        <img src="/chofesh-logo.png" alt="Chofesh AI" className="size-5" />
                       </div>
                     )}
 
@@ -290,10 +290,10 @@ export function AIChatBox({
                   }
                 >
                   <div className="size-8 shrink-0 mt-1 rounded-full bg-primary/10 flex items-center justify-center">
-                    <img src="/chofesh-logo.png" alt="" className="size-5" />
+                    <img src="/chofesh-logo.png" alt="Chofesh AI" className="size-5" />
                   </div>
                   <div className="rounded-lg bg-muted px-4 py-2.5">
-                    <img src="/chofesh-logo.png" alt="" className="size-4 animate-pulse" />
+                    <img src="/chofesh-logo.png" alt="AI thinking" className="size-4 animate-pulse" />
                   </div>
                 </div>
               )}
