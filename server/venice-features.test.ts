@@ -39,6 +39,13 @@ vi.mock("./db", () => ({
   incrementShareLinkViews: vi.fn().mockResolvedValue(undefined),
   deactivateSharedLink: vi.fn().mockResolvedValue(undefined),
   deleteSharedLink: vi.fn().mockResolvedValue(undefined),
+  // Generated images functions
+  createGeneratedImage: vi.fn().mockResolvedValue(1),
+  getUserGeneratedImages: vi.fn().mockResolvedValue([]),
+  getAllGeneratedImages: vi.fn().mockResolvedValue({ images: [], total: 0 }),
+  getGeneratedImageStats: vi.fn().mockResolvedValue({ total: 0, last24h: 0, last7d: 0, byModel: {} }),
+  getGeneratedImageById: vi.fn().mockResolvedValue(null),
+  deleteGeneratedImage: vi.fn().mockResolvedValue(undefined),
 }));
 
 // Mock LLM

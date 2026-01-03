@@ -237,12 +237,25 @@ export default function Chat() {
     }
   }, [authLoading, isAuthenticated, setLocation]);
 
-  // Auto-scroll to bottom when messages change
+  // Auto-scroll to bottom when messages change or when generating
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [currentConversation?.messages]);
+    const scrollToBottom = () => {
+      if (scrollRef.current) {
+        // ScrollArea uses a viewport element inside, need to scroll that
+        const viewport = scrollRef.current.querySelector('[data-slot="scroll-area-viewport"]');
+        if (viewport) {
+          viewport.scrollTo({
+            top: viewport.scrollHeight,
+            behavior: 'smooth'
+          });
+        }
+      }
+    };
+    
+    // Small delay to ensure DOM has updated
+    const timeoutId = setTimeout(scrollToBottom, 50);
+    return () => clearTimeout(timeoutId);
+  }, [currentConversation?.messages, isGenerating]);
 
   // Focus input on load
   useEffect(() => {

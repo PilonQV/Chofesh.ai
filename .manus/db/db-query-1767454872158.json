@@ -1,0 +1,18 @@
+{
+  "query": "SELECT id, email, name, subscriptionTier, stripeCustomerId, stripeSubscriptionId FROM users WHERE email = 'serever2003@yahoo.com';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host ***REMOVED*** --port 4000 --user ***REMOVED*** --database ***REMOVED*** --execute SELECT id, email, name, subscriptionTier, stripeCustomerId, stripeSubscriptionId FROM users WHERE email = 'serever2003@yahoo.com';",
+  "rows": [
+    {
+      "id": "90001",
+      "email": "serever2003@yahoo.com",
+      "name": "serever2003",
+      "subscriptionTier": "starter",
+      "stripeCustomerId": "cus_TiyoqSf76nnONN",
+      "stripeSubscriptionId": "sub_1SlWqwJwTXD2kMMf7tUrFrvw"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\temail\tname\tsubscriptionTier\tstripeCustomerId\tstripeSubscriptionId\n90001\tserever2003@yahoo.com\tserever2003\tstarter\tcus_TiyoqSf76nnONN\tsub_1SlWqwJwTXD2kMMf7tUrFrvw\n",
+  "stderr": "",
+  "execution_time_ms": 53
+}

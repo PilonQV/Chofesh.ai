@@ -780,3 +780,55 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Fix header getting hidden after scroll on mobile
 - [x] Ensure proper scroll behavior on mobile chat page
 - [x] Add safe area insets for iOS devices
+
+
+## Phase 41: Chat Scroll & Admin Enhancements
+
+- [ ] Fix chat auto-scroll issue when messages are added
+- [ ] Enhance admin user management with detailed user view (click to expand)
+- [ ] Show user's generated images in admin panel
+- [ ] Add user activity details (chat history, image generations, usage stats)
+
+
+---
+
+## Phase 18: Admin Dashboard Enhancements & Chat Auto-Scroll Fix
+
+### Chat Auto-Scrolling Fix
+- [x] Fix auto-scroll when new messages are added
+- [x] Fix auto-scroll during AI response streaming
+- [x] Add isGenerating to scroll dependency array
+
+### Generated Images Database
+- [x] Create generated_images table in schema
+- [x] Add columns: userId, imageUrl, prompt, model, status, metadata
+- [x] Add isEdit and originalImageUrl columns for edit tracking
+- [x] Create db helper functions for CRUD operations
+- [x] Push database schema changes
+
+### Image Generation Tracking
+- [x] Update image.generate mutation to save images to database
+- [x] Update imageEdit.edit mutation to save edited images
+- [x] Track failed generation attempts with status="failed"
+- [x] Store generation metadata (duration, parameters)
+
+### Admin Dashboard - Images Tab
+- [x] Create new Images tab in admin dashboard
+- [x] Display image grid with thumbnails
+- [x] Show image stats (total, last 24h, last 7d, by model)
+- [x] Add status filter (completed/failed)
+- [x] Add image preview modal
+- [x] Add delete image functionality
+- [x] Show prompt, user, and timestamp on hover
+
+### Admin Dashboard - Enhanced User Management
+- [x] Add "View" button to see user details
+- [x] Create user details dialog with activity info
+- [x] Show user's generated images in dialog
+- [x] Show user's recent activity in dialog
+- [x] Add user details API endpoint
+
+### Testing
+- [x] Update test mocks for generated images functions
+- [x] All 204 tests passing
+

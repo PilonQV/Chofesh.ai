@@ -63,6 +63,13 @@ vi.mock("./db", () => ({
   deleteArtifact: vi.fn().mockResolvedValue(undefined),
   createArtifactVersion: vi.fn().mockResolvedValue(1),
   getArtifactVersionHistory: vi.fn().mockResolvedValue([]),
+  // Generated images functions
+  createGeneratedImage: vi.fn().mockResolvedValue(1),
+  getUserGeneratedImages: vi.fn().mockResolvedValue([]),
+  getAllGeneratedImages: vi.fn().mockResolvedValue({ images: [], total: 0 }),
+  getGeneratedImageStats: vi.fn().mockResolvedValue({ total: 0, last24h: 0, last7d: 0, byModel: {} }),
+  getGeneratedImageById: vi.fn().mockResolvedValue(null),
+  deleteGeneratedImage: vi.fn().mockResolvedValue(undefined),
 }));
 
 // Mock LLM and image generation

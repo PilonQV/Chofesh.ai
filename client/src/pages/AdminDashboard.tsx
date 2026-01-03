@@ -17,12 +17,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { trpc } from "@/lib/trpc";
 import { Link, useLocation } from "wouter";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import {
   ArrowLeft,
   Users,
@@ -45,13 +53,13 @@ import {
   Star,
   Crown,
   Infinity,
-  Key,
   BarChart3,
   UserPlus,
-  UserCheck,
-  Timer,
-  Pause,
-  Play,
+  Eye,
+  Trash2,
+  ExternalLink,
+  ImageIcon,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -177,11 +185,16 @@ export default function AdminDashboard() {
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
   const [page, setPage] = useState(0);
+  const [imagePage, setImagePage] = useState(0);
   const [actionFilter, setActionFilter] = useState<string>("all");
-  const [autoRefreshInterval, setAutoRefreshInterval] = useState(30000); // Default 30s
+  const [imageStatusFilter, setImageStatusFilter] = useState<string>("all");
+  const [autoRefreshInterval, setAutoRefreshInterval] = useState(30000);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [countdown, setCountdown] = useState(30);
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const pageSize = 20;
+  const imagePageSize = 24;
 
   // Queries
   const { data: stats, isLoading: statsLoading, refetch: refetchStats } = trpc.admin.auditStats.useQuery();
@@ -192,6 +205,20 @@ export default function AdminDashboard() {
     actionType: actionFilter === "all" ? undefined : actionFilter,
   });
   const { data: users, isLoading: usersLoading, refetch: refetchUsers } = trpc.admin.users.useQuery();
+  
+  // Generated images queries
+  const { data: imagesData, isLoading: imagesLoading, refetch: refetchImages } = trpc.admin.generatedImages.useQuery({
+    limit: imagePageSize,
+    offset: imagePage * imagePageSize,
+    status: imageStatusFilter === "all" ? undefined : imageStatusFilter as "completed" | "failed",
+  });
+  const { data: imageStats, isLoading: imageStatsLoading } = trpc.admin.generatedImageStats.useQuery();
+  
+  // User details query
+  const { data: userDetails, isLoading: userDetailsLoading } = trpc.admin.userDetails.useQuery(
+    { userId: selectedUserId! },
+    { enabled: !!selectedUserId }
+  );
 
   const updateRoleMutation = trpc.admin.updateUserRole.useMutation({
     onSuccess: () => {
@@ -200,6 +227,16 @@ export default function AdminDashboard() {
     },
     onError: () => {
       toast.error("Failed to update user role");
+    },
+  });
+
+  const deleteImageMutation = trpc.admin.deleteGeneratedImage.useMutation({
+    onSuccess: () => {
+      toast.success("Image deleted");
+      refetchImages();
+    },
+    onError: () => {
+      toast.error("Failed to delete image");
     },
   });
 
@@ -217,10 +254,8 @@ export default function AdminDashboard() {
       return;
     }
 
-    // Set initial countdown
     setCountdown(autoRefreshInterval / 1000);
 
-    // Countdown timer
     const countdownTimer = setInterval(() => {
       setCountdown(prev => {
         if (prev <= 1) {
@@ -230,12 +265,12 @@ export default function AdminDashboard() {
       });
     }, 1000);
 
-    // Refresh timer
     const refreshTimer = setInterval(() => {
       refetchStats();
       refetchDashboard();
       refetchLogs();
       refetchUsers();
+      refetchImages();
       setLastRefresh(new Date());
     }, autoRefreshInterval);
 
@@ -243,13 +278,14 @@ export default function AdminDashboard() {
       clearInterval(countdownTimer);
       clearInterval(refreshTimer);
     };
-  }, [autoRefreshInterval, refetchStats, refetchDashboard, refetchLogs, refetchUsers]);
+  }, [autoRefreshInterval, refetchStats, refetchDashboard, refetchLogs, refetchUsers, refetchImages]);
 
   const handleRefresh = () => {
     refetchStats();
     refetchDashboard();
     refetchLogs();
     refetchUsers();
+    refetchImages();
     setLastRefresh(new Date());
     setCountdown(autoRefreshInterval / 1000);
     toast.success("Data refreshed");
@@ -257,6 +293,12 @@ export default function AdminDashboard() {
 
   const handleRoleChange = (userId: number, newRole: "user" | "admin") => {
     updateRoleMutation.mutate({ userId, role: newRole });
+  };
+
+  const handleDeleteImage = (imageId: number) => {
+    if (confirm("Are you sure you want to delete this image?")) {
+      deleteImageMutation.mutate({ imageId });
+    }
   };
 
   if (authLoading) {
@@ -295,34 +337,33 @@ export default function AdminDashboard() {
   }
 
   const totalPages = Math.ceil((logsData?.total || 0) / pageSize);
+  const totalImagePages = Math.ceil((imagesData?.total || 0) / imagePageSize);
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 glass border-b border-border">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+      <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex items-center justify-between h-14 px-4">
           <div className="flex items-center gap-4">
             <Link href="/">
               <Button variant="ghost" size="icon">
-                <ArrowLeft className="w-5 h-5" />
+                <ArrowLeft className="w-4 h-4" />
               </Button>
             </Link>
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                <Shield className="w-5 h-5 text-primary-foreground" />
-              </div>
-              <span className="text-lg font-bold">Admin Dashboard</span>
+              <Shield className="w-5 h-5 text-primary" />
+              <h1 className="font-semibold">Admin Dashboard</h1>
             </div>
           </div>
           <div className="flex items-center gap-2">
             {/* Auto-refresh controls */}
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50 border border-border">
-              <Timer className="w-4 h-4 text-muted-foreground" />
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span>Auto-refresh:</span>
               <Select 
                 value={autoRefreshInterval.toString()} 
-                onValueChange={(v) => setAutoRefreshInterval(parseInt(v))}
+                onValueChange={(v) => setAutoRefreshInterval(Number(v))}
               >
-                <SelectTrigger className="w-20 h-7 border-0 bg-transparent p-0 text-sm">
+                <SelectTrigger className="w-20 h-8">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -334,9 +375,7 @@ export default function AdminDashboard() {
                 </SelectContent>
               </Select>
               {autoRefreshInterval > 0 && (
-                <span className="text-xs text-muted-foreground min-w-[24px]">
-                  {countdown}s
-                </span>
+                <span className="text-xs tabular-nums">{countdown}s</span>
               )}
             </div>
             <Button variant="outline" size="sm" onClick={handleRefresh}>
@@ -359,58 +398,41 @@ export default function AdminDashboard() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
-        {/* Revenue & Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <main className="container py-6 px-4">
+        {/* Stats Overview */}
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
           <StatsCard
-            title="Monthly Revenue (MRR)"
-            value={`$${dashboardStats?.revenue.mrr.toFixed(2) || '0.00'}`}
+            title="MRR"
+            value={`$${dashboardStats?.revenue.mrr || 0}`}
             icon={<DollarSign className="w-5 h-5" />}
             loading={dashboardLoading}
-            subtitle={`ARR: $${dashboardStats?.revenue.projectedArr.toFixed(2) || '0.00'}`}
-            className="border-green-500/20"
+            subtitle={`ARR: $${dashboardStats?.revenue.projectedArr || 0}`}
           />
           <StatsCard
-            title="Paid Subscribers"
-            value={dashboardStats?.revenue.paidUsers || 0}
+            title="Conversion"
+            value={`${dashboardStats?.revenue.conversionRate || 0}%`}
             icon={<CreditCard className="w-5 h-5" />}
             loading={dashboardLoading}
-            subtitle={`${dashboardStats?.revenue.conversionRate || 0}% conversion`}
+            subtitle={`${dashboardStats?.revenue.paidUsers || 0} paid users`}
           />
           <StatsCard
             title="Total Users"
             value={dashboardStats?.users.total || 0}
             icon={<Users className="w-5 h-5" />}
             loading={dashboardLoading}
-            subtitle={`+${dashboardStats?.users.newLast7Days || 0} this week`}
           />
-          <StatsCard
-            title="Active Users (7d)"
-            value={dashboardStats?.users.activeLast7Days || 0}
-            icon={<UserCheck className="w-5 h-5" />}
-            loading={dashboardLoading}
-          />
-        </div>
-
-        {/* Second Row - Usage & Activity */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatsCard
             title="Queries Today"
             value={dashboardStats?.usage.queriesToday || 0}
-            icon={<MessageSquare className="w-5 h-5" />}
+            icon={<Activity className="w-5 h-5" />}
             loading={dashboardLoading}
           />
           <StatsCard
-            title="Total Events"
-            value={stats?.total || 0}
-            icon={<Activity className="w-5 h-5" />}
-            loading={statsLoading}
-          />
-          <StatsCard
-            title="Events (24h)"
-            value={stats?.last24h || 0}
-            icon={<Activity className="w-5 h-5" />}
-            loading={statsLoading}
+            title="Images Generated"
+            value={imageStats?.total || 0}
+            icon={<ImageIcon className="w-5 h-5" />}
+            loading={imageStatsLoading}
+            subtitle={`${imageStats?.last24h || 0} in 24h`}
           />
           <StatsCard
             title="New Users Today"
@@ -519,6 +541,10 @@ export default function AdminDashboard() {
               <Users className="w-4 h-4" />
               Users ({users?.length || 0})
             </TabsTrigger>
+            <TabsTrigger value="images" className="gap-2">
+              <ImageIcon className="w-4 h-4" />
+              Images ({imagesData?.total || 0})
+            </TabsTrigger>
           </TabsList>
 
           {/* Audit Logs Tab */}
@@ -558,37 +584,41 @@ export default function AdminDashboard() {
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>Time</TableHead>
                             <TableHead>Type</TableHead>
                             <TableHead>User</TableHead>
-                            <TableHead>IP Address</TableHead>
                             <TableHead>Model</TableHead>
+                            <TableHead>IP Address</TableHead>
                             <TableHead>Content Hash</TableHead>
+                            <TableHead>Timestamp</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {logsData?.logs.map((log) => (
                             <TableRow key={log.id}>
-                              <TableCell className="whitespace-nowrap">
-                                {new Date(log.timestamp).toLocaleString()}
-                              </TableCell>
                               <TableCell>
-                                <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium ${ACTION_COLORS[log.actionType] || ""}`}>
+                                <div className={`inline-flex items-center gap-2 px-2 py-1 rounded ${ACTION_COLORS[log.actionType]}`}>
                                   {ACTION_ICONS[log.actionType]}
-                                  <span className="capitalize">{log.actionType.replace("_", " ")}</span>
+                                  <span className="capitalize text-sm">
+                                    {log.actionType.replace("_", " ")}
+                                  </span>
                                 </div>
                               </TableCell>
-                              <TableCell className="font-mono text-xs">
-                                {log.userOpenId?.slice(0, 8) || "Anonymous"}
+                              <TableCell>
+                                <div className="text-sm font-mono">
+                                  {log.userOpenId?.slice(0, 8)}...
+                                </div>
                               </TableCell>
-                              <TableCell className="font-mono text-xs">
-                                {log.ipAddress}
-                              </TableCell>
-                              <TableCell className="text-xs">
+                              <TableCell className="text-sm">
                                 {log.modelUsed || "-"}
                               </TableCell>
-                              <TableCell className="font-mono text-xs">
-                                {log.contentHash?.slice(0, 12) || "-"}...
+                              <TableCell className="text-sm font-mono">
+                                {log.ipAddress}
+                              </TableCell>
+                              <TableCell className="text-sm font-mono">
+                                {log.contentHash?.slice(0, 12)}...
+                              </TableCell>
+                              <TableCell className="text-sm text-muted-foreground">
+                                {new Date(log.timestamp).toLocaleString()}
                               </TableCell>
                             </TableRow>
                           ))}
@@ -635,7 +665,7 @@ export default function AdminDashboard() {
               <CardHeader>
                 <CardTitle>User Management</CardTitle>
                 <CardDescription>
-                  View and manage all registered users
+                  View and manage all registered users. Click on a user to see their activity details.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -655,7 +685,7 @@ export default function AdminDashboard() {
                           <TableHead>Status</TableHead>
                           <TableHead>Role</TableHead>
                           <TableHead>Joined</TableHead>
-                          <TableHead>Last Active</TableHead>
+                          <TableHead>Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -704,10 +734,125 @@ export default function AdminDashboard() {
                             <TableCell className="text-sm text-muted-foreground">
                               {new Date(u.createdAt).toLocaleDateString()}
                             </TableCell>
-                            <TableCell className="text-sm text-muted-foreground">
-                              {u.lastSignedIn 
-                                ? new Date(u.lastSignedIn).toLocaleDateString()
-                                : "-"}
+                            <TableCell>
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm"
+                                    onClick={() => setSelectedUserId(u.id)}
+                                  >
+                                    <Eye className="w-4 h-4 mr-1" />
+                                    View
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                                  <DialogHeader>
+                                    <DialogTitle>User Details: {u.name || "Anonymous"}</DialogTitle>
+                                    <DialogDescription>
+                                      View detailed activity and generated images for this user
+                                    </DialogDescription>
+                                  </DialogHeader>
+                                  
+                                  {userDetailsLoading ? (
+                                    <div className="flex items-center justify-center py-8">
+                                      <Loader2 className="w-6 h-6 animate-spin" />
+                                    </div>
+                                  ) : userDetails ? (
+                                    <div className="space-y-6">
+                                      {/* User Info */}
+                                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                        <div className="p-3 rounded-lg bg-muted">
+                                          <p className="text-xs text-muted-foreground">Email</p>
+                                          <p className="font-medium">{userDetails.user?.email || "-"}</p>
+                                        </div>
+                                        <div className="p-3 rounded-lg bg-muted">
+                                          <p className="text-xs text-muted-foreground">Subscription</p>
+                                          <p className="font-medium capitalize">{userDetails.user?.subscriptionTier || "free"}</p>
+                                        </div>
+                                        <div className="p-3 rounded-lg bg-muted">
+                                          <p className="text-xs text-muted-foreground">Daily Queries</p>
+                                          <p className="font-medium">{userDetails.user?.dailyQueries || 0}</p>
+                                        </div>
+                                        <div className="p-3 rounded-lg bg-muted">
+                                          <p className="text-xs text-muted-foreground">Last Active</p>
+                                          <p className="font-medium">
+                                            {userDetails.user?.lastSignedIn 
+                                              ? new Date(userDetails.user.lastSignedIn).toLocaleDateString() 
+                                              : "-"}
+                                          </p>
+                                        </div>
+                                      </div>
+
+                                      {/* Generated Images */}
+                                      <div>
+                                        <h4 className="font-semibold mb-3 flex items-center gap-2">
+                                          <ImageIcon className="w-4 h-4" />
+                                          Generated Images ({userDetails.images?.length || 0})
+                                        </h4>
+                                        {userDetails.images && userDetails.images.length > 0 ? (
+                                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                            {userDetails.images.map((img) => (
+                                              <div key={img.id} className="group relative">
+                                                {img.imageUrl ? (
+                                                  <img 
+                                                    src={img.imageUrl} 
+                                                    alt={img.prompt.slice(0, 50)}
+                                                    className="w-full aspect-square object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                                                    onClick={() => setSelectedImage(img.imageUrl)}
+                                                  />
+                                                ) : (
+                                                  <div className="w-full aspect-square bg-muted rounded-lg flex items-center justify-center">
+                                                    <X className="w-8 h-8 text-muted-foreground" />
+                                                  </div>
+                                                )}
+                                                <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent rounded-b-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                                                  <p className="text-xs text-white truncate">{img.prompt}</p>
+                                                  <p className="text-xs text-white/60">
+                                                    {new Date(img.createdAt).toLocaleDateString()}
+                                                  </p>
+                                                </div>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        ) : (
+                                          <p className="text-muted-foreground text-sm">No images generated yet</p>
+                                        )}
+                                      </div>
+
+                                      {/* Recent Activity */}
+                                      <div>
+                                        <h4 className="font-semibold mb-3 flex items-center gap-2">
+                                          <Activity className="w-4 h-4" />
+                                          Recent Activity
+                                        </h4>
+                                        {userDetails.recentActivity && userDetails.recentActivity.length > 0 ? (
+                                          <div className="space-y-2">
+                                            {userDetails.recentActivity.slice(0, 10).map((activity) => (
+                                              <div key={activity.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
+                                                <div className="flex items-center gap-2">
+                                                  <div className={`p-1.5 rounded ${ACTION_COLORS[activity.actionType] || "bg-gray-500/10"}`}>
+                                                    {ACTION_ICONS[activity.actionType] || <Activity className="w-4 h-4" />}
+                                                  </div>
+                                                  <span className="text-sm capitalize">{activity.actionType.replace("_", " ")}</span>
+                                                  {activity.modelUsed && (
+                                                    <Badge variant="outline" className="text-xs">{activity.modelUsed}</Badge>
+                                                  )}
+                                                </div>
+                                                <span className="text-xs text-muted-foreground">
+                                                  {new Date(activity.timestamp).toLocaleString()}
+                                                </span>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        ) : (
+                                          <p className="text-muted-foreground text-sm">No recent activity</p>
+                                        )}
+                                      </div>
+                                    </div>
+                                  ) : null}
+                                </DialogContent>
+                              </Dialog>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -718,8 +863,189 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Images Tab */}
+          <TabsContent value="images">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Generated Images</CardTitle>
+                    <CardDescription>
+                      All AI-generated images with prompts and user information
+                    </CardDescription>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Select value={imageStatusFilter} onValueChange={setImageStatusFilter}>
+                      <SelectTrigger className="w-32">
+                        <SelectValue placeholder="Filter status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Status</SelectItem>
+                        <SelectItem value="completed">Completed</SelectItem>
+                        <SelectItem value="failed">Failed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {/* Image Stats */}
+                {imageStats && (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div className="p-3 rounded-lg bg-muted">
+                      <p className="text-xs text-muted-foreground">Total Images</p>
+                      <p className="text-xl font-bold">{imageStats.total}</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-muted">
+                      <p className="text-xs text-muted-foreground">Last 24 Hours</p>
+                      <p className="text-xl font-bold">{imageStats.last24h}</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-muted">
+                      <p className="text-xs text-muted-foreground">Last 7 Days</p>
+                      <p className="text-xl font-bold">{imageStats.last7d}</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-muted">
+                      <p className="text-xs text-muted-foreground">By Model</p>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {Object.entries(imageStats.byModel || {}).map(([model, count]) => (
+                          <Badge key={model} variant="secondary" className="text-xs">
+                            {model}: {count}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {imagesLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                  </div>
+                ) : (
+                  <>
+                    {/* Image Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                      {imagesData?.images.map((img) => (
+                        <div key={img.id} className="group relative">
+                          {img.imageUrl ? (
+                            <img 
+                              src={img.imageUrl} 
+                              alt={img.prompt.slice(0, 50)}
+                              className="w-full aspect-square object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                              onClick={() => setSelectedImage(img.imageUrl)}
+                            />
+                          ) : (
+                            <div className="w-full aspect-square bg-muted rounded-lg flex items-center justify-center">
+                              <X className="w-8 h-8 text-destructive" />
+                            </div>
+                          )}
+                          
+                          {/* Status Badge */}
+                          <Badge 
+                            variant={img.status === "completed" ? "default" : "destructive"} 
+                            className="absolute top-2 left-2 text-xs"
+                          >
+                            {img.status}
+                          </Badge>
+                          
+                          {/* Edit Badge */}
+                          {img.isEdit && (
+                            <Badge variant="secondary" className="absolute top-2 right-2 text-xs">
+                              Edit
+                            </Badge>
+                          )}
+                          
+                          {/* Hover Overlay */}
+                          <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent rounded-b-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                            <p className="text-xs text-white truncate">{img.prompt}</p>
+                            <p className="text-xs text-white/60">{img.userName || "Unknown"}</p>
+                            <p className="text-xs text-white/60">
+                              {new Date(img.createdAt).toLocaleDateString()}
+                            </p>
+                            <div className="flex gap-1 mt-1">
+                              {img.imageUrl && (
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="h-6 w-6 bg-white/20 hover:bg-white/30"
+                                  onClick={() => window.open(img.imageUrl, '_blank')}
+                                >
+                                  <ExternalLink className="w-3 h-3 text-white" />
+                                </Button>
+                              )}
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-6 w-6 bg-red-500/50 hover:bg-red-500/70"
+                                onClick={() => handleDeleteImage(img.id)}
+                              >
+                                <Trash2 className="w-3 h-3 text-white" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Pagination */}
+                    <div className="flex items-center justify-between mt-4">
+                      <p className="text-sm text-muted-foreground">
+                        Showing {imagePage * imagePageSize + 1} - {Math.min((imagePage + 1) * imagePageSize, imagesData?.total || 0)} of {imagesData?.total || 0}
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setImagePage(p => Math.max(0, p - 1))}
+                          disabled={imagePage === 0}
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                        </Button>
+                        <span className="text-sm">
+                          Page {imagePage + 1} of {totalImagePages || 1}
+                        </span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setImagePage(p => p + 1)}
+                          disabled={imagePage >= totalImagePages - 1}
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </main>
+
+      {/* Image Preview Modal */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div className="relative max-w-4xl max-h-[90vh]">
+            <img 
+              src={selectedImage} 
+              alt="Preview" 
+              className="max-w-full max-h-[90vh] object-contain rounded-lg"
+            />
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="absolute top-2 right-2 bg-black/50 hover:bg-black/70"
+              onClick={() => setSelectedImage(null)}
+            >
+              <X className="w-5 h-5 text-white" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

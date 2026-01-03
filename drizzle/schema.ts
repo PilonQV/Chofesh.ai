@@ -295,3 +295,29 @@ export const userDevices = mysqlTable("user_devices", {
 
 export type UserDevice = typeof userDevices.$inferSelect;
 export type InsertUserDevice = typeof userDevices.$inferInsert;
+
+
+/**
+ * Generated images table for tracking all AI-generated images.
+ * Stores image URLs, prompts, and metadata for admin review and user history.
+ */
+export const generatedImages = mysqlTable("generated_images", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  imageUrl: text("imageUrl").notNull(),
+  prompt: text("prompt").notNull(),
+  negativePrompt: text("negativePrompt"),
+  model: varchar("model", { length: 64 }).default("flux").notNull(),
+  aspectRatio: varchar("aspectRatio", { length: 20 }),
+  seed: varchar("seed", { length: 64 }),
+  steps: int("steps"),
+  cfgScale: varchar("cfgScale", { length: 10 }),
+  isEdit: boolean("isEdit").default(false).notNull(), // Whether this was an image edit
+  originalImageUrl: text("originalImageUrl"), // For edits, the source image
+  status: mysqlEnum("status", ["completed", "failed"]).default("completed").notNull(),
+  metadata: text("metadata"), // JSON string for additional data
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type GeneratedImage = typeof generatedImages.$inferSelect;
+export type InsertGeneratedImage = typeof generatedImages.$inferInsert;

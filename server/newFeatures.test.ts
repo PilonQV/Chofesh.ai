@@ -31,6 +31,13 @@ vi.mock("./db", () => ({
   createDocumentChunks: vi.fn().mockResolvedValue(undefined),
   getDocumentChunks: vi.fn().mockResolvedValue([]),
   searchDocumentChunks: vi.fn().mockResolvedValue([{ content: "test content" }]),
+  // Generated images functions
+  createGeneratedImage: vi.fn().mockResolvedValue(1),
+  getUserGeneratedImages: vi.fn().mockResolvedValue([]),
+  getAllGeneratedImages: vi.fn().mockResolvedValue({ images: [], total: 0 }),
+  getGeneratedImageStats: vi.fn().mockResolvedValue({ total: 0, last24h: 0, last7d: 0, byModel: {} }),
+  getGeneratedImageById: vi.fn().mockResolvedValue(null),
+  deleteGeneratedImage: vi.fn().mockResolvedValue(undefined),
 }));
 
 // Mock storage
