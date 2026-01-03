@@ -50,6 +50,13 @@
       "when": 1767380584635,
       "tag": "0006_remarkable_baron_zemo",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1767400350352,
+      "tag": "0007_crazy_logan",
+      "breakpoints": true
     }
   ]
 }
