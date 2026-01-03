@@ -1207,7 +1207,7 @@ export async function createGeneratedImage(image: InsertGeneratedImage) {
   return result[0].insertId;
 }
 
-export async function getUserGeneratedImages(userId: number, limit: number = 50) {
+export async function getUserGeneratedImages(userId: number, limit: number = 50, offset: number = 0) {
   const db = await getDb();
   if (!db) return [];
 
@@ -1215,7 +1215,8 @@ export async function getUserGeneratedImages(userId: number, limit: number = 50)
     .from(generatedImages)
     .where(eq(generatedImages.userId, userId))
     .orderBy(desc(generatedImages.createdAt))
-    .limit(limit);
+    .limit(limit)
+    .offset(offset);
 }
 
 export async function getAllGeneratedImages(options?: {

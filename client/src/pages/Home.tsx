@@ -140,6 +140,10 @@ export default function Home() {
                       <Settings className="mr-2 h-4 w-4" />
                       Settings
                     </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setLocation("/gallery")}>
+                      <Image className="mr-2 h-4 w-4" />
+                      My Gallery
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setLocation("/usage")}>
                       <BarChart3 className="mr-2 h-4 w-4" />
                       Usage

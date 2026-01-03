@@ -1024,6 +1024,52 @@ export const appRouter = router({
           });
         }
       }),
+    
+    // User's own gallery
+    myGallery: protectedProcedure
+      .input(z.object({
+        limit: z.number().min(1).max(100).optional(),
+        offset: z.number().min(0).optional(),
+      }).optional())
+      .query(async ({ ctx, input }) => {
+        const images = await getUserGeneratedImages(
+          ctx.user.id,
+          input?.limit ?? 50,
+          input?.offset ?? 0
+        );
+        return images;
+      }),
+    
+    // Delete user's own image
+    deleteMyImage: protectedProcedure
+      .input(z.object({ imageId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        // First verify the image belongs to this user
+        const image = await getGeneratedImageById(input.imageId);
+        if (!image || image.userId !== ctx.user.id) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Image not found or you don't have permission to delete it",
+          });
+        }
+        
+        await deleteGeneratedImage(input.imageId);
+        
+        await createAuditLog({
+          userId: ctx.user.id,
+          userOpenId: ctx.user.openId,
+          actionType: "settings_change",
+          ipAddress: getClientIp(ctx.req),
+          userAgent: ctx.req.headers["user-agent"] || null,
+          metadata: JSON.stringify({
+            action: "delete_own_image",
+            imageId: input.imageId,
+          }),
+          timestamp: new Date(),
+        });
+        
+        return { success: true };
+      }),
   }),
 
   // User settings
