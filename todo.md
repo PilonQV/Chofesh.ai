@@ -418,3 +418,23 @@
 - [x] Add persona selector to chat interface
 - [x] Add persona library page with search and filtering
 - [x] Add 23 unit tests for personas feature
+
+
+## Phase 19: Advanced Task Templates from Prompts Repository
+
+- [x] Add specialized task templates (Code Review, Writing Assistant, Research, etc.)
+- [x] Created FUTURE_ROADMAP.md with comprehensive implementation suggestions
+- [ ] Add memory/context management features inspired by Windsurf (see FUTURE_ROADMAP.md)
+- [ ] Add structured output templates (tables, lists, documents) (see FUTURE_ROADMAP.md)
+
+## Future Implementation Reference
+
+See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
+- Memory System (Windsurf-inspired)
+- Thinking Mode / Chain of Thought (Claude/Devin-inspired)
+- Artifacts / Document Mode (Claude/Notion-inspired)
+- Code Workspace (Cursor/Windsurf/Replit-inspired)
+- Deep Research Mode (Perplexity-inspired)
+- Voice Conversations
+- Workflows & Automation
+- And 15+ more features with implementation details
