@@ -318,13 +318,13 @@ export default function Settings() {
               )}
 
               {/* Manage Subscription */}
-              {user?.subscriptionTier && user.subscriptionTier !== 'free' && (
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={() => window.open('/api/stripe/portal', '_blank')}>
+              <div className="flex gap-2">
+                <Link href="/subscription">
+                  <Button variant="outline">
                     Manage Subscription
                   </Button>
-                </div>
-              )}
+                </Link>
+              </div>
             </CardContent>
           </Card>
 

@@ -18,6 +18,7 @@ import Characters from "./pages/Characters";
 import SharedChat from "./pages/SharedChat";
 import Memory from "./pages/Memory";
 import Artifacts from "./pages/Artifacts";
+import Subscription from "./pages/Subscription";
 
 function Router() {
   return (
@@ -35,6 +36,7 @@ function Router() {
       <Route path="/share/:shareId" component={SharedChat} />
       <Route path="/memory" component={Memory} />
       <Route path="/artifacts" component={Artifacts} />
+      <Route path="/subscription" component={Subscription} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

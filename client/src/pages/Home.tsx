@@ -428,7 +428,7 @@ export default function Home() {
             Simple, <span className="gradient-text">Transparent</span> Pricing
           </h2>
           <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-4">
-            Start free, upgrade when you need more. <span className="text-primary font-medium">8% cheaper than Venice.ai</span>
+            Start free, upgrade when you need more.
           </p>
           <p className="text-sm text-muted-foreground text-center max-w-2xl mx-auto mb-12">
             Save 20% with annual billing

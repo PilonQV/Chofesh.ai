@@ -496,3 +496,15 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Add Smart Routing feature card
 - [x] Update grid layout to 4 columns on XL screens
 - [x] Update feature descriptions to highlight new capabilities
+
+
+## Phase 23: Subscription Management Page
+
+- [x] Create dedicated /subscription page with all plan tiers
+- [x] Show current plan highlighted with upgrade/downgrade options
+- [x] Add plan comparison showing features per tier
+- [x] Implement upgrade flow (change to higher tier via Stripe checkout)
+- [x] Implement downgrade flow (change to lower tier via Stripe checkout)
+- [x] Add "Cancel Subscription" with confirmation dialog and feature loss warning
+- [x] Update Settings page to link to new subscription page
+- [x] Remove Venice.ai comparison text from pricing section
