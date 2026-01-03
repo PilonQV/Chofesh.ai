@@ -510,7 +510,7 @@ export default function Chat() {
   }
 
   return (
-    <div className="h-[100dvh] bg-background flex overflow-hidden">
+    <div className="h-[100dvh] bg-background flex overflow-hidden" style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}>
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div
@@ -639,7 +639,7 @@ export default function Chat() {
       </aside>
 
       {/* Main Chat Area */}
-      <main className="flex-1 flex flex-col min-w-0 pt-[env(safe-area-inset-top)]">
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Chat Header */}
         <header className="h-14 min-h-14 shrink-0 border-b border-border flex items-center justify-between px-2 sm:px-4">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -1168,7 +1168,7 @@ export default function Chat() {
         </ScrollArea>
 
         {/* Input Area */}
-        <div className="border-t border-border p-4">
+        <div className="border-t border-border p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
           <div className="max-w-3xl mx-auto">
             <div className="flex gap-2">
               {/* Voice Input Button */}
