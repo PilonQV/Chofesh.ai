@@ -26,6 +26,11 @@ import {
   LayoutDashboard,
   CreditCard,
   Download,
+  Brain,
+  Lightbulb,
+  FileCode,
+  Users,
+  Sparkles,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -239,7 +244,7 @@ export default function Home() {
             Powerful features designed with privacy and creative freedom in mind.
           </p>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             <FeatureCard
               icon={<MessageSquare className="w-6 h-6" />}
               title="Uncensored Chat"
@@ -271,12 +276,40 @@ export default function Home() {
               icon={<BarChart3 className="w-6 h-6" />}
               title="Usage Dashboard"
               description="Track your usage and costs in real-time. Stay in control of your AI spending."
-              badge="New"
             />
             <FeatureCard
               icon={<Lock className="w-6 h-6" />}
               title="Local Storage"
               description="Your conversations are encrypted and stored on your device. We never see them."
+            />
+            <FeatureCard
+              icon={<Brain className="w-6 h-6" />}
+              title="Memory System"
+              description="AI remembers your preferences, facts, and instructions across conversations. Personalized experience."
+              badge="New"
+            />
+            <FeatureCard
+              icon={<Lightbulb className="w-6 h-6" />}
+              title="Thinking Mode"
+              description="See the AI's reasoning process. Understand how it arrives at answers with transparent thinking."
+              badge="New"
+            />
+            <FeatureCard
+              icon={<FileCode className="w-6 h-6" />}
+              title="Artifacts Panel"
+              description="Create and iterate on documents, code, and diagrams in a dedicated workspace with version history."
+              badge="New"
+            />
+            <FeatureCard
+              icon={<Users className="w-6 h-6" />}
+              title="AI Personas"
+              description="20+ expert personas: Senior Developer, Creative Writer, Research Assistant, and more. Specialized AI for every task."
+              badge="New"
+            />
+            <FeatureCard
+              icon={<Sparkles className="w-6 h-6" />}
+              title="Smart Routing"
+              description="Auto-selects the best AI model for your task. GPT-4, Claude, Llama, and more working together."
             />
           </div>
         </div>
