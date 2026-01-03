@@ -4,6 +4,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
+import { checkRateLimit, recordFailedAttempt, clearRateLimit } from "./_core/rateLimit";
 import { 
   createAuditLog, 
   getAuditLogs, 
@@ -195,6 +196,29 @@ export const appRouter = router({
           timestamp: new Date(),
         });
         
+        // Send verification email
+        try {
+          const { generateVerificationEmailHtml, generateVerificationEmailText } = await import("./_core/emailVerification");
+          const { notifyOwner } = await import("./_core/notification");
+          
+          // Get the base URL from request
+          const protocol = ctx.req.headers["x-forwarded-proto"] || "https";
+          const host = ctx.req.headers.host || "chofesh.ai";
+          const verificationUrl = `${protocol}://${host}/verify-email?token=${verificationToken}`;
+          
+          // For now, notify owner about new registration (email service integration can be added later)
+          await notifyOwner({
+            title: `New User Registration: ${input.name}`,
+            content: `A new user has registered:\n\nName: ${input.name}\nEmail: ${input.email}\n\nVerification link: ${verificationUrl}`,
+          });
+          
+          console.log(`[Auth] Verification email would be sent to ${input.email}`);
+          console.log(`[Auth] Verification URL: ${verificationUrl}`);
+        } catch (emailError) {
+          console.error("[Auth] Failed to send verification email:", emailError);
+          // Don't fail registration if email fails
+        }
+        
         return { success: true, message: "Account created successfully. Please check your email to verify your account." };
       }),
     
@@ -207,23 +231,60 @@ export const appRouter = router({
       .mutation(async ({ input, ctx }) => {
         const { verifyPassword } = await import("./_core/passwordAuth");
         const { sdk } = await import("./_core/sdk");
+        const clientIp = getClientIp(ctx.req);
+        
+        // Check rate limits
+        const ipRateLimit = await checkRateLimit(clientIp, "ip");
+        if (!ipRateLimit.allowed) {
+          throw new TRPCError({ 
+            code: "TOO_MANY_REQUESTS", 
+            message: ipRateLimit.message 
+          });
+        }
+        
+        const emailRateLimit = await checkRateLimit(input.email, "email");
+        if (!emailRateLimit.allowed) {
+          throw new TRPCError({ 
+            code: "TOO_MANY_REQUESTS", 
+            message: emailRateLimit.message 
+          });
+        }
         
         // Find user by email
         const user = await getUserByEmail(input.email);
         if (!user || !user.passwordHash) {
+          // Record failed attempt
+          await recordFailedAttempt(clientIp, "ip");
+          await recordFailedAttempt(input.email, "email");
           throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid email or password" });
         }
         
         // Verify password
         const isValid = await verifyPassword(input.password, user.passwordHash);
         if (!isValid) {
-          throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid email or password" });
+          // Record failed attempt
+          const ipResult = await recordFailedAttempt(clientIp, "ip");
+          const emailResult = await recordFailedAttempt(input.email, "email");
+          const remaining = Math.min(ipResult.remainingAttempts, emailResult.remainingAttempts);
+          throw new TRPCError({ 
+            code: "UNAUTHORIZED", 
+            message: remaining > 0 
+              ? `Invalid email or password. ${remaining} attempts remaining.`
+              : "Invalid email or password. Too many failed attempts." 
+          });
         }
         
-        // Check if email is verified (optional - can be enabled later)
-        // if (!user.emailVerified) {
-        //   throw new TRPCError({ code: "FORBIDDEN", message: "Please verify your email before logging in" });
-        // }
+        // Clear rate limits on successful login
+        await clearRateLimit(clientIp, "ip");
+        await clearRateLimit(input.email, "email");
+        
+        // Check if email is verified
+        if (!user.emailVerified) {
+          throw new TRPCError({ 
+            code: "FORBIDDEN", 
+            message: "Please verify your email before logging in. Check your inbox for the verification link.",
+          });
+        }
         
         // Create session token
         const sessionToken = await sdk.createSessionToken(user.openId, {

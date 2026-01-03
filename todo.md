@@ -587,3 +587,76 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [ ] Add password reset confirmation endpoint
 - [ ] Create forgot password UI
 - [ ] Add email verification flow
+
+
+## Phase 27: Email Verification & Rate Limiting
+
+### Email Verification
+- [ ] Add email verification token field to users table
+- [ ] Create email sending utility using notification API
+- [ ] Send verification email on registration
+- [ ] Create email verification endpoint
+- [ ] Create email verification page
+- [ ] Require verification before full access
+
+### Rate Limiting
+- [ ] Create rate limiting table for tracking attempts
+- [ ] Add rate limit check on login endpoint
+- [ ] Block IP after 5 failed attempts (15 min cooldown)
+- [ ] Block email after 10 failed attempts (30 min cooldown)
+- [ ] Show remaining attempts to user
+- [ ] Add rate limit bypass for verified users (optional)
+
+- [x] Show current plan highlighted with upgrade/downgrade options
+- [x] Add plan comparison showing features per tier
+- [x] Implement upgrade flow (change to higher tier via Stripe checkout)
+- [x] Implement downgrade flow (change to lower tier via Stripe checkout)
+- [x] Add "Cancel Subscription" with confirmation dialog and feature loss warning
+- [x] Update Settings page to link to new subscription page
+- [x] Remove Venice.ai comparison text from pricing section
+
+
+## Phase 24: Enhanced Admin Dashboard
+
+- [x] Add revenue metrics (MRR, ARR, conversion rate)
+- [x] Add user growth stats (new users today, this week, active users)
+- [x] Add usage statistics (queries today, total events)
+- [x] Add subscription tier distribution with visual breakdown
+- [x] Add top users by usage leaderboard
+- [x] Add subscription status column to users table
+- [x] Improved stats cards with subtitles and trends
+
+
+## Phase 25: Dashboard Auto-Refresh & OAuth Security
+
+- [x] Add auto-refresh to dashboard (default 30 seconds)
+- [x] Add refresh interval toggle (Off, 15s, 30s, 60s) with countdown timer
+- [x] Add login audit logging to Manus OAuth callback
+- [x] Add login audit logging to Google OAuth callback
+- [x] Verify logout logging (already implemented)
+- [x] All auth events captured with IP, user agent, and metadata
+
+
+## Phase 26: Email/Password Authentication
+
+- [x] Add password hash fields to users table (passwordHash, emailVerified, resetToken, resetTokenExpiry)
+- [x] Create password hashing utilities (bcrypt)
+- [x] Add registration endpoint with email validation
+- [x] Add login endpoint with session creation
+- [x] Create Login page with email/password form + OAuth options
+- [x] Create Registration page with password strength indicator
+- [x] Add "Forgot Password" and "Reset Password" pages
+- [x] Update Home page to link to /login instead of OAuth directly
+- [x] Add 23 unit tests for email auth
+
+
+## Phase 27: Email Verification & Rate Limiting
+
+- [x] Add verification token fields to users table (verificationToken, verificationTokenExpiry)
+- [x] Create email verification utilities (generateVerificationToken, isVerificationTokenExpired)
+- [x] Add rate_limits table for tracking login attempts
+- [x] Implement rate limiting (5 attempts per IP/15min, 10 attempts per email/30min)
+- [x] Create email verification page (/verify-email)
+- [x] Add verification check to login flow (blocks unverified users)
+- [x] Show rate limit warnings in login UI (remaining attempts, blocked message)
+- [x] Add 24 unit tests for security features (203 total tests passing)

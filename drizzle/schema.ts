@@ -260,3 +260,20 @@ export const userPreferences = mysqlTable("user_preferences", {
 
 export type UserPreference = typeof userPreferences.$inferSelect;
 export type InsertUserPreference = typeof userPreferences.$inferInsert;
+
+
+/**
+ * Rate limits table for tracking login attempts and preventing brute force attacks.
+ */
+export const rateLimits = mysqlTable("rate_limits", {
+  id: int("id").autoincrement().primaryKey(),
+  identifier: varchar("identifier", { length: 255 }).notNull(),
+  identifierType: mysqlEnum("identifier_type", ["ip", "email"]).notNull(),
+  attempts: int("attempts").default(1).notNull(),
+  firstAttemptAt: timestamp("first_attempt_at").defaultNow().notNull(),
+  lastAttemptAt: timestamp("last_attempt_at").defaultNow().notNull(),
+  blockedUntil: timestamp("blocked_until"),
+});
+
+export type RateLimit = typeof rateLimits.$inferSelect;
+export type InsertRateLimit = typeof rateLimits.$inferInsert;

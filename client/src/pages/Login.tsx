@@ -6,9 +6,10 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { trpc } from "@/lib/trpc";
-import { Mail, Lock, Eye, EyeOff, Loader2, Shield, ArrowLeft } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, Loader2, Shield, ArrowLeft, AlertCircle } from "lucide-react";
 import { getLoginUrl } from "@/const";
 import { toast } from "sonner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function Login() {
   const [, setLocation] = useLocation();
@@ -16,14 +17,29 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [rateLimitMessage, setRateLimitMessage] = useState<string | null>(null);
 
   const loginMutation = trpc.auth.login.useMutation({
     onSuccess: () => {
       toast.success("Login successful!");
+      setNeedsVerification(false);
+      setRateLimitMessage(null);
       setLocation("/chat");
     },
     onError: (error) => {
-      toast.error(error.message || "Login failed. Please check your credentials.");
+      // Check for specific error types
+      if (error.message.includes("verify your email")) {
+        setNeedsVerification(true);
+        setRateLimitMessage(null);
+      } else if (error.message.includes("Too many") || error.message.includes("attempts remaining")) {
+        setRateLimitMessage(error.message);
+        setNeedsVerification(false);
+      } else {
+        setNeedsVerification(false);
+        setRateLimitMessage(null);
+        toast.error(error.message || "Login failed. Please check your credentials.");
+      }
     },
     onSettled: () => {
       setIsLoading(false);
@@ -70,6 +86,25 @@ export default function Login() {
           </CardHeader>
           
           <CardContent className="space-y-4">
+            {/* Alert Messages */}
+            {needsVerification && (
+              <Alert variant="default" className="border-amber-500/50 bg-amber-500/10">
+                <Mail className="h-4 w-4 text-amber-500" />
+                <AlertDescription className="text-amber-200">
+                  Please verify your email before logging in. Check your inbox for the verification link.
+                </AlertDescription>
+              </Alert>
+            )}
+            
+            {rateLimitMessage && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  {rateLimitMessage}
+                </AlertDescription>
+              </Alert>
+            )}
+            
             {/* OAuth Buttons */}
             <div className="grid gap-3">
               <Button
