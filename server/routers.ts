@@ -70,6 +70,13 @@ import {
   upsertUserPreferences,
   getShowThinking,
   getMemoryEnabled,
+  // Generated images functions
+  createGeneratedImage,
+  getUserGeneratedImages,
+  getAllGeneratedImages,
+  getGeneratedImageStats,
+  getGeneratedImageById,
+  deleteGeneratedImage,
 } from "./db";
 import { invokeLLM } from "./_core/llm";
 import { invokeGrok, isGrokAvailable } from "./_core/grok";
@@ -924,6 +931,26 @@ export const appRouter = router({
             prompt: input.prompt,
           });
 
+          // Save generated image to database for admin visibility
+          if (result.url) {
+            await createGeneratedImage({
+              userId: ctx.user.id,
+              imageUrl: result.url,
+              prompt: input.prompt,
+              negativePrompt: input.negativePrompt || null,
+              model: input.model || "flux",
+              aspectRatio: input.aspectRatio || null,
+              seed: input.seed?.toString() || null,
+              steps: input.steps || null,
+              cfgScale: input.cfgScale?.toString() || null,
+              isEdit: false,
+              status: "completed",
+              metadata: JSON.stringify({
+                duration: Date.now() - startTime,
+              }),
+            });
+          }
+
           // Create usage record for image generation
           await createUsageRecord({
             userId: ctx.user.id,
@@ -957,6 +984,25 @@ export const appRouter = router({
             model: input.model || "flux",
           };
         } catch (error) {
+          // Save failed generation attempt
+          await createGeneratedImage({
+            userId: ctx.user.id,
+            imageUrl: "",
+            prompt: input.prompt,
+            negativePrompt: input.negativePrompt || null,
+            model: input.model || "flux",
+            aspectRatio: input.aspectRatio || null,
+            seed: input.seed?.toString() || null,
+            steps: input.steps || null,
+            cfgScale: input.cfgScale?.toString() || null,
+            isEdit: false,
+            status: "failed",
+            metadata: JSON.stringify({
+              error: true,
+              duration: Date.now() - startTime,
+            }),
+          });
+
           await createAuditLog({
             userId: ctx.user.id,
             userOpenId: ctx.user.openId,
@@ -1512,6 +1558,82 @@ export const appRouter = router({
         
         return { success: true };
       }),
+    
+    // Generated Images endpoints for admin
+    generatedImages: adminProcedure
+      .input(z.object({
+        limit: z.number().min(1).max(100).optional(),
+        offset: z.number().min(0).optional(),
+        userId: z.number().optional(),
+        status: z.enum(["completed", "failed"]).optional(),
+        startDate: z.date().optional(),
+        endDate: z.date().optional(),
+      }).optional())
+      .query(async ({ input }) => {
+        return await getAllGeneratedImages({
+          limit: input?.limit ?? 50,
+          offset: input?.offset ?? 0,
+          userId: input?.userId,
+          status: input?.status,
+          startDate: input?.startDate,
+          endDate: input?.endDate,
+        });
+      }),
+    
+    generatedImageStats: adminProcedure.query(async () => {
+      return await getGeneratedImageStats();
+    }),
+    
+    generatedImageById: adminProcedure
+      .input(z.object({ imageId: z.number() }))
+      .query(async ({ input }) => {
+        return await getGeneratedImageById(input.imageId);
+      }),
+    
+    deleteGeneratedImage: adminProcedure
+      .input(z.object({ imageId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await deleteGeneratedImage(input.imageId);
+        
+        await createAuditLog({
+          userId: ctx.user.id,
+          userOpenId: ctx.user.openId,
+          actionType: "settings_change",
+          ipAddress: getClientIp(ctx.req),
+          userAgent: ctx.req.headers["user-agent"] || null,
+          metadata: JSON.stringify({
+            action: "delete_generated_image",
+            imageId: input.imageId,
+          }),
+          timestamp: new Date(),
+        });
+        
+        return { success: true };
+      }),
+    
+    // Get user details with activity
+    userDetails: adminProcedure
+      .input(z.object({ userId: z.number() }))
+      .query(async ({ input }) => {
+        const allUsers = await getAllUsers();
+        const user = allUsers.find(u => u.id === input.userId);
+        if (!user) return null;
+        
+        // Get user's generated images
+        const images = await getUserGeneratedImages(input.userId, 20);
+        
+        // Get user's audit logs
+        const auditData = await getAuditLogs({
+          userId: input.userId,
+          limit: 20,
+        });
+        
+        return {
+          user,
+          images,
+          recentActivity: auditData.logs,
+        };
+      }),
   }),
 
   // Web Search using Data API
@@ -1681,6 +1803,23 @@ export const appRouter = router({
             }],
           });
           
+          // Save edited image to database for admin visibility
+          if (result.url) {
+            await createGeneratedImage({
+              userId: ctx.user.id,
+              imageUrl: result.url,
+              prompt: input.prompt,
+              model: "flux-edit",
+              isEdit: true,
+              originalImageUrl: input.originalImageUrl,
+              status: "completed",
+              metadata: JSON.stringify({
+                type: "image_edit",
+                duration: Date.now() - startTime,
+              }),
+            });
+          }
+
           await createUsageRecord({
             userId: ctx.user.id,
             actionType: "image_generation",
@@ -1713,6 +1852,21 @@ export const appRouter = router({
             model: "flux-edit",
           };
         } catch (error) {
+          // Save failed edit attempt
+          await createGeneratedImage({
+            userId: ctx.user.id,
+            imageUrl: "",
+            prompt: input.prompt,
+            model: "flux-edit",
+            isEdit: true,
+            originalImageUrl: input.originalImageUrl,
+            status: "failed",
+            metadata: JSON.stringify({
+              type: "image_edit",
+              error: true,
+              duration: Date.now() - startTime,
+            }),
+          });
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
             message: "Failed to edit image",

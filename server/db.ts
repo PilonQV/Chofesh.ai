@@ -4,7 +4,7 @@ import {
   InsertUser, users, auditLogs, InsertAuditLog, userSettings, InsertUserSettings,
   aiCharacters, InsertAiCharacter, sharedLinks, InsertSharedLink,
   userMemories, InsertUserMemory, artifacts, InsertArtifact, userPreferences, InsertUserPreference,
-  userDevices, InsertUserDevice
+  userDevices, InsertUserDevice, generatedImages, InsertGeneratedImage
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -1194,4 +1194,169 @@ export async function getUserDevices(userId: number) {
     .from(userDevices)
     .where(eq(userDevices.userId, userId))
     .orderBy(desc(userDevices.lastUsedAt));
+}
+
+
+// ============ GENERATED IMAGES FUNCTIONS ============
+
+export async function createGeneratedImage(image: InsertGeneratedImage) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(generatedImages).values(image);
+  return result[0].insertId;
+}
+
+export async function getUserGeneratedImages(userId: number, limit: number = 50) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select()
+    .from(generatedImages)
+    .where(eq(generatedImages.userId, userId))
+    .orderBy(desc(generatedImages.createdAt))
+    .limit(limit);
+}
+
+export async function getAllGeneratedImages(options?: {
+  limit?: number;
+  offset?: number;
+  userId?: number;
+  status?: "completed" | "failed";
+  startDate?: Date;
+  endDate?: Date;
+}) {
+  const db = await getDb();
+  if (!db) return { images: [], total: 0 };
+
+  const conditions = [];
+  
+  if (options?.userId) {
+    conditions.push(eq(generatedImages.userId, options.userId));
+  }
+  if (options?.status) {
+    conditions.push(eq(generatedImages.status, options.status));
+  }
+  if (options?.startDate) {
+    conditions.push(gte(generatedImages.createdAt, options.startDate));
+  }
+  if (options?.endDate) {
+    conditions.push(lte(generatedImages.createdAt, options.endDate));
+  }
+
+  const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+  // Get total count
+  const countResult = await db.select({ count: sql<number>`count(*)` })
+    .from(generatedImages)
+    .where(whereClause);
+  const total = Number(countResult[0]?.count ?? 0);
+
+  // Get images with user info
+  const images = await db.select({
+    id: generatedImages.id,
+    userId: generatedImages.userId,
+    imageUrl: generatedImages.imageUrl,
+    prompt: generatedImages.prompt,
+    negativePrompt: generatedImages.negativePrompt,
+    model: generatedImages.model,
+    aspectRatio: generatedImages.aspectRatio,
+    seed: generatedImages.seed,
+    steps: generatedImages.steps,
+    cfgScale: generatedImages.cfgScale,
+    isEdit: generatedImages.isEdit,
+    originalImageUrl: generatedImages.originalImageUrl,
+    status: generatedImages.status,
+    metadata: generatedImages.metadata,
+    createdAt: generatedImages.createdAt,
+    userName: users.name,
+    userEmail: users.email,
+  })
+    .from(generatedImages)
+    .leftJoin(users, eq(generatedImages.userId, users.id))
+    .where(whereClause)
+    .orderBy(desc(generatedImages.createdAt))
+    .limit(options?.limit ?? 50)
+    .offset(options?.offset ?? 0);
+
+  return { images, total };
+}
+
+export async function getGeneratedImageStats() {
+  const db = await getDb();
+  if (!db) return { total: 0, last24h: 0, last7d: 0, byModel: {} };
+
+  const now = new Date();
+  const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+  // Total count
+  const totalResult = await db.select({ count: sql<number>`count(*)` })
+    .from(generatedImages);
+  const total = Number(totalResult[0]?.count ?? 0);
+
+  // Last 24h
+  const last24hResult = await db.select({ count: sql<number>`count(*)` })
+    .from(generatedImages)
+    .where(gte(generatedImages.createdAt, yesterday));
+  const last24h = Number(last24hResult[0]?.count ?? 0);
+
+  // Last 7 days
+  const last7dResult = await db.select({ count: sql<number>`count(*)` })
+    .from(generatedImages)
+    .where(gte(generatedImages.createdAt, lastWeek));
+  const last7d = Number(last7dResult[0]?.count ?? 0);
+
+  // By model
+  const byModelResult = await db.select({
+    model: generatedImages.model,
+    count: sql<number>`count(*)`,
+  })
+    .from(generatedImages)
+    .groupBy(generatedImages.model);
+  
+  const byModel: Record<string, number> = {};
+  for (const row of byModelResult) {
+    byModel[row.model] = Number(row.count);
+  }
+
+  return { total, last24h, last7d, byModel };
+}
+
+export async function getGeneratedImageById(imageId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const results = await db.select({
+    id: generatedImages.id,
+    userId: generatedImages.userId,
+    imageUrl: generatedImages.imageUrl,
+    prompt: generatedImages.prompt,
+    negativePrompt: generatedImages.negativePrompt,
+    model: generatedImages.model,
+    aspectRatio: generatedImages.aspectRatio,
+    seed: generatedImages.seed,
+    steps: generatedImages.steps,
+    cfgScale: generatedImages.cfgScale,
+    isEdit: generatedImages.isEdit,
+    originalImageUrl: generatedImages.originalImageUrl,
+    status: generatedImages.status,
+    metadata: generatedImages.metadata,
+    createdAt: generatedImages.createdAt,
+    userName: users.name,
+    userEmail: users.email,
+  })
+    .from(generatedImages)
+    .leftJoin(users, eq(generatedImages.userId, users.id))
+    .where(eq(generatedImages.id, imageId))
+    .limit(1);
+
+  return results[0];
+}
+
+export async function deleteGeneratedImage(imageId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.delete(generatedImages).where(eq(generatedImages.id, imageId));
 }
