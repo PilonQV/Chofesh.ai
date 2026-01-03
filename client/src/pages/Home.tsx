@@ -52,7 +52,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 glass">
+      <nav className="fixed top-0 left-0 right-0 z-50 glass" role="banner" aria-label="Main navigation">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <img src="/chofesh-logo.png" alt="Chofesh" className="w-8 h-8 object-contain" />
@@ -176,7 +176,8 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4 relative overflow-hidden">
+      <main role="main">
+      <section className="pt-32 pb-20 px-4 relative overflow-hidden" aria-labelledby="hero-heading">
         {/* Background gradient effects */}
         <div className="absolute top-20 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-accent/20 rounded-full blur-3xl" />
@@ -187,7 +188,7 @@ export default function Home() {
             Privacy-First AI Platform
           </div>
           
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
+          <h1 id="hero-heading" className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
             AI Without <span className="gradient-text">Limits</span>
           </h1>
           
@@ -238,9 +239,9 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 px-4">
+      <section id="features" className="py-20 px-4" aria-labelledby="features-heading">
         <div className="container mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
+          <h2 id="features-heading" className="text-3xl md:text-4xl font-bold text-center mb-4">
             Everything You Need for <span className="gradient-text">AI Freedom</span>
           </h2>
           <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-12">
@@ -425,9 +426,9 @@ export default function Home() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-20 px-4 bg-card/50">
+      <section id="pricing" className="py-20 px-4 bg-card/50" aria-labelledby="pricing-heading">
         <div className="container mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
+          <h2 id="pricing-heading" className="text-3xl md:text-4xl font-bold text-center mb-4">
             Simple, <span className="gradient-text">Transparent</span> Pricing
           </h2>
           <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-4">
@@ -547,10 +548,12 @@ export default function Home() {
           )}
         </div>
       </section>
+      </main>
 
       {/* Footer */}
-      <footer className="py-12 px-4 border-t border-border">
+      <footer className="py-12 px-4 border-t border-border" role="contentinfo">
         <div className="container mx-auto">
+          <h3 className="sr-only">Footer Navigation</h3>
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
@@ -562,7 +565,7 @@ export default function Home() {
               </p>
             </div>
             <div>
-              <h3 className="font-semibold mb-4 text-base">Product</h3>
+              <h4 className="font-semibold mb-4 text-base">Product</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link href="/chat" className="hover:text-foreground transition-colors">Chat</Link></li>
                 <li><Link href="/image" className="hover:text-foreground transition-colors">Image Generation</Link></li>
@@ -570,14 +573,14 @@ export default function Home() {
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold mb-4 text-base">Legal</h3>
+              <h4 className="font-semibold mb-4 text-base">Legal</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link></li>
                 <li><Link href="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link></li>
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold mb-4 text-base">Support</h3>
+              <h4 className="font-semibold mb-4 text-base">Support</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><a href="/#features" className="hover:text-foreground transition-colors">How It Works</a></li>
                 <li><a href="mailto:support@chofesh.ai" className="hover:text-foreground transition-colors">Contact</a></li>
