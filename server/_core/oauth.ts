@@ -4,6 +4,15 @@ import * as db from "../db";
 import { getSessionCookieOptions } from "./cookies";
 import { sdk } from "./sdk";
 import { notifyOwner } from "./notification";
+import { createAuditLog } from "../db";
+
+function getClientIp(req: Request): string {
+  const forwarded = req.headers['x-forwarded-for'];
+  if (typeof forwarded === 'string') {
+    return forwarded.split(',')[0].trim();
+  }
+  return req.socket.remoteAddress || 'unknown';
+}
 
 function getQueryParam(req: Request, key: string): string | undefined {
   const value = req.query[key];
@@ -39,6 +48,24 @@ export function registerOAuthRoutes(app: Express) {
         email: userInfo.email ?? null,
         loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
         lastSignedIn: new Date(),
+      });
+      
+      // Get user from database to get the ID
+      const dbUser = await db.getUserByOpenId(userInfo.openId);
+      
+      // Log the login event
+      await createAuditLog({
+        userId: dbUser?.id || null,
+        userOpenId: userInfo.openId,
+        actionType: "login",
+        ipAddress: getClientIp(req),
+        userAgent: req.headers["user-agent"] || null,
+        metadata: JSON.stringify({
+          loginMethod: userInfo.loginMethod || userInfo.platform || 'manus',
+          isNewUser,
+          email: userInfo.email || null,
+        }),
+        timestamp: new Date(),
       });
       
       // Notify owner of new user registration

@@ -519,3 +519,13 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Add top users by usage leaderboard
 - [x] Add subscription status column to users table
 - [x] Improved stats cards with subtitles and trends
+
+
+## Phase 25: Dashboard Auto-Refresh & OAuth Security
+
+- [x] Add auto-refresh to dashboard (default 30 seconds)
+- [x] Add refresh interval toggle (Off, 15s, 30s, 60s) with countdown timer
+- [x] Add login audit logging to Manus OAuth callback
+- [x] Add login audit logging to Google OAuth callback
+- [x] Verify logout logging (already implemented)
+- [x] All auth events captured with IP, user agent, and metadata
