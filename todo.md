@@ -403,3 +403,8 @@
 - [x] Create robots.txt
 - [x] Create sitemap.xml
 - [x] Add Content Security Policy
+- [x] Protect admin pages with role-based access control (already implemented)
+- [x] Performance: Convert logo to WebP 48x48, enable sourcemaps
+- [x] Accessibility: Fix viewport, add main landmark, fix headings
+- [x] Security: Add HSTS, COOP, X-Frame-Options headers, strengthen CSP
+- [x] SEO: Update privacy link text
