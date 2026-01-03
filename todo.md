@@ -755,3 +755,8 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 
 - [x] Fix scroll not working on homepage (caused by overflow:hidden CSS)
 - [x] Fix logout not working (was using manual cookie clear instead of useAuth logout)
+
+
+## Phase 37: Light Mode Header Contrast
+
+- [x] Fix header navigation links visibility in light mode (changed from text-muted-foreground to text-foreground/70 with font-medium)
