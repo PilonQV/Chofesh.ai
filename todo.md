@@ -864,5 +864,5 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 
 ## Bug Fixes (User Reported - Jan 3 2026)
 
-- [x] Fix chat auto-scroll not working - messages not scrolling to bottom
+- [x] Fix chat scroll not working - users cannot scroll up to see full response or message history
 

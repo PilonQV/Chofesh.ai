@@ -239,18 +239,35 @@ export default function Chat() {
   }, [authLoading, isAuthenticated, setLocation]);
 
   // Auto-scroll to bottom when messages change or when generating
-  useEffect(() => {
-    const scrollToBottom = () => {
-      // Use messagesEndRef for reliable scrolling
-      if (messagesEndRef.current) {
-        messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  const scrollToBottom = useCallback(() => {
+    // Try multiple scroll methods for reliability
+    requestAnimationFrame(() => {
+      // Method 1: Use scrollRef to find the viewport and scroll it
+      if (scrollRef.current) {
+        const viewport = scrollRef.current.querySelector('[data-slot="scroll-area-viewport"]') as HTMLElement;
+        if (viewport) {
+          viewport.scrollTop = viewport.scrollHeight;
+        }
       }
-    };
-    
-    // Small delay to ensure DOM has updated
-    const timeoutId = setTimeout(scrollToBottom, 100);
-    return () => clearTimeout(timeoutId);
-  }, [currentConversation?.messages, currentConversation?.messages?.length, isGenerating]);
+      // Method 2: Also try scrollIntoView on the anchor
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: 'auto', block: 'end' });
+      }
+    });
+  }, []);
+
+  // Trigger scroll when messages change
+  useEffect(() => {
+    scrollToBottom();
+  }, [currentConversation?.messages?.length, scrollToBottom]);
+
+  // Trigger scroll during generation (for streaming)
+  useEffect(() => {
+    if (isGenerating) {
+      const interval = setInterval(scrollToBottom, 200);
+      return () => clearInterval(interval);
+    }
+  }, [isGenerating, scrollToBottom]);
 
   // Focus input on load
   useEffect(() => {
@@ -1000,8 +1017,8 @@ export default function Chat() {
         )}
 
         {/* Messages Area */}
-        <ScrollArea ref={scrollRef} className="flex-1 p-4">
-          <div className="max-w-3xl mx-auto space-y-6">
+        <ScrollArea ref={scrollRef} className="flex-1 overflow-hidden">
+          <div className="max-w-3xl mx-auto space-y-6 p-4">
             {/* Mode Info Banner */}
             {!currentConversation?.messages.length && (
               <div className="text-center py-12 space-y-6">
