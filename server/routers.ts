@@ -198,7 +198,7 @@ export const appRouter = router({
         
         // Send verification email
         try {
-          const { generateVerificationEmailHtml, generateVerificationEmailText } = await import("./_core/emailVerification");
+          const { sendVerificationEmail } = await import("./_core/resend");
           const { notifyOwner } = await import("./_core/notification");
           
           // Get the base URL from request
@@ -206,14 +206,19 @@ export const appRouter = router({
           const host = ctx.req.headers.host || "chofesh.ai";
           const verificationUrl = `${protocol}://${host}/verify-email?token=${verificationToken}`;
           
-          // For now, notify owner about new registration (email service integration can be added later)
+          // Send verification email via Resend
+          const emailResult = await sendVerificationEmail(input.email, input.name, verificationUrl);
+          if (!emailResult.success) {
+            console.error(`[Auth] Failed to send verification email: ${emailResult.error}`);
+          } else {
+            console.log(`[Auth] Verification email sent to ${input.email}`);
+          }
+          
+          // Notify owner about new registration
           await notifyOwner({
             title: `New User Registration: ${input.name}`,
-            content: `A new user has registered:\n\nName: ${input.name}\nEmail: ${input.email}\n\nVerification link: ${verificationUrl}`,
+            content: `A new user has registered:\n\nName: ${input.name}\nEmail: ${input.email}`,
           });
-          
-          console.log(`[Auth] Verification email would be sent to ${input.email}`);
-          console.log(`[Auth] Verification URL: ${verificationUrl}`);
         } catch (emailError) {
           console.error("[Auth] Failed to send verification email:", emailError);
           // Don't fail registration if email fails
@@ -313,8 +318,9 @@ export const appRouter = router({
     // Request Password Reset
     requestPasswordReset: publicProcedure
       .input(z.object({ email: z.string().email() }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
         const { generateToken, getTokenExpiry } = await import("./_core/passwordAuth");
+        const { sendPasswordResetEmail } = await import("./_core/resend");
         
         const user = await getUserByEmail(input.email);
         if (!user) {
@@ -325,9 +331,17 @@ export const appRouter = router({
         const resetToken = generateToken();
         await setPasswordResetToken(input.email, resetToken, getTokenExpiry());
         
-        // TODO: Send email with reset link
-        // For now, just log it (in production, integrate with email service)
-        console.log(`[Auth] Password reset token for ${input.email}: ${resetToken}`);
+        // Send password reset email via Resend
+        const protocol = ctx.req.headers["x-forwarded-proto"] || "https";
+        const host = ctx.req.headers.host || "chofesh.ai";
+        const resetUrl = `${protocol}://${host}/reset-password?token=${resetToken}`;
+        
+        const emailResult = await sendPasswordResetEmail(input.email, user.name || "User", resetUrl);
+        if (!emailResult.success) {
+          console.error(`[Auth] Failed to send password reset email: ${emailResult.error}`);
+        } else {
+          console.log(`[Auth] Password reset email sent to ${input.email}`);
+        }
         
         return { success: true, message: "If an account exists with this email, you will receive a password reset link." };
       }),
@@ -366,7 +380,63 @@ export const appRouter = router({
           throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid or expired verification token" });
         }
         
+        // Send welcome email
+        try {
+          const { sendWelcomeEmail } = await import("./_core/resend");
+          await sendWelcomeEmail(user.email!, user.name || "User");
+          console.log(`[Auth] Welcome email sent to ${user.email}`);
+        } catch (err) {
+          console.error("[Auth] Failed to send welcome email:", err);
+        }
+        
         return { success: true, message: "Email verified successfully. You can now log in." };
+      }),
+    
+    // Resend Verification Email
+    resendVerification: publicProcedure
+      .input(z.object({ email: z.string().email() }))
+      .mutation(async ({ input, ctx }) => {
+        const { generateToken, getTokenExpiry } = await import("./_core/passwordAuth");
+        const { sendVerificationEmail } = await import("./_core/resend");
+        
+        const user = await getUserByEmail(input.email);
+        if (!user) {
+          // Don't reveal if email exists
+          return { success: true, message: "If an unverified account exists with this email, a new verification link has been sent." };
+        }
+        
+        if (user.emailVerified) {
+          return { success: true, message: "This email is already verified. You can log in." };
+        }
+        
+        // Generate new verification token
+        const verificationToken = generateToken();
+        
+        // Update user with new token
+        const { getDb } = await import("./db");
+        const { users } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        const db = await getDb();
+        await db!.update(users)
+          .set({ 
+            verificationToken,
+            verificationTokenExpiry: getTokenExpiry()
+          })
+          .where(eq(users.email, input.email));
+        
+        // Send verification email
+        const protocol = ctx.req.headers["x-forwarded-proto"] || "https";
+        const host = ctx.req.headers.host || "chofesh.ai";
+        const verificationUrl = `${protocol}://${host}/verify-email?token=${verificationToken}`;
+        
+        const emailResult = await sendVerificationEmail(input.email, user.name || "User", verificationUrl);
+        if (!emailResult.success) {
+          console.error(`[Auth] Failed to resend verification email: ${emailResult.error}`);
+        } else {
+          console.log(`[Auth] Verification email resent to ${input.email}`);
+        }
+        
+        return { success: true, message: "If an unverified account exists with this email, a new verification link has been sent." };
       }),
   }),
 

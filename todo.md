@@ -660,3 +660,15 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Add verification check to login flow (blocks unverified users)
 - [x] Show rate limit warnings in login UI (remaining attempts, blocked message)
 - [x] Add 24 unit tests for security features (203 total tests passing)
+
+
+## Phase 28: Resend Email Integration
+
+- [x] Add Resend API key to project secrets
+- [x] Create Resend email service utility (verification, password reset, welcome emails)
+- [x] Update registration to send real verification emails via Resend
+- [x] Update password reset to send real emails via Resend
+- [x] Add resend verification email endpoint
+- [x] Add "Resend Verification Email" button on login page
+- [x] Send welcome email after verification
+- [x] 204 tests passing

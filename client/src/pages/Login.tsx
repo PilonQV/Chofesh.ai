@@ -20,6 +20,15 @@ export default function Login() {
   const [needsVerification, setNeedsVerification] = useState(false);
   const [rateLimitMessage, setRateLimitMessage] = useState<string | null>(null);
 
+  const resendVerificationMutation = trpc.auth.resendVerification.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.message);
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to resend verification email");
+    },
+  });
+
   const loginMutation = trpc.auth.login.useMutation({
     onSuccess: () => {
       toast.success("Login successful!");
@@ -90,8 +99,21 @@ export default function Login() {
             {needsVerification && (
               <Alert variant="default" className="border-amber-500/50 bg-amber-500/10">
                 <Mail className="h-4 w-4 text-amber-500" />
-                <AlertDescription className="text-amber-200">
-                  Please verify your email before logging in. Check your inbox for the verification link.
+                <AlertDescription className="text-amber-200 space-y-2">
+                  <p>Please verify your email before logging in. Check your inbox for the verification link.</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-amber-500/50 hover:bg-amber-500/20"
+                    onClick={() => resendVerificationMutation.mutate({ email })}
+                    disabled={resendVerificationMutation.isPending || !email}
+                  >
+                    {resendVerificationMutation.isPending ? (
+                      <><Loader2 className="mr-2 h-3 w-3 animate-spin" /> Sending...</>
+                    ) : (
+                      "Resend Verification Email"
+                    )}
+                  </Button>
                 </AlertDescription>
               </Alert>
             )}
