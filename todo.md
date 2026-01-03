@@ -749,3 +749,9 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Track device fingerprint (user agent hash) for each user
 - [x] Compare current login device with known devices
 - [x] Register new devices and update last used timestamp for known devices
+
+
+## Phase 36: Bug Fixes
+
+- [x] Fix scroll not working on homepage (caused by overflow:hidden CSS)
+- [x] Fix logout not working (was using manual cookie clear instead of useAuth logout)
