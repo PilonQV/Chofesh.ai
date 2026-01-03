@@ -698,3 +698,15 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [ ] Add email unsubscribe link to marketing emails
 - [ ] Add login notification emails (new device/location alerts)
 - [ ] Add subscription confirmation emails (upgrade/downgrade receipts)
+
+
+## Phase 30: Deployment Bug Fix
+
+- [ ] Fix Resend API key initialization error on Render deployment
+- [ ] Make Resend initialization graceful when API key is missing
+
+
+## Phase 30: Deployment Bug Fix
+
+- [x] Fix Resend API key initialization error on Render deployment
+- [x] Make Resend initialization graceful when API key is missing
