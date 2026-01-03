@@ -42,6 +42,13 @@ import {
   deleteSharedLink,
   incrementDailyQueries,
   getDailyQueryCount,
+  // Email auth functions
+  getUserByEmail,
+  createEmailUser,
+  verifyUserEmail,
+  setPasswordResetToken,
+  resetPassword,
+  getUserByOpenId,
   // Memory functions
   createMemory,
   getUserMemories,
@@ -139,6 +146,167 @@ export const appRouter = router({
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
       return { success: true } as const;
     }),
+    
+    // Email/Password Registration
+    register: publicProcedure
+      .input(z.object({
+        email: z.string().email(),
+        password: z.string().min(8),
+        name: z.string().min(1),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const { hashPassword, generateToken, generateEmailOpenId, validatePassword, getTokenExpiry } = await import("./_core/passwordAuth");
+        
+        // Validate password strength
+        const passwordError = validatePassword(input.password);
+        if (passwordError) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: passwordError });
+        }
+        
+        // Check if email already exists
+        const existingUser = await getUserByEmail(input.email);
+        if (existingUser) {
+          throw new TRPCError({ code: "CONFLICT", message: "An account with this email already exists" });
+        }
+        
+        // Create user
+        const passwordHash = await hashPassword(input.password);
+        const verificationToken = generateToken();
+        const openId = generateEmailOpenId(input.email);
+        
+        await createEmailUser({
+          openId,
+          email: input.email,
+          name: input.name,
+          passwordHash,
+          verificationToken,
+          verificationTokenExpiry: getTokenExpiry(),
+        });
+        
+        // Log the registration
+        const newUser = await getUserByOpenId(openId);
+        await createAuditLog({
+          userId: newUser?.id || null,
+          userOpenId: openId,
+          actionType: "login",
+          ipAddress: getClientIp(ctx.req),
+          userAgent: ctx.req.headers["user-agent"] || null,
+          metadata: JSON.stringify({ loginMethod: "email", isNewUser: true, action: "register" }),
+          timestamp: new Date(),
+        });
+        
+        return { success: true, message: "Account created successfully. Please check your email to verify your account." };
+      }),
+    
+    // Email/Password Login
+    login: publicProcedure
+      .input(z.object({
+        email: z.string().email(),
+        password: z.string(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const { verifyPassword } = await import("./_core/passwordAuth");
+        const { sdk } = await import("./_core/sdk");
+        
+        // Find user by email
+        const user = await getUserByEmail(input.email);
+        if (!user || !user.passwordHash) {
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid email or password" });
+        }
+        
+        // Verify password
+        const isValid = await verifyPassword(input.password, user.passwordHash);
+        if (!isValid) {
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid email or password" });
+        }
+        
+        // Check if email is verified (optional - can be enabled later)
+        // if (!user.emailVerified) {
+        //   throw new TRPCError({ code: "FORBIDDEN", message: "Please verify your email before logging in" });
+        // }
+        
+        // Create session token
+        const sessionToken = await sdk.createSessionToken(user.openId, {
+          name: user.name || "",
+          expiresInMs: 365 * 24 * 60 * 60 * 1000, // 1 year
+        });
+        
+        // Set cookie
+        const cookieOptions = getSessionCookieOptions(ctx.req);
+        ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: 365 * 24 * 60 * 60 * 1000 });
+        
+        // Log the login
+        await createAuditLog({
+          userId: user.id,
+          userOpenId: user.openId,
+          actionType: "login",
+          ipAddress: getClientIp(ctx.req),
+          userAgent: ctx.req.headers["user-agent"] || null,
+          metadata: JSON.stringify({ loginMethod: "email" }),
+          timestamp: new Date(),
+        });
+        
+        return { success: true, user: { id: user.id, name: user.name, email: user.email, role: user.role } };
+      }),
+    
+    // Request Password Reset
+    requestPasswordReset: publicProcedure
+      .input(z.object({ email: z.string().email() }))
+      .mutation(async ({ input }) => {
+        const { generateToken, getTokenExpiry } = await import("./_core/passwordAuth");
+        
+        const user = await getUserByEmail(input.email);
+        if (!user) {
+          // Don't reveal if email exists
+          return { success: true, message: "If an account exists with this email, you will receive a password reset link." };
+        }
+        
+        const resetToken = generateToken();
+        await setPasswordResetToken(input.email, resetToken, getTokenExpiry());
+        
+        // TODO: Send email with reset link
+        // For now, just log it (in production, integrate with email service)
+        console.log(`[Auth] Password reset token for ${input.email}: ${resetToken}`);
+        
+        return { success: true, message: "If an account exists with this email, you will receive a password reset link." };
+      }),
+    
+    // Reset Password with Token
+    resetPassword: publicProcedure
+      .input(z.object({
+        token: z.string(),
+        newPassword: z.string().min(8),
+      }))
+      .mutation(async ({ input }) => {
+        const { hashPassword, validatePassword } = await import("./_core/passwordAuth");
+        
+        const passwordError = validatePassword(input.newPassword);
+        if (passwordError) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: passwordError });
+        }
+        
+        const newPasswordHash = await hashPassword(input.newPassword);
+        const user = await resetPassword(input.token, newPasswordHash);
+        
+        if (!user) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid or expired reset token" });
+        }
+        
+        return { success: true, message: "Password has been reset successfully. You can now log in with your new password." };
+      }),
+    
+    // Verify Email
+    verifyEmail: publicProcedure
+      .input(z.object({ token: z.string() }))
+      .mutation(async ({ input }) => {
+        const user = await verifyUserEmail(input.token);
+        
+        if (!user) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid or expired verification token" });
+        }
+        
+        return { success: true, message: "Email verified successfully. You can now log in." };
+      }),
   }),
 
   // Enhanced Models endpoint with tiers
