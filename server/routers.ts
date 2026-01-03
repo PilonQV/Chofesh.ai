@@ -323,16 +323,8 @@ export const appRouter = router({
           // Update last used timestamp for known device
           await updateDeviceLastUsed(user.id, deviceFingerprint, clientIp);
         } else {
-          // Register new device
+          // Register new device (no email notification - disabled for privacy)
           await registerDevice(user.id, deviceFingerprint, userAgent, clientIp);
-          
-          // Send login notification email for new device (async, don't wait)
-          const { sendLoginNotificationEmail } = await import("./_core/resend");
-          sendLoginNotificationEmail(user.email!, user.name || "User", {
-            ipAddress: clientIp,
-            userAgent: userAgent,
-            timestamp: loginTimestamp,
-          }).catch(err => console.error("Failed to send login notification:", err));
         }
         
         return { success: true, user: { id: user.id, name: user.name, email: user.email, role: user.role } };
