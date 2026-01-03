@@ -25,6 +25,7 @@ import {
   ChevronDown,
   LayoutDashboard,
   CreditCard,
+  Download,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -35,11 +36,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useState } from "react";
+import { usePWAInstall } from "@/hooks/usePWAInstall";
 
 export default function Home() {
   const { user, loading, isAuthenticated } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [, setLocation] = useLocation();
+  const { isInstallable, isInstalled, promptInstall } = usePWAInstall();
 
   return (
     <div className="min-h-screen bg-background">
@@ -58,6 +61,19 @@ export default function Home() {
           </div>
           
           <div className="flex items-center gap-4">
+            {/* Install App Button */}
+            {isInstallable && !isInstalled && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={promptInstall}
+                className="hidden sm:flex items-center gap-2"
+              >
+                <Download className="w-4 h-4" />
+                Install App
+              </Button>
+            )}
+            
             {/* Theme Toggle */}
             <Button
               variant="ghost"

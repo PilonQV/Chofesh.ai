@@ -392,4 +392,8 @@
 
 ## Phase 17: User Experience Improvements
 
-- [ ] Add user dropdown menu in header with Dashboard, Settings, Usage, Logout
+- [x] Add user dropdown menu in header with Dashboard, Settings, Usage, Logout
+- [x] Run full website audit (performance, SEO, accessibility)
+- [x] Add PWA manifest for app install option
+- [x] Add service worker for offline support
+- [x] Add "Install App" button/prompt
