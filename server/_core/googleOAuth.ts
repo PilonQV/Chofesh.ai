@@ -6,6 +6,15 @@ import { sdk } from "./sdk";
 import { notifyOwner } from "./notification";
 import { ENV } from "./env";
 import crypto from "crypto";
+import { createAuditLog } from "../db";
+
+function getClientIp(req: Request): string {
+  const forwarded = req.headers['x-forwarded-for'];
+  if (typeof forwarded === 'string') {
+    return forwarded.split(',')[0].trim();
+  }
+  return req.socket.remoteAddress || 'unknown';
+}
 
 // Google OAuth URLs
 const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
@@ -156,6 +165,25 @@ export function registerGoogleOAuthRoutes(app: Express) {
 
       console.log("[Google OAuth] User upserted:", { openId, isNewUser });
 
+      // Get user from database to get the ID
+      const dbUser = await db.getUserByOpenId(openId);
+      
+      // Log the login event
+      await createAuditLog({
+        userId: dbUser?.id || null,
+        userOpenId: openId,
+        actionType: "login",
+        ipAddress: getClientIp(req),
+        userAgent: req.headers["user-agent"] || null,
+        metadata: JSON.stringify({
+          loginMethod: 'google',
+          isNewUser,
+          email: googleUser.email || null,
+          googleId: googleUser.id,
+        }),
+        timestamp: new Date(),
+      });
+      
       // Notify owner of new user registration
       if (isNewUser) {
         notifyOwner({

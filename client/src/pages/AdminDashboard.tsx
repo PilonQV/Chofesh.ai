@@ -22,7 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { trpc } from "@/lib/trpc";
 import { Link, useLocation } from "wouter";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   ArrowLeft,
   Users,
@@ -49,6 +49,9 @@ import {
   BarChart3,
   UserPlus,
   UserCheck,
+  Timer,
+  Pause,
+  Play,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -163,11 +166,21 @@ function SubscriptionPieChart({ data }: { data: { free: number; starter: number;
   );
 }
 
+const REFRESH_INTERVALS = [
+  { label: 'Off', value: 0 },
+  { label: '15s', value: 15000 },
+  { label: '30s', value: 30000 },
+  { label: '60s', value: 60000 },
+];
+
 export default function AdminDashboard() {
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
   const [page, setPage] = useState(0);
   const [actionFilter, setActionFilter] = useState<string>("all");
+  const [autoRefreshInterval, setAutoRefreshInterval] = useState(30000); // Default 30s
+  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const [countdown, setCountdown] = useState(30);
   const pageSize = 20;
 
   // Queries
@@ -197,11 +210,48 @@ export default function AdminDashboard() {
     }
   }, [authLoading, isAuthenticated, user, setLocation]);
 
+  // Auto-refresh effect
+  useEffect(() => {
+    if (autoRefreshInterval === 0) {
+      setCountdown(0);
+      return;
+    }
+
+    // Set initial countdown
+    setCountdown(autoRefreshInterval / 1000);
+
+    // Countdown timer
+    const countdownTimer = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) {
+          return autoRefreshInterval / 1000;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    // Refresh timer
+    const refreshTimer = setInterval(() => {
+      refetchStats();
+      refetchDashboard();
+      refetchLogs();
+      refetchUsers();
+      setLastRefresh(new Date());
+    }, autoRefreshInterval);
+
+    return () => {
+      clearInterval(countdownTimer);
+      clearInterval(refreshTimer);
+    };
+  }, [autoRefreshInterval, refetchStats, refetchDashboard, refetchLogs, refetchUsers]);
+
   const handleRefresh = () => {
     refetchStats();
     refetchDashboard();
     refetchLogs();
     refetchUsers();
+    setLastRefresh(new Date());
+    setCountdown(autoRefreshInterval / 1000);
     toast.success("Data refreshed");
   };
 
@@ -242,6 +292,30 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {/* Auto-refresh controls */}
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50 border border-border">
+              <Timer className="w-4 h-4 text-muted-foreground" />
+              <Select 
+                value={autoRefreshInterval.toString()} 
+                onValueChange={(v) => setAutoRefreshInterval(parseInt(v))}
+              >
+                <SelectTrigger className="w-20 h-7 border-0 bg-transparent p-0 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {REFRESH_INTERVALS.map(interval => (
+                    <SelectItem key={interval.value} value={interval.value.toString()}>
+                      {interval.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {autoRefreshInterval > 0 && (
+                <span className="text-xs text-muted-foreground min-w-[24px]">
+                  {countdown}s
+                </span>
+              )}
+            </div>
             <Button variant="outline" size="sm" onClick={handleRefresh}>
               <RefreshCw className="w-4 h-4 mr-2" />
               Refresh
