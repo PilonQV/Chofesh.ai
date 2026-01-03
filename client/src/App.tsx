@@ -16,6 +16,8 @@ import Documents from "./pages/Documents";
 import Usage from "./pages/Usage";
 import Characters from "./pages/Characters";
 import SharedChat from "./pages/SharedChat";
+import Memory from "./pages/Memory";
+import Artifacts from "./pages/Artifacts";
 
 function Router() {
   return (
@@ -31,6 +33,8 @@ function Router() {
       <Route path="/usage" component={Usage} />
       <Route path="/characters" component={Characters} />
       <Route path="/share/:shareId" component={SharedChat} />
+      <Route path="/memory" component={Memory} />
+      <Route path="/artifacts" component={Artifacts} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

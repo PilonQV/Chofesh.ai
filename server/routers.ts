@@ -42,6 +42,26 @@ import {
   deleteSharedLink,
   incrementDailyQueries,
   getDailyQueryCount,
+  // Memory functions
+  createMemory,
+  getUserMemories,
+  getMemoryById,
+  updateMemory,
+  deleteMemory,
+  getActiveMemoriesForContext,
+  // Artifact functions
+  createArtifact,
+  getUserArtifacts,
+  getArtifactById,
+  updateArtifact,
+  deleteArtifact,
+  createArtifactVersion,
+  getArtifactVersionHistory,
+  // Preferences functions
+  getUserPreferences,
+  upsertUserPreferences,
+  getShowThinking,
+  getMemoryEnabled,
 } from "./db";
 import { invokeLLM } from "./_core/llm";
 import { invokeGrok, isGrokAvailable } from "./_core/grok";
@@ -315,6 +335,8 @@ export const appRouter = router({
         temperature: z.number().min(0).max(1).optional(),
         topP: z.number().min(0.1).max(1).optional(),
         webSearch: z.boolean().optional(),
+        showThinking: z.boolean().optional(),
+        includeMemories: z.boolean().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const startTime = Date.now();
@@ -359,9 +381,52 @@ export const appRouter = router({
         const lastUserMessage = input.messages.filter(m => m.role === "user").pop();
         const promptContent = lastUserMessage?.content || "";
         
+        // Memory injection
+        let messagesWithContext = [...input.messages];
+        if (input.includeMemories !== false) {
+          const memoryEnabled = await getMemoryEnabled(ctx.user.id);
+          if (memoryEnabled) {
+            const memories = await getActiveMemoriesForContext(ctx.user.id, 10);
+            if (memories.length > 0) {
+              const memoryContext = memories.map(m => `- ${m.content}`).join('\n');
+              const memorySystemPrompt = `User context (remember these facts about the user):\n${memoryContext}`;
+              
+              const existingSystemIdx = messagesWithContext.findIndex(m => m.role === 'system');
+              if (existingSystemIdx >= 0) {
+                messagesWithContext[existingSystemIdx] = {
+                  ...messagesWithContext[existingSystemIdx],
+                  content: messagesWithContext[existingSystemIdx].content + '\n\n' + memorySystemPrompt,
+                };
+              } else {
+                messagesWithContext.unshift({
+                  role: 'system',
+                  content: memorySystemPrompt,
+                });
+              }
+            }
+          }
+        }
+
+        // Thinking mode - add instruction to show reasoning
+        if (input.showThinking) {
+          const thinkingInstruction = 'Before answering, show your reasoning process inside <think>...</think> tags. Think step by step, then provide your final answer after the thinking block.';
+          const existingSystemIdx = messagesWithContext.findIndex(m => m.role === 'system');
+          if (existingSystemIdx >= 0) {
+            messagesWithContext[existingSystemIdx] = {
+              ...messagesWithContext[existingSystemIdx],
+              content: thinkingInstruction + '\n\n' + messagesWithContext[existingSystemIdx].content,
+            };
+          } else {
+            messagesWithContext.unshift({
+              role: 'system',
+              content: thinkingInstruction,
+            });
+          }
+        }
+
         // Web search integration
         let webSearchResults: { title: string; url: string; description: string }[] = [];
-        let messagesWithSearch = [...input.messages];
+        let messagesWithSearch = [...messagesWithContext];
         
         if (input.webSearch && promptContent) {
           try {
@@ -1397,6 +1462,189 @@ export const appRouter = router({
 
       return { portalUrl: session.url };
     }),
+  }),
+
+  // User Memories
+  memories: router({
+    list: protectedProcedure
+      .input(z.object({
+        category: z.enum(["preference", "fact", "context", "instruction"]).optional(),
+        activeOnly: z.boolean().optional(),
+      }).optional())
+      .query(async ({ ctx, input }) => {
+        return await getUserMemories(
+          ctx.user.id,
+          input?.category,
+          input?.activeOnly ?? true
+        );
+      }),
+
+    get: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const memory = await getMemoryById(input.id, ctx.user.id);
+        if (!memory) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Memory not found" });
+        }
+        return memory;
+      }),
+
+    create: protectedProcedure
+      .input(z.object({
+        content: z.string().min(1).max(2000),
+        category: z.enum(["preference", "fact", "context", "instruction"]).optional(),
+        importance: z.enum(["low", "medium", "high"]).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const id = await createMemory({
+          userId: ctx.user.id,
+          content: input.content,
+          category: input.category || "fact",
+          importance: input.importance || "medium",
+          source: "user",
+        });
+        return { id, success: true };
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        content: z.string().min(1).max(2000).optional(),
+        category: z.enum(["preference", "fact", "context", "instruction"]).optional(),
+        importance: z.enum(["low", "medium", "high"]).optional(),
+        isActive: z.boolean().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { id, ...updates } = input;
+        await updateMemory(id, ctx.user.id, updates);
+        return { success: true };
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await deleteMemory(input.id, ctx.user.id);
+        return { success: true };
+      }),
+
+    getForContext: protectedProcedure
+      .input(z.object({ limit: z.number().min(1).max(20).optional() }).optional())
+      .query(async ({ ctx, input }) => {
+        return await getActiveMemoriesForContext(ctx.user.id, input?.limit || 10);
+      }),
+  }),
+
+  // Artifacts
+  artifacts: router({
+    list: protectedProcedure
+      .input(z.object({
+        type: z.enum(["document", "code", "table", "diagram", "markdown"]).optional(),
+      }).optional())
+      .query(async ({ ctx, input }) => {
+        return await getUserArtifacts(ctx.user.id, input?.type);
+      }),
+
+    get: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const artifact = await getArtifactById(input.id, ctx.user.id);
+        if (!artifact) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Artifact not found" });
+        }
+        return artifact;
+      }),
+
+    create: protectedProcedure
+      .input(z.object({
+        title: z.string().min(1).max(255),
+        type: z.enum(["document", "code", "table", "diagram", "markdown"]),
+        content: z.string(),
+        language: z.string().optional(),
+        conversationId: z.string().optional(),
+        metadata: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const id = await createArtifact({
+          userId: ctx.user.id,
+          title: input.title,
+          type: input.type,
+          content: input.content,
+          language: input.language,
+          conversationId: input.conversationId,
+          metadata: input.metadata,
+        });
+        return { id, success: true };
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        title: z.string().min(1).max(255).optional(),
+        content: z.string().optional(),
+        language: z.string().optional(),
+        metadata: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { id, ...updates } = input;
+        await updateArtifact(id, ctx.user.id, updates);
+        return { success: true };
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await deleteArtifact(input.id, ctx.user.id);
+        return { success: true };
+      }),
+
+    createVersion: protectedProcedure
+      .input(z.object({
+        originalId: z.number(),
+        newContent: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const id = await createArtifactVersion(input.originalId, ctx.user.id, input.newContent);
+        return { id, success: true };
+      }),
+
+    getVersionHistory: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ ctx, input }) => {
+        return await getArtifactVersionHistory(input.id, ctx.user.id);
+      }),
+  }),
+
+  // User Preferences (for advanced features)
+  preferences: router({
+    get: protectedProcedure.query(async ({ ctx }) => {
+      const prefs = await getUserPreferences(ctx.user.id);
+      return prefs || {
+        showThinking: false,
+        thinkingExpanded: false,
+        memoryEnabled: true,
+        autoExtractMemories: false,
+        artifactPanelEnabled: true,
+        artifactPanelPosition: "right",
+        preferredResponseFormat: "auto",
+        codeTheme: "github-dark",
+      };
+    }),
+
+    update: protectedProcedure
+      .input(z.object({
+        showThinking: z.boolean().optional(),
+        thinkingExpanded: z.boolean().optional(),
+        memoryEnabled: z.boolean().optional(),
+        autoExtractMemories: z.boolean().optional(),
+        artifactPanelEnabled: z.boolean().optional(),
+        artifactPanelPosition: z.enum(["right", "bottom"]).optional(),
+        preferredResponseFormat: z.enum(["detailed", "concise", "bullet", "auto"]).optional(),
+        codeTheme: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        await upsertUserPreferences(ctx.user.id, input);
+        return { success: true };
+      }),
   }),
 });
 

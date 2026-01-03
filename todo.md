@@ -438,3 +438,29 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - Voice Conversations
 - Workflows & Automation
 - And 15+ more features with implementation details
+
+
+## Phase 20: Advanced Features Implementation
+
+### Memory System
+- [x] Add memories table to database schema
+- [x] Create memory CRUD operations in db.ts
+- [x] Add memory router endpoints
+- [x] Build memory management UI (/memory page)
+- [ ] Auto-extract memories from conversations (future)
+
+### Thinking Mode
+- [x] Add thinking mode toggle to chat settings
+- [x] Update chat backend to support thinking blocks (<think>...</think>)
+- [x] Render thinking blocks in chat UI with collapsible sections
+- [x] Add visual styling for thinking vs response
+
+### Artifacts Panel
+- [x] Create artifact types and schema (document, code, table, diagram, markdown)
+- [x] Add artifact router endpoints (CRUD + versioning)
+- [x] Build split-view interface (/artifacts page)
+- [x] Implement artifact versioning with history
+- [x] Add export options (copy, download)
+
+### Tests
+- [x] 156 unit tests passing

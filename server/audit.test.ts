@@ -45,6 +45,24 @@ vi.mock("./db", () => ({
   incrementDailyQueries: vi.fn().mockResolvedValue(undefined),
   getUserSubscription: vi.fn().mockResolvedValue({ tier: 'free', dailyLimit: 20 }),
   updateUserSubscription: vi.fn().mockResolvedValue(undefined),
+  // Memory functions
+  getMemoryEnabled: vi.fn().mockResolvedValue(false),
+  getActiveMemoriesForContext: vi.fn().mockResolvedValue([]),
+  createMemory: vi.fn().mockResolvedValue(1),
+  getUserMemories: vi.fn().mockResolvedValue([]),
+  updateMemory: vi.fn().mockResolvedValue(undefined),
+  deleteMemory: vi.fn().mockResolvedValue(undefined),
+  // Preferences functions
+  getUserPreferences: vi.fn().mockResolvedValue({ memoryEnabled: true, showThinking: false }),
+  updateUserPreferences: vi.fn().mockResolvedValue(undefined),
+  // Artifacts functions
+  createArtifact: vi.fn().mockResolvedValue(1),
+  getUserArtifacts: vi.fn().mockResolvedValue([]),
+  getArtifactById: vi.fn().mockResolvedValue(null),
+  updateArtifact: vi.fn().mockResolvedValue(undefined),
+  deleteArtifact: vi.fn().mockResolvedValue(undefined),
+  createArtifactVersion: vi.fn().mockResolvedValue(1),
+  getArtifactVersionHistory: vi.fn().mockResolvedValue([]),
 }));
 
 // Mock LLM and image generation

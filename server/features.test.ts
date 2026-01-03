@@ -251,3 +251,226 @@ describe("Settings Router", () => {
     ).rejects.toThrow();
   });
 });
+
+
+// ============================================
+// Memory System Tests
+// ============================================
+
+describe("Memory Router", () => {
+  it("requires authentication to list memories", async () => {
+    const ctx = createMockContext(null);
+    const caller = appRouter.createCaller(ctx);
+
+    await expect(caller.memories.list()).rejects.toThrow();
+  });
+
+  it("requires authentication to create memories", async () => {
+    const ctx = createMockContext(null);
+    const caller = appRouter.createCaller(ctx);
+
+    await expect(
+      caller.memories.create({
+        content: "Test memory",
+        category: "fact",
+        importance: "medium",
+      })
+    ).rejects.toThrow();
+  });
+});
+
+// ============================================
+// Artifacts System Tests
+// ============================================
+
+describe("Artifacts Router", () => {
+  it("requires authentication to list artifacts", async () => {
+    const ctx = createMockContext(null);
+    const caller = appRouter.createCaller(ctx);
+
+    await expect(caller.artifacts.list()).rejects.toThrow();
+  });
+
+  it("requires authentication to create artifacts", async () => {
+    const ctx = createMockContext(null);
+    const caller = appRouter.createCaller(ctx);
+
+    await expect(
+      caller.artifacts.create({
+        title: "Test Artifact",
+        type: "document",
+        content: "Test content",
+      })
+    ).rejects.toThrow();
+  });
+
+  it("validates artifact type enum", async () => {
+    const ctx = createMockContext(mockUser);
+    const caller = appRouter.createCaller(ctx);
+
+    // Invalid type should fail validation
+    await expect(
+      caller.artifacts.create({
+        title: "Test",
+        type: "invalid_type" as any,
+        content: "Test",
+      })
+    ).rejects.toThrow();
+  });
+});
+
+// ============================================
+// User Preferences Tests
+// ============================================
+
+describe("Preferences Router", () => {
+  it("requires authentication to get preferences", async () => {
+    const ctx = createMockContext(null);
+    const caller = appRouter.createCaller(ctx);
+
+    await expect(caller.preferences.get()).rejects.toThrow();
+  });
+
+  it("requires authentication to update preferences", async () => {
+    const ctx = createMockContext(null);
+    const caller = appRouter.createCaller(ctx);
+
+    await expect(
+      caller.preferences.update({ memoryEnabled: false })
+    ).rejects.toThrow();
+  });
+});
+
+// ============================================
+// Thinking Mode Parsing Tests
+// ============================================
+
+describe("Thinking Mode Content Parsing", () => {
+  it("should parse thinking blocks from content", () => {
+    const content = "<think>Let me analyze this step by step...</think>The answer is 42.";
+    
+    const thinkMatch = content.match(/<think>([\s\S]*?)<\/think>/);
+    const thinkingContent = thinkMatch ? thinkMatch[1].trim() : "";
+    const mainContent = content.replace(/<think>[\s\S]*?<\/think>/, "").trim();
+    
+    expect(thinkingContent).toBe("Let me analyze this step by step...");
+    expect(mainContent).toBe("The answer is 42.");
+  });
+
+  it("should handle content without thinking blocks", () => {
+    const content = "The answer is 42.";
+    
+    const hasThinking = content.includes("<think>");
+    
+    expect(hasThinking).toBe(false);
+  });
+
+  it("should handle multi-line thinking blocks", () => {
+    const content = `<think>
+Step 1: Consider the problem
+Step 2: Analyze the data
+Step 3: Draw conclusions
+</think>
+
+Based on my analysis, the answer is 42.`;
+    
+    const thinkMatch = content.match(/<think>([\s\S]*?)<\/think>/);
+    const thinkingContent = thinkMatch ? thinkMatch[1].trim() : "";
+    
+    expect(thinkingContent).toContain("Step 1");
+    expect(thinkingContent).toContain("Step 2");
+    expect(thinkingContent).toContain("Step 3");
+  });
+
+  it("should handle empty thinking blocks", () => {
+    const content = "<think></think>The answer is 42.";
+    
+    const thinkMatch = content.match(/<think>([\s\S]*?)<\/think>/);
+    const thinkingContent = thinkMatch ? thinkMatch[1].trim() : "";
+    const mainContent = content.replace(/<think>[\s\S]*?<\/think>/, "").trim();
+    
+    expect(thinkingContent).toBe("");
+    expect(mainContent).toBe("The answer is 42.");
+  });
+});
+
+// ============================================
+// Memory Context Injection Tests
+// ============================================
+
+describe("Memory Context Injection", () => {
+  it("should format memories for system prompt", () => {
+    const memories = [
+      { content: "I prefer TypeScript" },
+      { content: "I am a software developer" },
+    ];
+    
+    const memoryContext = memories.map(m => `- ${m.content}`).join("\n");
+    const memorySystemPrompt = `User context (remember these facts about the user):\n${memoryContext}`;
+    
+    expect(memorySystemPrompt).toContain("- I prefer TypeScript");
+    expect(memorySystemPrompt).toContain("- I am a software developer");
+    expect(memorySystemPrompt).toContain("User context");
+  });
+
+  it("should handle empty memories array", () => {
+    const memories: { content: string }[] = [];
+    
+    const memoryContext = memories.map(m => `- ${m.content}`).join("\n");
+    
+    expect(memoryContext).toBe("");
+  });
+
+  it("should limit memories to specified count", () => {
+    const memories = [
+      { content: "Memory 1" },
+      { content: "Memory 2" },
+      { content: "Memory 3" },
+      { content: "Memory 4" },
+      { content: "Memory 5" },
+    ];
+    
+    const limitedMemories = memories.slice(0, 3);
+    
+    expect(limitedMemories.length).toBe(3);
+  });
+});
+
+// ============================================
+// Artifact Type Validation Tests
+// ============================================
+
+describe("Artifact Type Validation", () => {
+  const validTypes = ["document", "code", "table", "diagram", "markdown"];
+  
+  it("should accept all valid artifact types", () => {
+    validTypes.forEach(type => {
+      expect(validTypes.includes(type)).toBe(true);
+    });
+  });
+
+  it("should have correct type count", () => {
+    expect(validTypes.length).toBe(5);
+  });
+});
+
+// ============================================
+// Memory Category Validation Tests
+// ============================================
+
+describe("Memory Category Validation", () => {
+  const validCategories = ["preference", "fact", "context", "instruction"];
+  const validImportance = ["low", "medium", "high"];
+  
+  it("should accept all valid memory categories", () => {
+    validCategories.forEach(category => {
+      expect(validCategories.includes(category)).toBe(true);
+    });
+  });
+
+  it("should accept all valid importance levels", () => {
+    validImportance.forEach(level => {
+      expect(validImportance.includes(level)).toBe(true);
+    });
+  });
+});

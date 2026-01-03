@@ -2,7 +2,8 @@ import { eq, desc, and, gte, lte, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { 
   InsertUser, users, auditLogs, InsertAuditLog, userSettings, InsertUserSettings,
-  aiCharacters, InsertAiCharacter, sharedLinks, InsertSharedLink
+  aiCharacters, InsertAiCharacter, sharedLinks, InsertSharedLink,
+  userMemories, InsertUserMemory, artifacts, InsertArtifact, userPreferences, InsertUserPreference
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -744,4 +745,241 @@ export async function updateUserSubscription(
       ...(stripeSubscriptionId && { stripeSubscriptionId }),
     })
     .where(eq(users.id, userId));
+}
+
+
+// ============ USER MEMORIES FUNCTIONS ============
+
+export async function createMemory(memory: InsertUserMemory) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(userMemories).values(memory);
+  return result[0].insertId;
+}
+
+export async function getUserMemories(userId: number, category?: string, activeOnly: boolean = true) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const conditions = [eq(userMemories.userId, userId)];
+  if (activeOnly) conditions.push(eq(userMemories.isActive, true));
+  if (category) conditions.push(eq(userMemories.category, category as "preference" | "fact" | "context" | "instruction"));
+
+  return await db.select()
+    .from(userMemories)
+    .where(and(...conditions))
+    .orderBy(desc(userMemories.importance), desc(userMemories.createdAt));
+}
+
+export async function getMemoryById(memoryId: number, userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const results = await db.select()
+    .from(userMemories)
+    .where(and(
+      eq(userMemories.id, memoryId),
+      eq(userMemories.userId, userId)
+    ))
+    .limit(1);
+
+  return results[0];
+}
+
+export async function updateMemory(memoryId: number, userId: number, updates: Partial<InsertUserMemory>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(userMemories)
+    .set(updates)
+    .where(and(
+      eq(userMemories.id, memoryId),
+      eq(userMemories.userId, userId)
+    ));
+}
+
+export async function deleteMemory(memoryId: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.delete(userMemories).where(and(
+    eq(userMemories.id, memoryId),
+    eq(userMemories.userId, userId)
+  ));
+}
+
+export async function touchMemory(memoryId: number) {
+  const db = await getDb();
+  if (!db) return;
+
+  await db.update(userMemories)
+    .set({ lastUsed: new Date() })
+    .where(eq(userMemories.id, memoryId));
+}
+
+export async function getActiveMemoriesForContext(userId: number, limit: number = 10) {
+  const db = await getDb();
+  if (!db) return [];
+
+  // Get most important and recently used memories
+  return await db.select()
+    .from(userMemories)
+    .where(and(
+      eq(userMemories.userId, userId),
+      eq(userMemories.isActive, true)
+    ))
+    .orderBy(
+      desc(userMemories.importance),
+      desc(userMemories.lastUsed),
+      desc(userMemories.createdAt)
+    )
+    .limit(limit);
+}
+
+// ============ ARTIFACTS FUNCTIONS ============
+
+export async function createArtifact(artifact: InsertArtifact) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(artifacts).values(artifact);
+  return result[0].insertId;
+}
+
+export async function getUserArtifacts(userId: number, type?: string) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const conditions = [eq(artifacts.userId, userId)];
+  if (type) conditions.push(eq(artifacts.type, type as "document" | "code" | "table" | "diagram" | "markdown"));
+
+  return await db.select()
+    .from(artifacts)
+    .where(and(...conditions))
+    .orderBy(desc(artifacts.updatedAt));
+}
+
+export async function getArtifactById(artifactId: number, userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const results = await db.select()
+    .from(artifacts)
+    .where(and(
+      eq(artifacts.id, artifactId),
+      eq(artifacts.userId, userId)
+    ))
+    .limit(1);
+
+  return results[0];
+}
+
+export async function updateArtifact(artifactId: number, userId: number, updates: Partial<InsertArtifact>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(artifacts)
+    .set(updates)
+    .where(and(
+      eq(artifacts.id, artifactId),
+      eq(artifacts.userId, userId)
+    ));
+}
+
+export async function deleteArtifact(artifactId: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.delete(artifacts).where(and(
+    eq(artifacts.id, artifactId),
+    eq(artifacts.userId, userId)
+  ));
+}
+
+export async function createArtifactVersion(originalId: number, userId: number, newContent: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  // Get the original artifact
+  const original = await getArtifactById(originalId, userId);
+  if (!original) throw new Error("Original artifact not found");
+
+  // Create new version
+  const result = await db.insert(artifacts).values({
+    userId,
+    title: original.title,
+    type: original.type,
+    content: newContent,
+    language: original.language,
+    version: original.version + 1,
+    parentId: originalId,
+    conversationId: original.conversationId,
+    metadata: original.metadata,
+  });
+
+  return result[0].insertId;
+}
+
+export async function getArtifactVersionHistory(artifactId: number, userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  // Get the artifact and all its ancestors
+  const artifact = await getArtifactById(artifactId, userId);
+  if (!artifact) return [];
+
+  const history = [artifact];
+  let currentId = artifact.parentId;
+
+  while (currentId) {
+    const parent = await getArtifactById(currentId, userId);
+    if (!parent) break;
+    history.push(parent);
+    currentId = parent.parentId;
+  }
+
+  return history.reverse(); // Oldest first
+}
+
+// ============ USER PREFERENCES FUNCTIONS ============
+
+export async function getUserPreferences(userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const results = await db.select()
+    .from(userPreferences)
+    .where(eq(userPreferences.userId, userId))
+    .limit(1);
+
+  return results[0] || null;
+}
+
+export async function upsertUserPreferences(userId: number, prefs: Partial<InsertUserPreference>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const existing = await getUserPreferences(userId);
+
+  if (existing) {
+    await db.update(userPreferences)
+      .set(prefs)
+      .where(eq(userPreferences.userId, userId));
+  } else {
+    await db.insert(userPreferences).values({
+      userId,
+      ...prefs,
+    });
+  }
+}
+
+export async function getShowThinking(userId: number): Promise<boolean> {
+  const prefs = await getUserPreferences(userId);
+  return prefs?.showThinking ?? false;
+}
+
+export async function getMemoryEnabled(userId: number): Promise<boolean> {
+  const prefs = await getUserPreferences(userId);
+  return prefs?.memoryEnabled ?? true;
 }
