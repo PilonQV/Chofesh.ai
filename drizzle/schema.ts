@@ -10,6 +10,13 @@ export const users = mysqlTable("users", {
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+  // Password authentication fields
+  passwordHash: varchar("passwordHash", { length: 255 }),
+  emailVerified: boolean("emailVerified").default(false).notNull(),
+  verificationToken: varchar("verificationToken", { length: 64 }),
+  verificationTokenExpiry: timestamp("verificationTokenExpiry"),
+  resetToken: varchar("resetToken", { length: 64 }),
+  resetTokenExpiry: timestamp("resetTokenExpiry"),
   // Subscription fields
   subscriptionTier: mysqlEnum("subscriptionTier", ["free", "starter", "pro", "unlimited"]).default("free").notNull(),
   stripeCustomerId: varchar("stripeCustomerId", { length: 64 }),

@@ -19,6 +19,10 @@ import SharedChat from "./pages/SharedChat";
 import Memory from "./pages/Memory";
 import Artifacts from "./pages/Artifacts";
 import Subscription from "./pages/Subscription";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 function Router() {
   return (
@@ -37,6 +41,10 @@ function Router() {
       <Route path="/memory" component={Memory} />
       <Route path="/artifacts" component={Artifacts} />
       <Route path="/subscription" component={Subscription} />
+      <Route path="/login" component={Login} />
+      <Route path="/register" component={Register} />
+      <Route path="/forgot-password" component={ForgotPassword} />
+      <Route path="/reset-password" component={ResetPassword} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

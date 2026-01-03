@@ -164,9 +164,9 @@ export default function Home() {
                 </DropdownMenu>
               </>
             ) : (
-              <a href={getLoginUrl()}>
+              <Link href="/login">
                 <Button>Get Started</Button>
-              </a>
+              </Link>
             )}
           </div>
         </div>
@@ -202,12 +202,12 @@ export default function Home() {
                 </Button>
               </Link>
             ) : (
-              <a href={getLoginUrl()}>
+              <Link href="/login">
                 <Button size="lg" className="gap-2">
                   Get Started Free
                   <ArrowRight className="w-4 h-4" />
                 </Button>
-              </a>
+              </Link>
             )}
             <a href="#features">
               <Button size="lg" variant="outline" className="gap-2">
@@ -535,12 +535,12 @@ export default function Home() {
               </Button>
             </Link>
           ) : (
-            <a href={getLoginUrl()}>
+            <Link href="/login">
               <Button size="lg" className="gap-2">
                 Get Started Free
                 <ArrowRight className="w-4 h-4" />
               </Button>
-            </a>
+            </Link>
           )}
         </div>
       </section>
@@ -718,7 +718,7 @@ function PricingCard({
   const handleClick = () => {
     // If not authenticated, redirect to login
     if (!isAuthenticated) {
-      window.location.href = getLoginUrl();
+      setLocation("/login");
       return;
     }
 

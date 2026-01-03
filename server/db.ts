@@ -119,6 +119,102 @@ export async function updateUserRole(userId: number, role: "user" | "admin") {
   await db.update(users).set({ role }).where(eq(users.id, userId));
 }
 
+// ============ EMAIL/PASSWORD AUTH FUNCTIONS ============
+
+export async function getUserByEmail(email: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(users).where(eq(users.email, email.toLowerCase())).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function createEmailUser(data: {
+  openId: string;
+  email: string;
+  name: string;
+  passwordHash: string;
+  verificationToken: string;
+  verificationTokenExpiry: Date;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.insert(users).values({
+    openId: data.openId,
+    email: data.email.toLowerCase(),
+    name: data.name,
+    passwordHash: data.passwordHash,
+    loginMethod: "email",
+    emailVerified: false,
+    verificationToken: data.verificationToken,
+    verificationTokenExpiry: data.verificationTokenExpiry,
+  });
+  
+  return await getUserByOpenId(data.openId);
+}
+
+export async function verifyUserEmail(token: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.select().from(users).where(eq(users.verificationToken, token)).limit(1);
+  if (result.length === 0) return null;
+  
+  const user = result[0];
+  if (user.verificationTokenExpiry && new Date() > user.verificationTokenExpiry) {
+    return null; // Token expired
+  }
+  
+  await db.update(users).set({
+    emailVerified: true,
+    verificationToken: null,
+    verificationTokenExpiry: null,
+  }).where(eq(users.id, user.id));
+  
+  return user;
+}
+
+export async function setPasswordResetToken(email: string, token: string, expiry: Date) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.update(users).set({
+    resetToken: token,
+    resetTokenExpiry: expiry,
+  }).where(eq(users.email, email.toLowerCase()));
+  
+  return result;
+}
+
+export async function resetPassword(token: string, newPasswordHash: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.select().from(users).where(eq(users.resetToken, token)).limit(1);
+  if (result.length === 0) return null;
+  
+  const user = result[0];
+  if (user.resetTokenExpiry && new Date() > user.resetTokenExpiry) {
+    return null; // Token expired
+  }
+  
+  await db.update(users).set({
+    passwordHash: newPasswordHash,
+    resetToken: null,
+    resetTokenExpiry: null,
+  }).where(eq(users.id, user.id));
+  
+  return user;
+}
+
+export async function updateUserPassword(userId: number, newPasswordHash: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(users).set({ passwordHash: newPasswordHash }).where(eq(users.id, userId));
+}
+
 // ============ AUDIT LOG FUNCTIONS ============
 
 export async function createAuditLog(log: InsertAuditLog) {
