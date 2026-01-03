@@ -1,7 +1,15 @@
 import { Resend } from "resend";
 
-// Initialize Resend with API key
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Initialize Resend with API key - handle missing key gracefully
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+let resend: Resend | null = null;
+
+if (RESEND_API_KEY) {
+  resend = new Resend(RESEND_API_KEY);
+  console.log("[Resend] Initialized with API key");
+} else {
+  console.warn("[Resend] API key not configured - email functionality disabled");
+}
 
 const FROM_EMAIL = "Chofesh.ai <noreply@chofesh.ai>";
 const SUPPORT_EMAIL = "support@chofesh.ai";
@@ -17,6 +25,11 @@ export interface SendEmailOptions {
  * Send an email using Resend
  */
 export async function sendEmail(options: SendEmailOptions): Promise<{ success: boolean; id?: string; error?: string }> {
+  if (!resend) {
+    console.warn("[Resend] Email not sent - API key not configured");
+    return { success: false, error: "Email service not configured" };
+  }
+
   try {
     const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,
@@ -351,6 +364,10 @@ Need help? Reply to this email or visit our support page.
  * Validate Resend API key by checking domains
  */
 export async function validateResendApiKey(): Promise<{ valid: boolean; error?: string }> {
+  if (!resend) {
+    return { valid: false, error: "Resend API key not configured" };
+  }
+
   try {
     const { data, error } = await resend.domains.list();
     
