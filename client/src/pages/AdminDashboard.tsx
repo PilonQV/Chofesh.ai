@@ -1,7 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
@@ -20,11 +19,11 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { trpc } from "@/lib/trpc";
 import { Link, useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import {
-  Sparkles,
   ArrowLeft,
   Users,
   FileText,
@@ -39,6 +38,17 @@ import {
   RefreshCw,
   ChevronLeft,
   ChevronRight,
+  DollarSign,
+  TrendingUp,
+  CreditCard,
+  Zap,
+  Star,
+  Crown,
+  Infinity,
+  Key,
+  BarChart3,
+  UserPlus,
+  UserCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -58,6 +68,101 @@ const ACTION_COLORS: Record<string, string> = {
   settings_change: "bg-gray-500/10 text-gray-500",
 };
 
+const TIER_ICONS: Record<string, React.ReactNode> = {
+  free: <Zap className="w-4 h-4" />,
+  starter: <Star className="w-4 h-4" />,
+  pro: <Crown className="w-4 h-4" />,
+  unlimited: <Infinity className="w-4 h-4" />,
+};
+
+const TIER_COLORS: Record<string, string> = {
+  free: "bg-muted text-muted-foreground",
+  starter: "bg-blue-500/10 text-blue-500",
+  pro: "bg-primary/10 text-primary",
+  unlimited: "bg-amber-500/10 text-amber-500",
+};
+
+function StatsCard({ 
+  title, 
+  value, 
+  icon, 
+  loading, 
+  subtitle,
+  trend,
+  className = ""
+}: { 
+  title: string; 
+  value: string | number; 
+  icon: React.ReactNode; 
+  loading?: boolean;
+  subtitle?: string;
+  trend?: { value: number; label: string };
+  className?: string;
+}) {
+  return (
+    <Card className={className}>
+      <CardContent className="pt-6">
+        <div className="flex items-start justify-between">
+          <div className="space-y-1">
+            <p className="text-sm text-muted-foreground">{title}</p>
+            {loading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <>
+                <p className="text-2xl font-bold">{value}</p>
+                {subtitle && (
+                  <p className="text-xs text-muted-foreground">{subtitle}</p>
+                )}
+                {trend && (
+                  <div className="flex items-center gap-1 text-xs">
+                    <TrendingUp className={`w-3 h-3 ${trend.value >= 0 ? 'text-green-500' : 'text-red-500'}`} />
+                    <span className={trend.value >= 0 ? 'text-green-500' : 'text-red-500'}>
+                      {trend.value >= 0 ? '+' : ''}{trend.value}%
+                    </span>
+                    <span className="text-muted-foreground">{trend.label}</span>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+          <div className="p-2 rounded-lg bg-primary/10 text-primary">
+            {icon}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function SubscriptionPieChart({ data }: { data: { free: number; starter: number; pro: number; unlimited: number } }) {
+  const total = data.free + data.starter + data.pro + data.unlimited;
+  if (total === 0) return <p className="text-muted-foreground text-center py-4">No users yet</p>;
+  
+  const segments = [
+    { key: 'free', label: 'Free', count: data.free, color: 'bg-muted' },
+    { key: 'starter', label: 'Starter', count: data.starter, color: 'bg-blue-500' },
+    { key: 'pro', label: 'Pro', count: data.pro, color: 'bg-primary' },
+    { key: 'unlimited', label: 'Unlimited', count: data.unlimited, color: 'bg-amber-500' },
+  ];
+
+  return (
+    <div className="space-y-3">
+      {segments.map(seg => (
+        <div key={seg.key} className="space-y-1">
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center gap-2">
+              <div className={`w-3 h-3 rounded-full ${seg.color}`} />
+              <span>{seg.label}</span>
+            </div>
+            <span className="font-medium">{seg.count} ({Math.round(seg.count / total * 100)}%)</span>
+          </div>
+          <Progress value={seg.count / total * 100} className="h-2" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
@@ -67,6 +172,7 @@ export default function AdminDashboard() {
 
   // Queries
   const { data: stats, isLoading: statsLoading, refetch: refetchStats } = trpc.admin.auditStats.useQuery();
+  const { data: dashboardStats, isLoading: dashboardLoading, refetch: refetchDashboard } = trpc.admin.dashboardStats.useQuery();
   const { data: logsData, isLoading: logsLoading, refetch: refetchLogs } = trpc.admin.auditLogs.useQuery({
     limit: pageSize,
     offset: page * pageSize,
@@ -93,6 +199,7 @@ export default function AdminDashboard() {
 
   const handleRefresh = () => {
     refetchStats();
+    refetchDashboard();
     refetchLogs();
     refetchUsers();
     toast.success("Data refreshed");
@@ -156,8 +263,46 @@ export default function AdminDashboard() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        {/* Stats Cards */}
+        {/* Revenue & Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <StatsCard
+            title="Monthly Revenue (MRR)"
+            value={`$${dashboardStats?.revenue.mrr.toFixed(2) || '0.00'}`}
+            icon={<DollarSign className="w-5 h-5" />}
+            loading={dashboardLoading}
+            subtitle={`ARR: $${dashboardStats?.revenue.projectedArr.toFixed(2) || '0.00'}`}
+            className="border-green-500/20"
+          />
+          <StatsCard
+            title="Paid Subscribers"
+            value={dashboardStats?.revenue.paidUsers || 0}
+            icon={<CreditCard className="w-5 h-5" />}
+            loading={dashboardLoading}
+            subtitle={`${dashboardStats?.revenue.conversionRate || 0}% conversion`}
+          />
+          <StatsCard
+            title="Total Users"
+            value={dashboardStats?.users.total || 0}
+            icon={<Users className="w-5 h-5" />}
+            loading={dashboardLoading}
+            subtitle={`+${dashboardStats?.users.newLast7Days || 0} this week`}
+          />
+          <StatsCard
+            title="Active Users (7d)"
+            value={dashboardStats?.users.activeLast7Days || 0}
+            icon={<UserCheck className="w-5 h-5" />}
+            loading={dashboardLoading}
+          />
+        </div>
+
+        {/* Second Row - Usage & Activity */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <StatsCard
+            title="Queries Today"
+            value={dashboardStats?.usage.queriesToday || 0}
+            icon={<MessageSquare className="w-5 h-5" />}
+            loading={dashboardLoading}
+          />
           <StatsCard
             title="Total Events"
             value={stats?.total || 0}
@@ -165,23 +310,79 @@ export default function AdminDashboard() {
             loading={statsLoading}
           />
           <StatsCard
-            title="Last 24 Hours"
+            title="Events (24h)"
             value={stats?.last24h || 0}
-            icon={<FileText className="w-5 h-5" />}
+            icon={<Activity className="w-5 h-5" />}
             loading={statsLoading}
           />
           <StatsCard
-            title="Last 7 Days"
-            value={stats?.last7d || 0}
-            icon={<FileText className="w-5 h-5" />}
-            loading={statsLoading}
+            title="New Users Today"
+            value={dashboardStats?.users.newToday || 0}
+            icon={<UserPlus className="w-5 h-5" />}
+            loading={dashboardLoading}
           />
-          <StatsCard
-            title="Total Users"
-            value={users?.length || 0}
-            icon={<Users className="w-5 h-5" />}
-            loading={usersLoading}
-          />
+        </div>
+
+        {/* Subscription Breakdown & Top Users */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="w-5 h-5" />
+                Subscription Distribution
+              </CardTitle>
+              <CardDescription>Breakdown of users by plan tier</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {dashboardLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                </div>
+              ) : dashboardStats?.subscriptions ? (
+                <SubscriptionPieChart data={dashboardStats.subscriptions} />
+              ) : null}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="w-5 h-5" />
+                Top Users by Usage
+              </CardTitle>
+              <CardDescription>Most active users today</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {dashboardLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                </div>
+              ) : dashboardStats?.topUsers && dashboardStats.topUsers.length > 0 ? (
+                <div className="space-y-3">
+                  {dashboardStats.topUsers.map((user, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
+                      <div className="flex items-center gap-3">
+                        <span className="text-lg font-bold text-muted-foreground w-6">{idx + 1}</span>
+                        <div>
+                          <p className="font-medium">{user.name}</p>
+                          <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs ${TIER_COLORS[user.tier]}`}>
+                            {TIER_ICONS[user.tier]}
+                            <span className="capitalize">{user.tier}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold">{user.queries}</p>
+                        <p className="text-xs text-muted-foreground">queries</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground text-center py-4">No activity yet today</p>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         {/* Activity by Type */}
@@ -219,7 +420,7 @@ export default function AdminDashboard() {
             </TabsTrigger>
             <TabsTrigger value="users" className="gap-2">
               <Users className="w-4 h-4" />
-              Users
+              Users ({users?.length || 0})
             </TabsTrigger>
           </TabsList>
 
@@ -286,9 +487,11 @@ export default function AdminDashboard() {
                               <TableCell className="font-mono text-xs">
                                 {log.ipAddress}
                               </TableCell>
-                              <TableCell>{log.modelUsed || "-"}</TableCell>
-                              <TableCell className="font-mono text-xs max-w-[120px] truncate">
-                                {log.contentHash || "-"}
+                              <TableCell className="text-xs">
+                                {log.modelUsed || "-"}
+                              </TableCell>
+                              <TableCell className="font-mono text-xs">
+                                {log.contentHash?.slice(0, 12) || "-"}...
                               </TableCell>
                             </TableRow>
                           ))}
@@ -301,19 +504,22 @@ export default function AdminDashboard() {
                       <p className="text-sm text-muted-foreground">
                         Showing {page * pageSize + 1} - {Math.min((page + 1) * pageSize, logsData?.total || 0)} of {logsData?.total || 0}
                       </p>
-                      <div className="flex gap-2">
+                      <div className="flex items-center gap-2">
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => setPage((p) => Math.max(0, p - 1))}
+                          onClick={() => setPage(p => Math.max(0, p - 1))}
                           disabled={page === 0}
                         >
                           <ChevronLeft className="w-4 h-4" />
                         </Button>
+                        <span className="text-sm">
+                          Page {page + 1} of {totalPages || 1}
+                        </span>
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => setPage((p) => p + 1)}
+                          onClick={() => setPage(p => p + 1)}
                           disabled={page >= totalPages - 1}
                         >
                           <ChevronRight className="w-4 h-4" />
@@ -332,7 +538,7 @@ export default function AdminDashboard() {
               <CardHeader>
                 <CardTitle>User Management</CardTitle>
                 <CardDescription>
-                  Manage user roles and permissions
+                  View and manage all registered users
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -341,61 +547,76 @@ export default function AdminDashboard() {
                     <Loader2 className="w-6 h-6 animate-spin" />
                   </div>
                 ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>User</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Role</TableHead>
-                        <TableHead>Joined</TableHead>
-                        <TableHead>Last Active</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {users?.map((u) => (
-                        <TableRow key={u.id}>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-xs font-medium text-primary-foreground">
-                                {u.name?.[0]?.toUpperCase() || "U"}
-                              </div>
-                              <span className="font-medium">{u.name || "Unknown"}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-muted-foreground">
-                            {u.email || "-"}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={u.role === "admin" ? "default" : "secondary"}>
-                              {u.role}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-muted-foreground">
-                            {new Date(u.createdAt).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell className="text-muted-foreground">
-                            {new Date(u.lastSignedIn).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell>
-                            <Select
-                              value={u.role}
-                              onValueChange={(value) => handleRoleChange(u.id, value as "user" | "admin")}
-                              disabled={u.openId === user?.openId}
-                            >
-                              <SelectTrigger className="w-24">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="user">User</SelectItem>
-                                <SelectItem value="admin">Admin</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </TableCell>
+                  <ScrollArea className="w-full">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>User</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Subscription</TableHead>
+                          <TableHead>Usage Today</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Role</TableHead>
+                          <TableHead>Joined</TableHead>
+                          <TableHead>Last Active</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {users?.map((u) => (
+                          <TableRow key={u.id}>
+                            <TableCell>
+                              <div className="font-medium">{u.name || "Anonymous"}</div>
+                              <div className="text-xs text-muted-foreground font-mono">
+                                {u.openId.slice(0, 8)}...
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-sm">
+                              {u.email || "-"}
+                            </TableCell>
+                            <TableCell>
+                              <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium ${TIER_COLORS[u.subscriptionTier || 'free']}`}>
+                                {TIER_ICONS[u.subscriptionTier || 'free']}
+                                <span className="capitalize">{u.subscriptionTier || 'free'}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-sm">
+                                <span className="font-medium">{u.dailyQueries || 0}</span>
+                                <span className="text-muted-foreground"> queries</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={u.subscriptionStatus === 'active' ? 'default' : 'secondary'} className="capitalize">
+                                {u.subscriptionStatus}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Select
+                                value={u.role}
+                                onValueChange={(value) => handleRoleChange(u.id, value as "user" | "admin")}
+                              >
+                                <SelectTrigger className="w-24 h-8">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="user">User</SelectItem>
+                                  <SelectItem value="admin">Admin</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground">
+                              {new Date(u.createdAt).toLocaleDateString()}
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground">
+                              {u.lastSignedIn 
+                                ? new Date(u.lastSignedIn).toLocaleDateString()
+                                : "-"}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </ScrollArea>
                 )}
               </CardContent>
             </Card>
@@ -403,37 +624,5 @@ export default function AdminDashboard() {
         </Tabs>
       </main>
     </div>
-  );
-}
-
-function StatsCard({
-  title,
-  value,
-  icon,
-  loading,
-}: {
-  title: string;
-  value: number;
-  icon: React.ReactNode;
-  loading?: boolean;
-}) {
-  return (
-    <Card>
-      <CardContent className="pt-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-muted-foreground">{title}</p>
-            {loading ? (
-              <div className="h-8 w-16 bg-muted animate-pulse rounded mt-1" />
-            ) : (
-              <p className="text-3xl font-bold">{value.toLocaleString()}</p>
-            )}
-          </div>
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-            {icon}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
   );
 }

@@ -105,6 +105,10 @@ export async function getAllUsers() {
     role: users.role,
     createdAt: users.createdAt,
     lastSignedIn: users.lastSignedIn,
+    subscriptionTier: users.subscriptionTier,
+    subscriptionStatus: users.subscriptionStatus,
+    dailyQueries: users.dailyQueries,
+    stripeCustomerId: users.stripeCustomerId,
   }).from(users).orderBy(desc(users.createdAt));
 }
 
