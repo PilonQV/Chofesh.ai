@@ -408,3 +408,5 @@
 - [x] Accessibility: Fix viewport, add main landmark, fix headings
 - [x] Security: Add HSTS, COOP, X-Frame-Options headers, strengthen CSP
 - [x] SEO: Update privacy link text
+- [x] Install Geist fonts locally (remove CDN)
+- [x] Add Permissions-Policy: unload=() header
