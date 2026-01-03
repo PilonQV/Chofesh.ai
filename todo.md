@@ -859,3 +859,10 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Ensure all pages have proper heading structure
 - [x] Add ARIA landmarks (role="banner", role="main", etc.)
 
+
+---
+
+## Bug Fixes (User Reported - Jan 3 2026)
+
+- [x] Fix chat auto-scroll not working - messages not scrolling to bottom
+

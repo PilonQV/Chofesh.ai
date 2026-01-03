@@ -174,6 +174,7 @@ export default function Chat() {
     webSearchUsed?: boolean;
   } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -240,22 +241,16 @@ export default function Chat() {
   // Auto-scroll to bottom when messages change or when generating
   useEffect(() => {
     const scrollToBottom = () => {
-      if (scrollRef.current) {
-        // ScrollArea uses a viewport element inside, need to scroll that
-        const viewport = scrollRef.current.querySelector('[data-slot="scroll-area-viewport"]');
-        if (viewport) {
-          viewport.scrollTo({
-            top: viewport.scrollHeight,
-            behavior: 'smooth'
-          });
-        }
+      // Use messagesEndRef for reliable scrolling
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
       }
     };
     
     // Small delay to ensure DOM has updated
-    const timeoutId = setTimeout(scrollToBottom, 50);
+    const timeoutId = setTimeout(scrollToBottom, 100);
     return () => clearTimeout(timeoutId);
-  }, [currentConversation?.messages, isGenerating]);
+  }, [currentConversation?.messages, currentConversation?.messages?.length, isGenerating]);
 
   // Focus input on load
   useEffect(() => {
@@ -1177,6 +1172,9 @@ export default function Chat() {
                 </div>
               </div>
             )}
+            
+            {/* Scroll anchor - always at bottom */}
+            <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
 
