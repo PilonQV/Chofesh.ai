@@ -268,7 +268,30 @@ export default function AdminDashboard() {
   }
 
   if (!isAuthenticated || user?.role !== "admin") {
-    return null;
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className="max-w-md w-full mx-4">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-destructive" />
+              Access Denied
+            </CardTitle>
+            <CardDescription>
+              {!isAuthenticated 
+                ? "You need to log in to access the admin dashboard."
+                : "You don't have permission to access the admin dashboard."}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link href={!isAuthenticated ? "/login" : "/"}>
+              <Button className="w-full">
+                {!isAuthenticated ? "Log In" : "Go Home"}
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   const totalPages = Math.ceil((logsData?.total || 0) / pageSize);
