@@ -508,3 +508,14 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Add "Cancel Subscription" with confirmation dialog and feature loss warning
 - [x] Update Settings page to link to new subscription page
 - [x] Remove Venice.ai comparison text from pricing section
+
+
+## Phase 24: Enhanced Admin Dashboard
+
+- [x] Add revenue metrics (MRR, ARR, conversion rate)
+- [x] Add user growth stats (new users today, this week, active users)
+- [x] Add usage statistics (queries today, total events)
+- [x] Add subscription tier distribution with visual breakdown
+- [x] Add top users by usage leaderboard
+- [x] Add subscription status column to users table
+- [x] Improved stats cards with subtitles and trends

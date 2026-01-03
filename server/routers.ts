@@ -1106,6 +1106,70 @@ export const appRouter = router({
       return await getAuditLogStats();
     }),
     
+    // Dashboard stats - comprehensive metrics
+    dashboardStats: adminProcedure.query(async () => {
+      const allUsers = await getAllUsers();
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const last7Days = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const last30Days = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+      
+      // User stats
+      const totalUsers = allUsers.length;
+      const newUsersToday = allUsers.filter(u => new Date(u.createdAt) >= today).length;
+      const newUsersLast7Days = allUsers.filter(u => new Date(u.createdAt) >= last7Days).length;
+      const activeUsersLast7Days = allUsers.filter(u => u.lastSignedIn && new Date(u.lastSignedIn) >= last7Days).length;
+      
+      // Subscription breakdown
+      const subscriptionBreakdown = {
+        free: allUsers.filter(u => !u.subscriptionTier || u.subscriptionTier === 'free').length,
+        starter: allUsers.filter(u => u.subscriptionTier === 'starter').length,
+        pro: allUsers.filter(u => u.subscriptionTier === 'pro').length,
+        unlimited: allUsers.filter(u => u.subscriptionTier === 'unlimited').length,
+      };
+      
+      // Revenue calculation (MRR)
+      const mrr = 
+        subscriptionBreakdown.starter * 4.99 +
+        subscriptionBreakdown.pro * 14.99 +
+        subscriptionBreakdown.unlimited * 27.99;
+      
+      // Usage stats
+      const totalQueriesToday = allUsers.reduce((sum, u) => sum + (u.dailyQueries || 0), 0);
+      
+      // Top users by usage
+      const topUsersByQueries = [...allUsers]
+        .sort((a, b) => (b.dailyQueries || 0) - (a.dailyQueries || 0))
+        .slice(0, 5)
+        .map(u => ({
+          name: u.name || 'Anonymous',
+          queries: u.dailyQueries || 0,
+          tier: u.subscriptionTier || 'free',
+        }));
+      
+      return {
+        users: {
+          total: totalUsers,
+          newToday: newUsersToday,
+          newLast7Days: newUsersLast7Days,
+          activeLast7Days: activeUsersLast7Days,
+        },
+        subscriptions: subscriptionBreakdown,
+        revenue: {
+          mrr: Math.round(mrr * 100) / 100,
+          projectedArr: Math.round(mrr * 12 * 100) / 100,
+          paidUsers: subscriptionBreakdown.starter + subscriptionBreakdown.pro + subscriptionBreakdown.unlimited,
+          conversionRate: totalUsers > 0 
+            ? Math.round((subscriptionBreakdown.starter + subscriptionBreakdown.pro + subscriptionBreakdown.unlimited) / totalUsers * 10000) / 100 
+            : 0,
+        },
+        usage: {
+          queriesToday: totalQueriesToday,
+        },
+        topUsers: topUsersByQueries,
+      };
+    }),
+    
     users: adminProcedure.query(async () => {
       return await getAllUsers();
     }),
