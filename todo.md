@@ -848,3 +848,14 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Add navigation link to gallery page
 - [x] Update messaging: "Your images are stored securely and accessible from any device"
 
+
+---
+
+## Phase 20: Accessibility Optimization
+
+### WAVE Report Fixes
+- [x] Fix "No heading structure" alert on homepage
+- [x] Add proper h1, h2, h3 heading hierarchy
+- [x] Ensure all pages have proper heading structure
+- [x] Add ARIA landmarks (role="banner", role="main", etc.)
+
