@@ -1,0 +1,31 @@
+{
+  "query": "SELECT id, name, email, role, openId FROM users ORDER BY id DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 48hnjcx4CHbyzt9.87573283f85b --database ffmn4BbJe88bt6JMq4xy2a --execute SELECT id, name, email, role, openId FROM users ORDER BY id DESC LIMIT 10;",
+  "rows": [
+    {
+      "id": "420001",
+      "name": "Junio Lopez",
+      "email": "cocovenecas@gmail.com",
+      "role": "user",
+      "openId": "google_105172322082629613889"
+    },
+    {
+      "id": "90001",
+      "name": "serever2003",
+      "email": "serever2003@yahoo.com",
+      "role": "user",
+      "openId": "RMu3TSP2qxg3gZb5bnWezm"
+    },
+    {
+      "id": "1",
+      "name": "sssociety33",
+      "email": "sssociety33@gmail.com",
+      "role": "admin",
+      "openId": "jFi9Qpk37qR7KynRQQF4FJ"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\trole\topenId\n420001\tJunio Lopez\tcocovenecas@gmail.com\tuser\tgoogle_105172322082629613889\n90001\tserever2003\tserever2003@yahoo.com\tuser\tRMu3TSP2qxg3gZb5bnWezm\n1\tsssociety33\tsssociety33@gmail.com\tadmin\tjFi9Qpk37qR7KynRQQF4FJ\n",
+  "stderr": "",
+  "execution_time_ms": 64
+}
