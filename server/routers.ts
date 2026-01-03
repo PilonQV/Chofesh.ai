@@ -302,6 +302,7 @@ export const appRouter = router({
         ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: 365 * 24 * 60 * 60 * 1000 });
         
         // Log the login
+        const loginTimestamp = new Date();
         await createAuditLog({
           userId: user.id,
           userOpenId: user.openId,
@@ -309,8 +310,16 @@ export const appRouter = router({
           ipAddress: getClientIp(ctx.req),
           userAgent: ctx.req.headers["user-agent"] || null,
           metadata: JSON.stringify({ loginMethod: "email" }),
-          timestamp: new Date(),
+          timestamp: loginTimestamp,
         });
+        
+        // Send login notification email (async, don't wait)
+        const { sendLoginNotificationEmail } = await import("./_core/resend");
+        sendLoginNotificationEmail(user.email!, user.name || "User", {
+          ipAddress: clientIp,
+          userAgent: ctx.req.headers["user-agent"] || "Unknown",
+          timestamp: loginTimestamp,
+        }).catch(err => console.error("Failed to send login notification:", err));
         
         return { success: true, user: { id: user.id, name: user.name, email: user.email, role: user.role } };
       }),

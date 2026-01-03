@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Separator } from "@/components/ui/separator";
 import { trpc } from "@/lib/trpc";
 import { Mail, Lock, Eye, EyeOff, Loader2, Shield, ArrowLeft, AlertCircle } from "lucide-react";
-import { getLoginUrl } from "@/const";
+
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -65,12 +65,8 @@ export default function Login() {
     loginMutation.mutate({ email, password });
   };
 
-  const handleOAuthLogin = (provider: "manus" | "google") => {
-    if (provider === "manus") {
-      window.location.href = getLoginUrl();
-    } else {
-      window.location.href = "/api/auth/google";
-    }
+  const handleGoogleLogin = () => {
+    window.location.href = "/api/auth/google";
   };
 
   return (
@@ -132,7 +128,7 @@ export default function Login() {
               <Button
                 variant="outline"
                 className="w-full"
-                onClick={() => handleOAuthLogin("google")}
+                onClick={handleGoogleLogin}
               >
                 <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                   <path
@@ -153,15 +149,6 @@ export default function Login() {
                   />
                 </svg>
                 Continue with Google
-              </Button>
-              
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => handleOAuthLogin("manus")}
-              >
-                <img src="/logo.webp" alt="Manus" className="mr-2 h-4 w-4" />
-                Continue with Manus
               </Button>
             </div>
 

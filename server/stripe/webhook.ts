@@ -3,7 +3,8 @@ import Stripe from "stripe";
 import { getDb } from "../db";
 import { users } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
-import { getTierFromPriceId } from "./products";
+import { getTierFromPriceId, SUBSCRIPTION_TIERS } from "./products";
+import { sendSubscriptionConfirmationEmail } from "../_core/resend";
 
 const router = Router();
 
@@ -121,6 +122,24 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     .where(eq(users.id, parseInt(userId)));
 
   console.log(`[Stripe Webhook] Updated user ${userId} to tier ${tier}`);
+
+  // Send subscription confirmation email
+  const [updatedUser] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, parseInt(userId)))
+    .limit(1);
+
+  if (updatedUser && updatedUser.email) {
+    const tierConfig = SUBSCRIPTION_TIERS[tier];
+    sendSubscriptionConfirmationEmail(updatedUser.email, updatedUser.name || "User", {
+      planName: tierConfig.name,
+      price: `$${(tierConfig.price / 100).toFixed(2)}`,
+      billingPeriod: "monthly",
+      action: "new",
+      features: tierConfig.features.slice(0, 5),
+    }).catch(err => console.error("[Stripe Webhook] Failed to send subscription email:", err));
+  }
 }
 
 async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
@@ -161,6 +180,23 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
     .where(eq(users.id, user.id));
 
   console.log(`[Stripe Webhook] Updated user ${user.id} to tier ${tier}, status ${status}`);
+
+  // Send subscription update email if tier changed
+  if (user.email && tier && tier !== "free" && tier !== user.subscriptionTier) {
+    const oldTier = user.subscriptionTier || "free";
+    const tierConfig = SUBSCRIPTION_TIERS[tier as keyof typeof SUBSCRIPTION_TIERS];
+    const action = (SUBSCRIPTION_TIERS[tier as keyof typeof SUBSCRIPTION_TIERS]?.price || 0) > 
+                   (SUBSCRIPTION_TIERS[oldTier as keyof typeof SUBSCRIPTION_TIERS]?.price || 0) 
+                   ? "upgrade" : "downgrade";
+    
+    sendSubscriptionConfirmationEmail(user.email, user.name || "User", {
+      planName: tierConfig.name,
+      price: `$${(tierConfig.price / 100).toFixed(2)}`,
+      billingPeriod: "monthly",
+      action,
+      features: tierConfig.features.slice(0, 5),
+    }).catch(err => console.error("[Stripe Webhook] Failed to send subscription update email:", err));
+  }
 }
 
 async function handleSubscriptionCanceled(subscription: Stripe.Subscription) {
@@ -192,6 +228,18 @@ async function handleSubscriptionCanceled(subscription: Stripe.Subscription) {
     .where(eq(users.id, user.id));
 
   console.log(`[Stripe Webhook] User ${user.id} subscription canceled, downgraded to free`);
+
+  // Send cancellation confirmation email
+  if (user.email) {
+    const oldTierConfig = SUBSCRIPTION_TIERS[(user.subscriptionTier || "free") as keyof typeof SUBSCRIPTION_TIERS];
+    sendSubscriptionConfirmationEmail(user.email, user.name || "User", {
+      planName: oldTierConfig.name,
+      price: `$${(oldTierConfig.price / 100).toFixed(2)}`,
+      billingPeriod: "monthly",
+      action: "cancel",
+      effectiveDate: subscription.ended_at ? new Date(subscription.ended_at * 1000) : new Date(),
+    }).catch(err => console.error("[Stripe Webhook] Failed to send cancellation email:", err));
+  }
 }
 
 async function handlePaymentFailed(invoice: Stripe.Invoice) {

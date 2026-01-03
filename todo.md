@@ -499,8 +499,26 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 
 
 ## Phase 23: Subscription Management Page
-
 - [x] Create dedicated /subscription page with all plan tiers
+- [x] Show current plan highlighted with upgrade/downgrade options
+- [x] Implement upgrade/downgrade flow via Stripe checkout
+- [x] Add cancel subscription with confirmation dialog
+
+## Phase 24-28: Security & Email Features
+- [x] Enhanced Admin Dashboard with MRR, ARR, user growth stats
+- [x] Dashboard auto-refresh (15s, 30s, 60s intervals)
+- [x] OAuth security logging (login/logout events)
+- [x] Email/password authentication
+- [x] Email verification with Resend
+- [x] Rate limiting (5 attempts/IP, 10 attempts/email)
+- [x] Password reset flow
+
+## Phase 29: Email Enhancements
+- [x] Remove Manus OAuth option from login page (Google only now)
+- [x] Add email unsubscribe link helper
+- [x] Add login notification emails (sent on each email login)
+- [x] Add subscription confirmation emails (new, upgrade, downgrade, cancel)
+- [x] 204 tests passings
 - [x] Show current plan highlighted with upgrade/downgrade options
 - [x] Add plan comparison showing features per tier
 - [x] Implement upgrade flow (change to higher tier via Stripe checkout)
@@ -672,3 +690,11 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Add "Resend Verification Email" button on login page
 - [x] Send welcome email after verification
 - [x] 204 tests passing
+
+
+## Phase 29: Email Enhancements & Login Cleanup
+
+- [ ] Remove "Continue with Manus" OAuth option from login page
+- [ ] Add email unsubscribe link to marketing emails
+- [ ] Add login notification emails (new device/location alerts)
+- [ ] Add subscription confirmation emails (upgrade/downgrade receipts)
