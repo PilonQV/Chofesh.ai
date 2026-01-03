@@ -866,3 +866,26 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 
 - [x] Fix chat scroll not working - users cannot scroll up to see full response or message history
 
+
+---
+
+## Phase 21: Performance Optimization (Lighthouse Score 72 → 90+)
+
+### Image Optimization
+- [x] Convert chofesh-logo.png to WebP format
+- [x] Resize logo to appropriate dimensions (48x48 instead of 512x512)
+- [x] Created multiple sizes (48, 96, 192) for responsive use
+
+### JavaScript Optimization
+- [x] Code split heavy components (Chat, ImageGen, etc.) with React.lazy
+- [x] Implemented Suspense with loading fallback
+- [x] Only Home and Login pages eagerly loaded
+
+### CSS/Font Optimization
+- [x] Fonts bundled locally via @fontsource (no external requests)
+- [x] Updated service worker cache to v2
+
+### Render Blocking
+- [x] Reduced logo image from 94KB to 1.4KB (48x48 WebP)
+- [x] Lazy loading reduces initial bundle size significantly
+

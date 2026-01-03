@@ -1,9 +1,10 @@
 // Chofesh.ai Service Worker
-const CACHE_NAME = 'chofesh-v1';
+const CACHE_NAME = 'chofesh-v2';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
-  '/chofesh-logo.png',
+  '/chofesh-logo-48.webp',
+  '/chofesh-logo-96.webp',
   '/icon-192.png',
   '/icon-512.png'
 ];

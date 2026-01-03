@@ -152,7 +152,7 @@ export default function SharedChat() {
         <div className="flex items-center gap-3">
           <Link href="/">
             <div className="flex items-center gap-2">
-              <img src="/chofesh-logo.png" alt="Chofesh" className="w-8 h-8 object-contain" />
+              <img src="/chofesh-logo-48.webp" alt="Chofesh" className="w-8 h-8 object-contain" />
               <span className="text-lg font-bold gradient-text">Chofesh</span>
             </div>
           </Link>
