@@ -347,7 +347,7 @@ export default function Documents() {
                   {chatMutation.isPending && (
                     <div className="flex justify-start">
                       <div className="bg-muted p-4 rounded-2xl">
-                        <img src="/chofesh-logo.png" alt="" className="w-5 h-5 animate-pulse" />
+                        <img src="/chofesh-logo.png" alt="AI analyzing document" className="w-5 h-5 animate-pulse" />
                       </div>
                     </div>
                   )}

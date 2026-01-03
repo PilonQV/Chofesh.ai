@@ -49,6 +49,19 @@ async function startServer() {
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     // Permissions Policy
     res.setHeader('Permissions-Policy', 'camera=(), microphone=(self), geolocation=(), unload=()');
+    // Content Security Policy
+    res.setHeader('Content-Security-Policy', [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      "style-src 'self' 'unsafe-inline'",
+      "font-src 'self' data:",
+      "img-src 'self' data: blob: https:",
+      "connect-src 'self' https: wss:",
+      "media-src 'self' blob:",
+      "frame-ancestors 'self'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ].join('; '));
     next();
   });
   

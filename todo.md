@@ -464,3 +464,24 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 
 ### Tests
 - [x] 156 unit tests passing
+
+
+## Phase 21: Lighthouse Score Improvements
+
+### Heading Hierarchy (Accessibility)
+- [x] Add proper h1 tag: "AI Without Limits" (already present)
+- [x] Ensure h2 follows h1 (verified)
+- [x] Fix heading progression - changed h4 to h3 in footer, h4 to p in ComparisonRow
+
+### Link Text (Accessibility)
+- [x] Update privacy link text to be descriptive: "Privacy Policy" (already descriptive)
+- [x] All links have meaningful text (verified)
+
+### Image Alt Text (Accessibility)
+- [x] Add alt="Chofesh Logo" to logo images
+- [x] Add descriptive alt text to all images (AIChatBox, Chat, Documents)
+
+### CSP Headers (Security)
+- [x] Add Content-Security-Policy header with comprehensive directives
+- [x] Configure script-src, style-src, font-src, img-src, connect-src
+- [x] Add frame-ancestors, base-uri, form-action restrictions
