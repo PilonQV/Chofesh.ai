@@ -44,7 +44,7 @@ import { useState } from "react";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 
 export default function Home() {
-  const { user, loading, isAuthenticated } = useAuth();
+  const { user, loading, isAuthenticated, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [, setLocation] = useLocation();
   const { isInstallable, isInstalled, promptInstall } = usePWAInstall();
@@ -150,9 +150,8 @@ export default function Home() {
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem 
-                      onClick={() => {
-                        // Clear session and redirect to home
-                        document.cookie = "session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                      onClick={async () => {
+                        await logout();
                         window.location.href = "/";
                       }}
                       className="text-red-500 focus:text-red-500"
