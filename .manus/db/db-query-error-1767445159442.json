@@ -1,0 +1,8 @@
+{
+  "query": "ALTER TABLE `ai_characters` DROP FOREIGN KEY `ai_characters_userId_users_id_fk`;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 48hnjcx4CHbyzt9.87573283f85b --database ffmn4BbJe88bt6JMq4xy2a --execute ALTER TABLE `ai_characters` DROP FOREIGN KEY `ai_characters_userId_users_id_fk`;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1091 (42000) at line 1: Can't DROP 'ai_characters_userId_users_id_fk'; check that column/key exists"
+  ]
+}

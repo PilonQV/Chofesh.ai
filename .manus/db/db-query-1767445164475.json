@@ -1,0 +1,94 @@
+{
+  "query": "SELECT CONSTRAINT_NAME, TABLE_NAME, COLUMN_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND REFERENCED_TABLE_NAME IS NOT NULL;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 48hnjcx4CHbyzt9.87573283f85b --database ffmn4BbJe88bt6JMq4xy2a --execute SELECT CONSTRAINT_NAME, TABLE_NAME, COLUMN_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND REFERENCED_TABLE_NAME IS NOT NULL;",
+  "rows": [
+    {
+      "CONSTRAINT_NAME": "audit_logs_userId_users_id_fk",
+      "TABLE_NAME": "audit_logs",
+      "COLUMN_NAME": "userId",
+      "REFERENCED_TABLE_NAME": "users",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "CONSTRAINT_NAME": "user_settings_userId_users_id_fk",
+      "TABLE_NAME": "user_settings",
+      "COLUMN_NAME": "userId",
+      "REFERENCED_TABLE_NAME": "users",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "CONSTRAINT_NAME": "document_chunks_documentId_user_documents_id_fk",
+      "TABLE_NAME": "document_chunks",
+      "COLUMN_NAME": "documentId",
+      "REFERENCED_TABLE_NAME": "user_documents",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "CONSTRAINT_NAME": "document_chunks_userId_users_id_fk",
+      "TABLE_NAME": "document_chunks",
+      "COLUMN_NAME": "userId",
+      "REFERENCED_TABLE_NAME": "users",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "CONSTRAINT_NAME": "usage_records_userId_users_id_fk",
+      "TABLE_NAME": "usage_records",
+      "COLUMN_NAME": "userId",
+      "REFERENCED_TABLE_NAME": "users",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "CONSTRAINT_NAME": "user_api_keys_userId_users_id_fk",
+      "TABLE_NAME": "user_api_keys",
+      "COLUMN_NAME": "userId",
+      "REFERENCED_TABLE_NAME": "users",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "CONSTRAINT_NAME": "user_documents_userId_users_id_fk",
+      "TABLE_NAME": "user_documents",
+      "COLUMN_NAME": "userId",
+      "REFERENCED_TABLE_NAME": "users",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "CONSTRAINT_NAME": "fk_1",
+      "TABLE_NAME": "ai_characters",
+      "COLUMN_NAME": "userId",
+      "REFERENCED_TABLE_NAME": "users",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "CONSTRAINT_NAME": "fk_1",
+      "TABLE_NAME": "shared_links",
+      "COLUMN_NAME": "userId",
+      "REFERENCED_TABLE_NAME": "users",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "CONSTRAINT_NAME": "user_memories_userId_users_id_fk",
+      "TABLE_NAME": "user_memories",
+      "COLUMN_NAME": "userId",
+      "REFERENCED_TABLE_NAME": "users",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "CONSTRAINT_NAME": "artifacts_userId_users_id_fk",
+      "TABLE_NAME": "artifacts",
+      "COLUMN_NAME": "userId",
+      "REFERENCED_TABLE_NAME": "users",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "CONSTRAINT_NAME": "user_preferences_userId_users_id_fk",
+      "TABLE_NAME": "user_preferences",
+      "COLUMN_NAME": "userId",
+      "REFERENCED_TABLE_NAME": "users",
+      "REFERENCED_COLUMN_NAME": "id"
+    }
+  ],
+  "messages": [],
+  "stdout": "CONSTRAINT_NAME\tTABLE_NAME\tCOLUMN_NAME\tREFERENCED_TABLE_NAME\tREFERENCED_COLUMN_NAME\naudit_logs_userId_users_id_fk\taudit_logs\tuserId\tusers\tid\nuser_settings_userId_users_id_fk\tuser_settings\tuserId\tusers\tid\ndocument_chunks_documentId_user_documents_id_fk\tdocument_chunks\tdocumentId\tuser_documents\tid\ndocument_chunks_userId_users_id_fk\tdocument_chunks\tuserId\tusers\tid\nusage_records_userId_users_id_fk\tusage_records\tuserId\tusers\tid\nuser_api_keys_userId_users_id_fk\tuser_api_keys\tuserId\tusers\tid\nuser_documents_userId_users_id_fk\tuser_documents\tuserId\tusers\tid\nfk_1\tai_characters\tuserId\tusers\tid\nfk_1\tshared_links\tuserId\tusers\tid\nuser_memories_userId_users_id_fk\tuser_memories\tuserId\tusers\tid\nartifacts_userId_users_id_fk\tartifacts\tuserId\tusers\tid\nuser_preferences_userId_users_id_fk\tuser_preferences\tuserId\tusers\tid\n",
+  "stderr": "",
+  "execution_time_ms": 74
+}

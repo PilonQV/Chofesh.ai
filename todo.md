@@ -717,3 +717,10 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Fix /admin route not loading admin dashboard in production
 - [x] Verify admin role check is working correctly
 - [x] Add proper "Access Denied" message for unauthenticated users instead of blank page
+
+
+## Phase 32: Database Foreign Key Fix
+
+- [x] Add CASCADE delete to audit_logs foreign key
+- [x] Add CASCADE delete to all user-related tables
+- [x] Push schema changes to database

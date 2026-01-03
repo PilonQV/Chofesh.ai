@@ -42,7 +42,7 @@ export type InsertUser = typeof users.$inferInsert;
  */
 export const auditLogs = mysqlTable("audit_logs", {
   id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").references(() => users.id),
+  userId: int("userId").references(() => users.id, { onDelete: "cascade" }),
   userOpenId: varchar("userOpenId", { length: 64 }),
   actionType: mysqlEnum("actionType", ["chat", "image_generation", "login", "logout", "settings_change", "document_upload", "document_chat"]).notNull(),
   ipAddress: varchar("ipAddress", { length: 45 }).notNull(),
@@ -64,7 +64,7 @@ export type InsertAuditLog = typeof auditLogs.$inferInsert;
  */
 export const userSettings = mysqlTable("user_settings", {
   id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").references(() => users.id).notNull().unique(),
+  userId: int("userId").references(() => users.id, { onDelete: "cascade" }).notNull().unique(),
   preferredModel: varchar("preferredModel", { length: 64 }).default("llama-3.1-8b"),
   preferredImageModel: varchar("preferredImageModel", { length: 64 }).default("flux"),
   theme: mysqlEnum("theme", ["light", "dark", "system"]).default("dark"),
@@ -81,7 +81,7 @@ export type InsertUserSettings = typeof userSettings.$inferInsert;
  */
 export const userApiKeys = mysqlTable("user_api_keys", {
   id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").references(() => users.id).notNull(),
+  userId: int("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
   provider: mysqlEnum("provider", ["openai", "anthropic", "google", "groq"]).notNull(),
   encryptedKey: text("encryptedKey").notNull(),
   keyHint: varchar("keyHint", { length: 8 }), // Last 4 chars for display
@@ -99,7 +99,7 @@ export type InsertUserApiKey = typeof userApiKeys.$inferInsert;
  */
 export const usageRecords = mysqlTable("usage_records", {
   id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").references(() => users.id).notNull(),
+  userId: int("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
   actionType: mysqlEnum("actionType", ["chat", "image_generation", "document_chat"]).notNull(),
   model: varchar("model", { length: 64 }),
   inputTokens: int("inputTokens").default(0),
@@ -118,7 +118,7 @@ export type InsertUsageRecord = typeof usageRecords.$inferInsert;
  */
 export const userDocuments = mysqlTable("user_documents", {
   id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").references(() => users.id).notNull(),
+  userId: int("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
   filename: varchar("filename", { length: 255 }).notNull(),
   originalName: varchar("originalName", { length: 255 }).notNull(),
   mimeType: varchar("mimeType", { length: 100 }).notNull(),
@@ -139,8 +139,8 @@ export type InsertUserDocument = typeof userDocuments.$inferInsert;
  */
 export const documentChunks = mysqlTable("document_chunks", {
   id: int("id").autoincrement().primaryKey(),
-  documentId: int("documentId").references(() => userDocuments.id).notNull(),
-  userId: int("userId").references(() => users.id).notNull(),
+  documentId: int("documentId").references(() => userDocuments.id, { onDelete: "cascade" }).notNull(),
+  userId: int("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
   chunkIndex: int("chunkIndex").notNull(),
   content: text("content").notNull(),
   embedding: text("embedding"), // JSON string of embedding vector
@@ -157,7 +157,7 @@ export type InsertDocumentChunk = typeof documentChunks.$inferInsert;
  */
 export const aiCharacters = mysqlTable("ai_characters", {
   id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").references(() => users.id).notNull(),
+  userId: int("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
   name: varchar("name", { length: 100 }).notNull(),
   description: text("description"),
   systemPrompt: text("systemPrompt").notNull(),
@@ -178,7 +178,7 @@ export type InsertAiCharacter = typeof aiCharacters.$inferInsert;
  */
 export const sharedLinks = mysqlTable("shared_links", {
   id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").references(() => users.id).notNull(),
+  userId: int("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
   shareId: varchar("shareId", { length: 32 }).notNull().unique(),
   encryptedData: text("encryptedData").notNull(), // Encrypted conversation data
   title: varchar("title", { length: 255 }),
@@ -199,7 +199,7 @@ export type InsertSharedLink = typeof sharedLinks.$inferInsert;
  */
 export const userMemories = mysqlTable("user_memories", {
   id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").references(() => users.id).notNull(),
+  userId: int("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
   content: text("content").notNull(),
   category: mysqlEnum("category", ["preference", "fact", "context", "instruction"]).default("fact").notNull(),
   importance: mysqlEnum("importance", ["low", "medium", "high"]).default("medium").notNull(),
@@ -219,7 +219,7 @@ export type InsertUserMemory = typeof userMemories.$inferInsert;
  */
 export const artifacts = mysqlTable("artifacts", {
   id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").references(() => users.id).notNull(),
+  userId: int("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
   title: varchar("title", { length: 255 }).notNull(),
   type: mysqlEnum("type", ["document", "code", "table", "diagram", "markdown"]).default("document").notNull(),
   content: text("content").notNull(),
@@ -240,7 +240,7 @@ export type InsertArtifact = typeof artifacts.$inferInsert;
  */
 export const userPreferences = mysqlTable("user_preferences", {
   id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").references(() => users.id).notNull().unique(),
+  userId: int("userId").references(() => users.id, { onDelete: "cascade" }).notNull().unique(),
   // Thinking mode settings
   showThinking: boolean("showThinking").default(false).notNull(),
   thinkingExpanded: boolean("thinkingExpanded").default(false).notNull(), // Default collapsed or expanded
