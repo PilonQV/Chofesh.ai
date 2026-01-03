@@ -60,9 +60,9 @@ export default function Home() {
           </Link>
           
           <div className="hidden md:flex items-center gap-6">
-            <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Features</a>
-            <a href="#pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Pricing</a>
-            <Link href="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</Link>
+            <a href="#features" className="text-sm text-foreground/70 hover:text-foreground transition-colors font-medium">Features</a>
+            <a href="#pricing" className="text-sm text-foreground/70 hover:text-foreground transition-colors font-medium">Pricing</a>
+            <Link href="/privacy" className="text-sm text-foreground/70 hover:text-foreground transition-colors font-medium">Privacy Policy</Link>
           </div>
           
           <div className="flex items-center gap-4">
