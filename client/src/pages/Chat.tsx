@@ -53,7 +53,6 @@ import { Link, useLocation } from "wouter";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Streamdown } from "streamdown";
 import {
-
   Send,
   Plus,
   Trash2,
@@ -78,6 +77,9 @@ import {
   Volume2,
   VolumeX,
   Globe,
+  Brain,
+  Lightbulb,
+  FileCode,
   Sliders,
   Copy,
   Share2,
@@ -150,6 +152,8 @@ export default function Chat() {
   const [temperature, setTemperature] = useState(0.7);
   const [topP, setTopP] = useState(0.9);
   const [webSearchEnabled, setWebSearchEnabled] = useState(false);
+  const [showThinking, setShowThinking] = useState(false);
+  const [includeMemories, setIncludeMemories] = useState(true);
   
   // Voice features
   const [isListening, setIsListening] = useState(false);
@@ -321,6 +325,8 @@ export default function Chat() {
         temperature,
         topP,
         webSearch: webSearchEnabled,
+        showThinking,
+        includeMemories,
       });
 
       const content = typeof response.content === 'string' ? response.content : JSON.stringify(response.content);
@@ -616,6 +622,12 @@ export default function Chat() {
                 Document Chat
               </Button>
             </Link>
+            <Link href="/artifacts">
+              <Button variant="ghost" className="w-full justify-start gap-2">
+                <FileCode className="w-4 h-4" />
+                Artifacts
+              </Button>
+            </Link>
             <Link href="/settings">
               <Button variant="ghost" className="w-full justify-start gap-2">
                 <Settings className="w-4 h-4" />
@@ -753,6 +765,40 @@ export default function Chat() {
                     <Switch
                       checked={voiceOutputEnabled}
                       onCheckedChange={setVoiceOutputEnabled}
+                    />
+                  </div>
+
+                  {/* Thinking Mode Toggle */}
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label className="flex items-center gap-2">
+                        <Lightbulb className="w-4 h-4 text-yellow-500" />
+                        Thinking Mode
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        Show AI reasoning process before answers
+                      </p>
+                    </div>
+                    <Switch
+                      checked={showThinking}
+                      onCheckedChange={setShowThinking}
+                    />
+                  </div>
+
+                  {/* Memory Toggle */}
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label className="flex items-center gap-2">
+                        <Brain className="w-4 h-4 text-purple-500" />
+                        Use Memory
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        Include your saved memories in context
+                      </p>
+                    </div>
+                    <Switch
+                      checked={includeMemories}
+                      onCheckedChange={setIncludeMemories}
                     />
                   </div>
                 </div>
@@ -900,7 +946,7 @@ export default function Chat() {
         </header>
 
         {/* Active Settings Indicators */}
-        {(selectedPersona || systemPrompt || webSearchEnabled || temperature !== 0.7) && (
+        {(selectedPersona || systemPrompt || webSearchEnabled || showThinking || !includeMemories || temperature !== 0.7) && (
           <div className="px-4 py-2 border-b border-border bg-muted/30 flex items-center gap-2 text-xs">
             <span className="text-muted-foreground">Active:</span>
             {selectedPersona && (
@@ -928,6 +974,18 @@ export default function Chat() {
             {temperature !== 0.7 && (
               <Badge variant="outline" className="text-xs">
                 Temp: {temperature.toFixed(1)}
+              </Badge>
+            )}
+            {showThinking && (
+              <Badge variant="outline" className="text-xs bg-yellow-500/10 text-yellow-400 border-yellow-500/30">
+                <Lightbulb className="w-3 h-3 mr-1" />
+                Thinking Mode
+              </Badge>
+            )}
+            {!includeMemories && (
+              <Badge variant="outline" className="text-xs bg-muted text-muted-foreground">
+                <Brain className="w-3 h-3 mr-1" />
+                Memory Off
               </Badge>
             )}
           </div>
@@ -1048,7 +1106,39 @@ export default function Chat() {
                 >
                   {message.role === "assistant" ? (
                     <div className="prose prose-sm dark:prose-invert max-w-none">
-                      <Streamdown>{message.content}</Streamdown>
+                      {/* Render thinking blocks if present */}
+                      {message.content.includes('<think>') ? (
+                        <>
+                          {/* Extract and render thinking block */}
+                          {(() => {
+                            const thinkMatch = message.content.match(/<think>([\s\S]*?)<\/think>/);
+                            const thinkingContent = thinkMatch ? thinkMatch[1].trim() : '';
+                            const mainContent = message.content.replace(/<think>[\s\S]*?<\/think>/, '').trim();
+                            
+                            return (
+                              <>
+                                {thinkingContent && (
+                                  <Collapsible defaultOpen={false}>
+                                    <CollapsibleTrigger className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground mb-3 w-full">
+                                      <Lightbulb className="w-4 h-4 text-yellow-500" />
+                                      <span>View reasoning process</span>
+                                      <ChevronDown className="w-3 h-3 ml-auto" />
+                                    </CollapsibleTrigger>
+                                    <CollapsibleContent>
+                                      <div className="mb-4 p-3 rounded-lg bg-yellow-500/5 border border-yellow-500/20 text-sm text-muted-foreground italic">
+                                        <Streamdown>{thinkingContent}</Streamdown>
+                                      </div>
+                                    </CollapsibleContent>
+                                  </Collapsible>
+                                )}
+                                <Streamdown>{mainContent}</Streamdown>
+                              </>
+                            );
+                          })()}
+                        </>
+                      ) : (
+                        <Streamdown>{message.content}</Streamdown>
+                      )}
                     </div>
                   ) : (
                     <p className="whitespace-pre-wrap">{message.content}</p>

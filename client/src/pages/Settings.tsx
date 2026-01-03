@@ -50,6 +50,7 @@ import {
   Crown,
   Sparkles,
   Clock,
+  Brain,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -211,6 +212,12 @@ export default function Settings() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Link href="/memory">
+              <Button variant="ghost" size="sm" className="gap-2">
+                <Brain className="w-4 h-4" />
+                Memory
+              </Button>
+            </Link>
             <Link href="/usage">
               <Button variant="ghost" size="sm" className="gap-2">
                 <BarChart3 className="w-4 h-4" />

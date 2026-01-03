@@ -184,3 +184,72 @@ export const sharedLinks = mysqlTable("shared_links", {
 
 export type SharedLink = typeof sharedLinks.$inferSelect;
 export type InsertSharedLink = typeof sharedLinks.$inferInsert;
+
+
+/**
+ * User memories table for persistent context.
+ * Stores important facts, preferences, and context that the AI should remember.
+ */
+export const userMemories = mysqlTable("user_memories", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").references(() => users.id).notNull(),
+  content: text("content").notNull(),
+  category: mysqlEnum("category", ["preference", "fact", "context", "instruction"]).default("fact").notNull(),
+  importance: mysqlEnum("importance", ["low", "medium", "high"]).default("medium").notNull(),
+  source: mysqlEnum("source", ["user", "auto"]).default("user").notNull(), // user-created or auto-extracted
+  isActive: boolean("isActive").default(true).notNull(),
+  lastUsed: timestamp("lastUsed"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type UserMemory = typeof userMemories.$inferSelect;
+export type InsertUserMemory = typeof userMemories.$inferInsert;
+
+/**
+ * Artifacts table for storing generated documents, code, and other content.
+ * Supports versioning and iterative editing.
+ */
+export const artifacts = mysqlTable("artifacts", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").references(() => users.id).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  type: mysqlEnum("type", ["document", "code", "table", "diagram", "markdown"]).default("document").notNull(),
+  content: text("content").notNull(),
+  language: varchar("language", { length: 50 }), // For code artifacts
+  version: int("version").default(1).notNull(),
+  parentId: int("parentId"), // For version history - references previous version
+  conversationId: varchar("conversationId", { length: 64 }), // Link to conversation that created it
+  metadata: text("metadata"), // JSON string for additional data
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Artifact = typeof artifacts.$inferSelect;
+export type InsertArtifact = typeof artifacts.$inferInsert;
+
+/**
+ * Extended user preferences for advanced features.
+ */
+export const userPreferences = mysqlTable("user_preferences", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").references(() => users.id).notNull().unique(),
+  // Thinking mode settings
+  showThinking: boolean("showThinking").default(false).notNull(),
+  thinkingExpanded: boolean("thinkingExpanded").default(false).notNull(), // Default collapsed or expanded
+  // Memory settings
+  memoryEnabled: boolean("memoryEnabled").default(true).notNull(),
+  autoExtractMemories: boolean("autoExtractMemories").default(false).notNull(),
+  // Artifact settings
+  artifactPanelEnabled: boolean("artifactPanelEnabled").default(true).notNull(),
+  artifactPanelPosition: mysqlEnum("artifactPanelPosition", ["right", "bottom"]).default("right").notNull(),
+  // Response format preferences
+  preferredResponseFormat: mysqlEnum("preferredResponseFormat", ["detailed", "concise", "bullet", "auto"]).default("auto").notNull(),
+  // Other preferences
+  codeTheme: varchar("codeTheme", { length: 50 }).default("github-dark"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type UserPreference = typeof userPreferences.$inferSelect;
+export type InsertUserPreference = typeof userPreferences.$inferInsert;
