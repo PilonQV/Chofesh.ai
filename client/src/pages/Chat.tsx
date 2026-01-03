@@ -555,7 +555,7 @@ export default function Chat() {
           <div className="p-4 border-b border-border">
             <div className="flex items-center justify-between mb-4">
               <Link href="/" className="flex items-center gap-2">
-                <img src="/chofesh-logo.png" alt="Chofesh" className="w-8 h-8 object-contain" />
+                <img src="/chofesh-logo-48.webp" alt="Chofesh" className="w-8 h-8 object-contain" />
                 <span className="text-lg font-bold gradient-text">Chofesh</span>
               </Link>
               <Button
@@ -1023,7 +1023,7 @@ export default function Chat() {
             {!currentConversation?.messages.length && (
               <div className="text-center py-12 space-y-6">
                 <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
-                  <img src="/chofesh-logo.png" alt="Chofesh AI Logo" className="w-10 h-10 object-contain" />
+                  <img src="/chofesh-logo-48.webp" alt="Chofesh AI Logo" className="w-10 h-10 object-contain" />
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold mb-2">Start a conversation</h2>
@@ -1178,7 +1178,7 @@ export default function Chat() {
                 <div className="bg-muted rounded-2xl px-4 py-3">
                   <div className="flex items-center gap-2">
                     <img 
-                      src="/chofesh-logo.png" 
+                      src="/chofesh-logo-48.webp" 
                       alt="AI generating response" 
                       className="w-5 h-5 object-contain animate-pulse" 
                     />

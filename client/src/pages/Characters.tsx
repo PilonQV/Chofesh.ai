@@ -382,7 +382,7 @@ export default function Characters() {
       <aside className="hidden lg:flex w-72 bg-card border-r border-border flex-col">
         <div className="p-4 border-b border-border">
           <Link href="/" className="flex items-center gap-2 mb-4">
-            <img src="/chofesh-logo.png" alt="Chofesh" className="w-8 h-8 object-contain" />
+            <img src="/chofesh-logo-48.webp" alt="Chofesh" className="w-8 h-8 object-contain" />
             <span className="text-lg font-bold gradient-text">Chofesh</span>
           </Link>
           <div className="text-sm font-medium text-muted-foreground">
