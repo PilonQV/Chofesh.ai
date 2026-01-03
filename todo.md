@@ -397,3 +397,9 @@
 - [x] Add PWA manifest for app install option
 - [x] Add service worker for offline support
 - [x] Add "Install App" button/prompt
+- [x] Compress logo images (6.6MB → 95KB)
+- [x] Add canonical URL
+- [x] Add structured data (JSON-LD)
+- [x] Create robots.txt
+- [x] Create sitemap.xml
+- [x] Add Content Security Policy

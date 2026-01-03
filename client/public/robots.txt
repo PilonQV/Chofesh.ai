@@ -1,0 +1,25 @@
+# Robots.txt for Chofesh.ai
+# https://chofesh.ai
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://chofesh.ai/sitemap.xml
+
+# Disallow API endpoints
+Disallow: /api/
+
+# Disallow auth pages
+Disallow: /api/auth/
+Disallow: /api/oauth/
+
+# Allow search engines to crawl main pages
+Allow: /chat
+Allow: /images
+Allow: /settings
+Allow: /privacy
+Allow: /terms
+
+# Crawl-delay for polite crawling
+Crawl-delay: 1
