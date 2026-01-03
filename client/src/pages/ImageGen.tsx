@@ -397,6 +397,12 @@ export default function ImageGen() {
 
         {/* Sidebar Footer */}
         <div className="p-4 border-t border-border space-y-2">
+          <Link href="/gallery">
+            <Button variant="ghost" className="w-full justify-start gap-2">
+              <ImageIcon className="w-4 h-4" />
+              My Gallery
+            </Button>
+          </Link>
           <Link href="/chat">
             <Button variant="ghost" className="w-full justify-start gap-2">
               <MessageSquare className="w-4 h-4" />

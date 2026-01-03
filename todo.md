@@ -832,3 +832,19 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Update test mocks for generated images functions
 - [x] All 204 tests passing
 
+
+---
+
+## Phase 19: User Image Gallery
+
+### Personal Gallery Page
+- [x] Create user gallery page component
+- [x] Add tRPC endpoint to fetch user's generated images
+- [x] Display images in responsive grid layout
+- [x] Add image preview modal on click
+- [x] Show prompt, date, and model info
+- [x] Add download button for images
+- [x] Add delete functionality for own images
+- [x] Add navigation link to gallery page
+- [x] Update messaging: "Your images are stored securely and accessible from any device"
+

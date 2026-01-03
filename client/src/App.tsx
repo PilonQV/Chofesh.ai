@@ -19,6 +19,7 @@ import SharedChat from "./pages/SharedChat";
 import Memory from "./pages/Memory";
 import Artifacts from "./pages/Artifacts";
 import Subscription from "./pages/Subscription";
+import MyGallery from "./pages/MyGallery";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -42,6 +43,7 @@ function Router() {
       <Route path="/memory" component={Memory} />
       <Route path="/artifacts" component={Artifacts} />
       <Route path="/subscription" component={Subscription} />
+      <Route path="/gallery" component={MyGallery} />
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
       <Route path="/forgot-password" component={ForgotPassword} />
