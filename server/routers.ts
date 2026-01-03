@@ -313,13 +313,27 @@ export const appRouter = router({
           timestamp: loginTimestamp,
         });
         
-        // Send login notification email (async, don't wait)
-        const { sendLoginNotificationEmail } = await import("./_core/resend");
-        sendLoginNotificationEmail(user.email!, user.name || "User", {
-          ipAddress: clientIp,
-          userAgent: ctx.req.headers["user-agent"] || "Unknown",
-          timestamp: loginTimestamp,
-        }).catch(err => console.error("Failed to send login notification:", err));
+        // Check if this is a new device and send notification only for new devices
+        const { generateDeviceFingerprint, isKnownDevice, registerDevice, updateDeviceLastUsed } = await import("./db");
+        const userAgent = ctx.req.headers["user-agent"] || "Unknown";
+        const deviceFingerprint = generateDeviceFingerprint(userAgent);
+        const knownDevice = await isKnownDevice(user.id, deviceFingerprint);
+        
+        if (knownDevice) {
+          // Update last used timestamp for known device
+          await updateDeviceLastUsed(user.id, deviceFingerprint, clientIp);
+        } else {
+          // Register new device
+          await registerDevice(user.id, deviceFingerprint, userAgent, clientIp);
+          
+          // Send login notification email for new device (async, don't wait)
+          const { sendLoginNotificationEmail } = await import("./_core/resend");
+          sendLoginNotificationEmail(user.email!, user.name || "User", {
+            ipAddress: clientIp,
+            userAgent: userAgent,
+            timestamp: loginTimestamp,
+          }).catch(err => console.error("Failed to send login notification:", err));
+        }
         
         return { success: true, user: { id: user.id, name: user.name, email: user.email, role: user.role } };
       }),
