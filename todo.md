@@ -760,3 +760,15 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 ## Phase 37: Light Mode Header Contrast
 
 - [x] Fix header navigation links visibility in light mode (changed from text-muted-foreground to text-foreground/70 with font-medium)
+
+
+## Phase 38: Stripe Live Migration
+
+- [ ] Get current test products from Stripe
+- [ ] Create products and prices in live mode
+- [ ] Update environment variables with live keys
+
+
+## Phase 39: Remove Login Notification Emails
+
+- [x] Disable login notification emails completely (removed from email auth login flow)
