@@ -772,3 +772,11 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 ## Phase 39: Remove Login Notification Emails
 
 - [x] Disable login notification emails completely (removed from email auth login flow)
+
+
+## Phase 40: Mobile Chat Layout Fix
+
+- [x] Fix bottom content cut off on mobile (Premium tier, input box)
+- [x] Fix header getting hidden after scroll on mobile
+- [x] Ensure proper scroll behavior on mobile chat page
+- [x] Add safe area insets for iOS devices
