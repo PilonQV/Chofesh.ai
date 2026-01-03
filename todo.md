@@ -724,3 +724,20 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Add CASCADE delete to audit_logs foreign key
 - [x] Add CASCADE delete to all user-related tables
 - [x] Push schema changes to database
+
+
+## Phase 33: Email Verification Bug
+
+- [x] Investigate why email verification is not being sent
+- [x] Check Resend API key configuration
+- [x] Test email sending functionality
+- [x] Add RESEND_API_KEY to Render production environment
+- [x] Trigger deployment to apply changes
+
+
+## Phase 34: Mobile Responsive Fix
+
+- [x] Fix chat page header getting cut off on mobile
+- [x] Ensure proper spacing and layout on small screens
+- [x] Add safe area insets for iOS devices
+- [x] Make header controls responsive (icon-only on mobile)

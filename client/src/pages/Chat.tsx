@@ -510,7 +510,7 @@ export default function Chat() {
   }
 
   return (
-    <div className="h-screen bg-background flex">
+    <div className="h-[100dvh] bg-background flex overflow-hidden">
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div
@@ -639,10 +639,10 @@ export default function Chat() {
       </aside>
 
       {/* Main Chat Area */}
-      <main className="flex-1 flex flex-col min-w-0">
+      <main className="flex-1 flex flex-col min-w-0 pt-[env(safe-area-inset-top)]">
         {/* Chat Header */}
-        <header className="h-14 border-b border-border flex items-center justify-between px-4">
-          <div className="flex items-center gap-3">
+        <header className="h-14 min-h-14 shrink-0 border-b border-border flex items-center justify-between px-2 sm:px-4">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <Button
               variant="ghost"
               size="icon"
@@ -651,13 +651,13 @@ export default function Chat() {
             >
               <Menu className="w-5 h-5" />
             </Button>
-            <h1 className="font-semibold truncate">
+            <h1 className="font-semibold truncate text-sm sm:text-base max-w-[120px] sm:max-w-none">
               {currentConversation?.title || "New Chat"}
             </h1>
           </div>
 
           {/* Header Controls */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             {/* Theme Toggle */}
             <Button
               variant="ghost"
@@ -675,7 +675,7 @@ export default function Chat() {
             {/* Advanced Settings Button */}
             <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2">
+                <Button variant="outline" size="icon" className="h-8 w-8 sm:h-9 sm:w-auto sm:px-3 sm:gap-2">
                   <Sliders className="w-4 h-4" />
                   <span className="hidden sm:inline">Settings</span>
                 </Button>
@@ -808,14 +808,14 @@ export default function Chat() {
             {/* Routing Mode Selector */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2">
+                <Button variant="outline" size="icon" className="h-8 w-8 sm:h-9 sm:w-auto sm:px-3 sm:gap-2">
                   {routingMode === "auto" && <Zap className="w-4 h-4 text-primary" />}
                   {routingMode === "free" && <Zap className="w-4 h-4 text-green-400" />}
                   {routingMode === "manual" && <Settings className="w-4 h-4" />}
                   <span className="hidden sm:inline">
                     {routingMode === "auto" ? "Auto" : routingMode === "free" ? "Free" : "Manual"}
                   </span>
-                  <ChevronDown className="w-3 h-3" />
+                  <ChevronDown className="w-3 h-3 hidden sm:block" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-64">
@@ -863,7 +863,7 @@ export default function Chat() {
             {/* Manual Model Selector (only shown in manual mode) */}
             {routingMode === "manual" && models && (
               <Select value={selectedModel} onValueChange={setSelectedModel}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-[100px] sm:w-[180px] text-xs sm:text-sm">
                   <SelectValue placeholder="Select model" />
                 </SelectTrigger>
                 <SelectContent>
@@ -879,9 +879,9 @@ export default function Chat() {
               </Select>
             )}
 
-            {/* Copy Conversation */}
+            {/* Copy Conversation - hidden on mobile */}
             {currentConversation?.messages.length ? (
-              <>
+              <div className="hidden sm:flex items-center gap-1">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button variant="ghost" size="icon" onClick={handleCopyConversation}>
@@ -907,7 +907,7 @@ export default function Chat() {
                   </TooltipTrigger>
                   <TooltipContent>Share conversation</TooltipContent>
                 </Tooltip>
-              </>
+              </div>
             ) : null}
 
             {/* Last Response Info */}
