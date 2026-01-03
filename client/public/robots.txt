@@ -16,7 +16,8 @@ Disallow: /api/oauth/
 
 # Allow search engines to crawl main pages
 Allow: /chat
-Allow: /images
+Allow: /image
+Allow: /gallery
 Allow: /settings
 Allow: /privacy
 Allow: /terms
