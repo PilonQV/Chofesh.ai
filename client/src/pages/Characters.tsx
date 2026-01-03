@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -25,9 +26,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc";
 import { getLoginUrl } from "@/const";
 import { Link, useLocation } from "wouter";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
-  Sparkles,
   Users,
   Plus,
   Edit,
@@ -40,10 +40,21 @@ import {
   Globe,
   Lock,
   Bot,
-  Wand2,
   Copy,
+  Search,
+  Sparkles,
+  Star,
+  Zap,
 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  CURATED_PERSONAS,
+  PERSONA_CATEGORIES,
+  getPopularPersonas,
+  searchPersonas,
+  type Persona,
+  type PersonaCategory,
+} from "@shared/personas";
 
 interface CharacterFormData {
   name: string;
@@ -63,21 +74,16 @@ const DEFAULT_FORM: CharacterFormData = {
   isPublic: false,
 };
 
-const PERSONALITY_PRESETS = [
-  { name: "Friendly Assistant", prompt: "You are a friendly and helpful AI assistant. You speak in a warm, conversational tone and always try to be encouraging and supportive." },
-  { name: "Expert Analyst", prompt: "You are an expert analyst with deep knowledge across many fields. You provide detailed, well-researched responses with clear reasoning and evidence." },
-  { name: "Creative Writer", prompt: "You are a creative writer with a vivid imagination. You craft engaging stories, poems, and creative content with rich descriptions and compelling narratives." },
-  { name: "Code Mentor", prompt: "You are an experienced software developer and mentor. You explain coding concepts clearly, provide clean code examples, and help debug issues patiently." },
-  { name: "Socratic Teacher", prompt: "You are a Socratic teacher who guides learning through questions. Instead of giving direct answers, you ask thought-provoking questions to help users discover insights themselves." },
-];
-
 export default function Characters() {
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingCharacter, setEditingCharacter] = useState<number | null>(null);
   const [formData, setFormData] = useState<CharacterFormData>(DEFAULT_FORM);
-  const [activeTab, setActiveTab] = useState("my");
+  const [activeTab, setActiveTab] = useState("library");
+  const [selectedCategory, setSelectedCategory] = useState<PersonaCategory | "all" | "popular">("popular");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [previewPersona, setPreviewPersona] = useState<Persona | null>(null);
 
   const { data: myCharacters, refetch: refetchMy } = trpc.characters.list.useQuery(
     undefined,
@@ -120,6 +126,21 @@ export default function Characters() {
       toast.error(error.message);
     },
   });
+
+  // Filter personas based on category and search
+  const filteredPersonas = useMemo(() => {
+    let personas = CURATED_PERSONAS;
+    
+    if (searchQuery) {
+      personas = searchPersonas(searchQuery);
+    } else if (selectedCategory === "popular") {
+      personas = getPopularPersonas();
+    } else if (selectedCategory !== "all") {
+      personas = CURATED_PERSONAS.filter(p => p.category === selectedCategory);
+    }
+    
+    return personas;
+  }, [selectedCategory, searchQuery]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -169,8 +190,7 @@ export default function Characters() {
     setIsCreateOpen(true);
   };
 
-  const handleUseInChat = (character: any) => {
-    // Store character in session storage for chat to pick up
+  const handleUseInChat = (character: { id?: number; name: string; systemPrompt: string }) => {
     sessionStorage.setItem("selectedCharacter", JSON.stringify({
       id: character.id,
       name: character.name,
@@ -180,13 +200,33 @@ export default function Characters() {
     toast.success(`Using ${character.name} in chat`);
   };
 
+  const handleUsePersonaInChat = (persona: Persona) => {
+    sessionStorage.setItem("selectedCharacter", JSON.stringify({
+      id: `persona-${persona.id}`,
+      name: persona.name,
+      systemPrompt: persona.systemPrompt,
+    }));
+    setLocation("/chat");
+    toast.success(`Using ${persona.name} in chat`);
+  };
+
   const handleCopyPrompt = (prompt: string) => {
     navigator.clipboard.writeText(prompt);
     toast.success("System prompt copied!");
   };
 
-  const handlePresetSelect = (prompt: string) => {
-    setFormData(prev => ({ ...prev, systemPrompt: prompt }));
+  const handleSavePersonaAsCharacter = (persona: Persona) => {
+    setFormData({
+      name: persona.name,
+      description: persona.description,
+      systemPrompt: persona.systemPrompt,
+      avatarUrl: "",
+      personality: persona.tags.join(", "),
+      isPublic: false,
+    });
+    setIsCreateOpen(true);
+    setPreviewPersona(null);
+    toast.info("Customize and save as your own character");
   };
 
   if (authLoading) {
@@ -273,6 +313,69 @@ export default function Characters() {
     </Card>
   );
 
+  const PersonaCard = ({ persona }: { persona: Persona }) => (
+    <Card 
+      className="group hover:border-primary/50 transition-all cursor-pointer hover:shadow-lg"
+      onClick={() => setPreviewPersona(persona)}
+    >
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-2xl">
+              {persona.avatarEmoji}
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <CardTitle className="text-lg">{persona.name}</CardTitle>
+                {persona.isPopular && (
+                  <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                )}
+              </div>
+              <Badge variant="secondary" className="text-xs mt-1">
+                {PERSONA_CATEGORIES.find(c => c.id === persona.category)?.name}
+              </Badge>
+            </div>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <CardDescription className="line-clamp-2">
+          {persona.description}
+        </CardDescription>
+        <div className="flex flex-wrap gap-1">
+          {persona.tags.slice(0, 3).map(tag => (
+            <Badge key={tag} variant="outline" className="text-xs">
+              {tag}
+            </Badge>
+          ))}
+        </div>
+        <div className="flex gap-2 pt-2">
+          <Button 
+            size="sm" 
+            className="flex-1"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleUsePersonaInChat(persona);
+            }}
+          >
+            <Zap className="w-4 h-4 mr-1" />
+            Use Now
+          </Button>
+          <Button 
+            size="sm" 
+            variant="outline"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleCopyPrompt(persona.systemPrompt);
+            }}
+          >
+            <Copy className="w-4 h-4" />
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   return (
     <div className="h-screen bg-background flex">
       {/* Sidebar */}
@@ -283,7 +386,7 @@ export default function Characters() {
             <span className="text-lg font-bold gradient-text">Chofesh</span>
           </Link>
           <div className="text-sm font-medium text-muted-foreground">
-            AI Characters
+            AI Personas & Characters
           </div>
         </div>
 
@@ -330,7 +433,7 @@ export default function Characters() {
                 <ArrowLeft className="w-5 h-5" />
               </Button>
             </Link>
-            <h1 className="font-semibold">AI Characters</h1>
+            <h1 className="font-semibold">AI Personas & Characters</h1>
           </div>
           <Dialog open={isCreateOpen} onOpenChange={(open) => {
             setIsCreateOpen(open);
@@ -342,13 +445,13 @@ export default function Characters() {
             <DialogTrigger asChild>
               <Button>
                 <Plus className="w-4 h-4 mr-2" />
-                Create Character
+                Create Custom
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>
-                  {editingCharacter ? "Edit Character" : "Create AI Character"}
+                  {editingCharacter ? "Edit Character" : "Create Custom Character"}
                 </DialogTitle>
                 <DialogDescription>
                   Create a custom AI persona with its own personality and behavior.
@@ -377,32 +480,16 @@ export default function Characters() {
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="systemPrompt">System Prompt *</Label>
-                    <div className="flex gap-1">
-                      {PERSONALITY_PRESETS.map((preset) => (
-                        <Button
-                          key={preset.name}
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="text-xs h-7"
-                          onClick={() => handlePresetSelect(preset.prompt)}
-                        >
-                          {preset.name.split(" ")[0]}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
+                  <Label htmlFor="systemPrompt">System Prompt *</Label>
                   <Textarea
                     id="systemPrompt"
                     value={formData.systemPrompt}
                     onChange={(e) => setFormData(prev => ({ ...prev, systemPrompt: e.target.value }))}
                     placeholder="Define the character's personality, knowledge, and behavior..."
-                    className="min-h-[150px]"
+                    className="min-h-[200px] font-mono text-sm"
                   />
                   <p className="text-xs text-muted-foreground">
-                    This prompt defines how the AI will behave and respond.
+                    This prompt defines how the AI will behave and respond. Be specific about personality, expertise, and communication style.
                   </p>
                 </div>
 
@@ -449,18 +536,88 @@ export default function Characters() {
         </header>
 
         <div className="flex-1 p-6 overflow-auto">
-          <div className="max-w-6xl mx-auto">
+          <div className="max-w-7xl mx-auto">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="mb-6">
+                <TabsTrigger value="library" className="gap-2">
+                  <Sparkles className="w-4 h-4" />
+                  Persona Library
+                </TabsTrigger>
                 <TabsTrigger value="my" className="gap-2">
                   <Lock className="w-4 h-4" />
                   My Characters
                 </TabsTrigger>
                 <TabsTrigger value="public" className="gap-2">
                   <Globe className="w-4 h-4" />
-                  Public Characters
+                  Community
                 </TabsTrigger>
               </TabsList>
+
+              <TabsContent value="library" className="space-y-6">
+                {/* Search and Filter */}
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search personas..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
+                </div>
+
+                {/* Category Pills */}
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant={selectedCategory === "popular" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => { setSelectedCategory("popular"); setSearchQuery(""); }}
+                    className="gap-1"
+                  >
+                    <Star className="w-3 h-3" />
+                    Popular
+                  </Button>
+                  <Button
+                    variant={selectedCategory === "all" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => { setSelectedCategory("all"); setSearchQuery(""); }}
+                  >
+                    All
+                  </Button>
+                  {PERSONA_CATEGORIES.map(cat => (
+                    <Button
+                      key={cat.id}
+                      variant={selectedCategory === cat.id ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => { setSelectedCategory(cat.id); setSearchQuery(""); }}
+                      className="gap-1"
+                    >
+                      <span>{cat.icon}</span>
+                      {cat.name}
+                    </Button>
+                  ))}
+                </div>
+
+                {/* Personas Grid */}
+                {filteredPersonas.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                      <Search className="w-8 h-8 text-primary" />
+                    </div>
+                    <h3 className="text-lg font-semibold mb-2">No Personas Found</h3>
+                    <p className="text-muted-foreground">
+                      Try a different search term or category.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {filteredPersonas.map((persona) => (
+                      <PersonaCard key={persona.id} persona={persona} />
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
 
               <TabsContent value="my">
                 {myCharacters?.length === 0 ? (
@@ -468,9 +625,9 @@ export default function Characters() {
                     <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
                       <Users className="w-8 h-8 text-primary" />
                     </div>
-                    <h3 className="text-lg font-semibold mb-2">No Characters Yet</h3>
+                    <h3 className="text-lg font-semibold mb-2">No Custom Characters Yet</h3>
                     <p className="text-muted-foreground mb-4">
-                      Create your first AI character to get started.
+                      Create your own or save a persona from the library.
                     </p>
                     <Button onClick={() => setIsCreateOpen(true)}>
                       <Plus className="w-4 h-4 mr-2" />
@@ -492,7 +649,7 @@ export default function Characters() {
                     <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
                       <Globe className="w-8 h-8 text-primary" />
                     </div>
-                    <h3 className="text-lg font-semibold mb-2">No Public Characters</h3>
+                    <h3 className="text-lg font-semibold mb-2">No Community Characters</h3>
                     <p className="text-muted-foreground">
                       Be the first to share a character with the community!
                     </p>
@@ -513,6 +670,86 @@ export default function Characters() {
           </div>
         </div>
       </main>
+
+      {/* Persona Preview Dialog */}
+      <Dialog open={!!previewPersona} onOpenChange={(open) => !open && setPreviewPersona(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          {previewPersona && (
+            <>
+              <DialogHeader>
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-3xl">
+                    {previewPersona.avatarEmoji}
+                  </div>
+                  <div>
+                    <DialogTitle className="text-xl flex items-center gap-2">
+                      {previewPersona.name}
+                      {previewPersona.isPopular && (
+                        <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+                      )}
+                    </DialogTitle>
+                    <DialogDescription className="mt-1">
+                      {previewPersona.description}
+                    </DialogDescription>
+                  </div>
+                </div>
+              </DialogHeader>
+
+              <div className="space-y-4 py-4">
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="secondary">
+                    {PERSONA_CATEGORIES.find(c => c.id === previewPersona.category)?.icon}{" "}
+                    {PERSONA_CATEGORIES.find(c => c.id === previewPersona.category)?.name}
+                  </Badge>
+                  {previewPersona.tags.map(tag => (
+                    <Badge key={tag} variant="outline">
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">System Prompt</Label>
+                  <div className="bg-muted rounded-lg p-4 max-h-[300px] overflow-y-auto">
+                    <pre className="text-sm whitespace-pre-wrap font-mono">
+                      {previewPersona.systemPrompt}
+                    </pre>
+                  </div>
+                </div>
+              </div>
+
+              <DialogFooter className="flex-col sm:flex-row gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => handleCopyPrompt(previewPersona.systemPrompt)}
+                  className="w-full sm:w-auto"
+                >
+                  <Copy className="w-4 h-4 mr-2" />
+                  Copy Prompt
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => handleSavePersonaAsCharacter(previewPersona)}
+                  className="w-full sm:w-auto"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Save as Custom
+                </Button>
+                <Button
+                  onClick={() => {
+                    handleUsePersonaInChat(previewPersona);
+                    setPreviewPersona(null);
+                  }}
+                  className="w-full sm:w-auto"
+                >
+                  <Zap className="w-4 h-4 mr-2" />
+                  Start Chat
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

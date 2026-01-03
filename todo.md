@@ -410,3 +410,11 @@
 - [x] SEO: Update privacy link text
 - [x] Install Geist fonts locally (remove CDN)
 - [x] Add Permissions-Policy: unload=() header
+## Phase 18: AI Personas & System Prompts
+
+- [x] Clone and analyze system-prompts repository
+- [x] Select best prompts for Chofesh.ai
+- [x] Implement AI personas feature (20 curated personas in 7 categories)
+- [x] Add persona selector to chat interface
+- [x] Add persona library page with search and filtering
+- [x] Add 23 unit tests for personas feature

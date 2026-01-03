@@ -1,6 +1,11 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
+import {
+  getPopularPersonas,
+  PERSONA_CATEGORIES,
+  type Persona,
+} from "@shared/personas";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -79,6 +84,8 @@ import {
   Users,
   Sun,
   Moon,
+  Sparkles,
+  Star,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -147,6 +154,10 @@ export default function Chat() {
   // Voice features
   const [isListening, setIsListening] = useState(false);
   const [voiceOutputEnabled, setVoiceOutputEnabled] = useState(false);
+  
+  // Persona/Character selection
+  const [selectedPersona, setSelectedPersona] = useState<{ name: string; systemPrompt: string } | null>(null);
+  const popularPersonas = getPopularPersonas();
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   
   const [lastResponse, setLastResponse] = useState<{
@@ -233,6 +244,22 @@ export default function Chat() {
   useEffect(() => {
     inputRef.current?.focus();
   }, [currentConversation?.id]);
+
+  // Load selected character/persona from sessionStorage
+  useEffect(() => {
+    const stored = sessionStorage.getItem("selectedCharacter");
+    if (stored) {
+      try {
+        const character = JSON.parse(stored);
+        setSelectedPersona({ name: character.name, systemPrompt: character.systemPrompt });
+        setSystemPrompt(character.systemPrompt);
+        sessionStorage.removeItem("selectedCharacter");
+        toast.success(`Loaded persona: ${character.name}`);
+      } catch (e) {
+        console.error("Failed to parse selected character", e);
+      }
+    }
+  }, []);
 
   // Voice output function
   const speakText = useCallback((text: string) => {
@@ -343,6 +370,18 @@ export default function Chat() {
   const handleTemplateSelect = (templatePrompt: string) => {
     setInput(templatePrompt);
     inputRef.current?.focus();
+  };
+
+  const handleSelectPersona = (persona: Persona) => {
+    setSelectedPersona({ name: persona.name, systemPrompt: persona.systemPrompt });
+    setSystemPrompt(persona.systemPrompt);
+    toast.success(`Using persona: ${persona.name}`);
+  };
+
+  const handleClearPersona = () => {
+    setSelectedPersona(null);
+    setSystemPrompt("");
+    toast.info("Persona cleared");
   };
 
   const handleCopyConversation = () => {
@@ -861,10 +900,21 @@ export default function Chat() {
         </header>
 
         {/* Active Settings Indicators */}
-        {(systemPrompt || webSearchEnabled || temperature !== 0.7) && (
+        {(selectedPersona || systemPrompt || webSearchEnabled || temperature !== 0.7) && (
           <div className="px-4 py-2 border-b border-border bg-muted/30 flex items-center gap-2 text-xs">
             <span className="text-muted-foreground">Active:</span>
-            {systemPrompt && (
+            {selectedPersona && (
+              <Badge 
+                variant="outline" 
+                className="text-xs bg-primary/10 text-primary border-primary/30 cursor-pointer hover:bg-primary/20"
+                onClick={handleClearPersona}
+              >
+                <Sparkles className="w-3 h-3 mr-1" />
+                {selectedPersona.name}
+                <span className="ml-1 opacity-60">×</span>
+              </Badge>
+            )}
+            {systemPrompt && !selectedPersona && (
               <Badge variant="outline" className="text-xs">
                 System Prompt
               </Badge>
@@ -918,6 +968,34 @@ export default function Chat() {
                     </div>
                   </div>
                 )}
+
+                {/* Quick Persona Selector */}
+                <div className="space-y-3 mt-6">
+                  <div className="flex items-center justify-center gap-2">
+                    <Sparkles className="w-4 h-4 text-primary" />
+                    <p className="text-sm text-muted-foreground">Quick start with a persona:</p>
+                  </div>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {popularPersonas.slice(0, 5).map((persona) => (
+                      <Button
+                        key={persona.id}
+                        variant={selectedPersona?.name === persona.name ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handleSelectPersona(persona)}
+                        className="text-xs gap-1"
+                      >
+                        <span>{persona.avatarEmoji}</span>
+                        {persona.name}
+                      </Button>
+                    ))}
+                    <Link href="/characters">
+                      <Button variant="ghost" size="sm" className="text-xs gap-1">
+                        <Users className="w-3 h-3" />
+                        More
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
 
                 {/* Tier Info Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl mx-auto mt-8">
