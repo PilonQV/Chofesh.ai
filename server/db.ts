@@ -3,7 +3,8 @@ import { drizzle } from "drizzle-orm/mysql2";
 import { 
   InsertUser, users, auditLogs, InsertAuditLog, userSettings, InsertUserSettings,
   aiCharacters, InsertAiCharacter, sharedLinks, InsertSharedLink,
-  userMemories, InsertUserMemory, artifacts, InsertArtifact, userPreferences, InsertUserPreference
+  userMemories, InsertUserMemory, artifacts, InsertArtifact, userPreferences, InsertUserPreference,
+  userDevices, InsertUserDevice
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -1082,4 +1083,115 @@ export async function getShowThinking(userId: number): Promise<boolean> {
 export async function getMemoryEnabled(userId: number): Promise<boolean> {
   const prefs = await getUserPreferences(userId);
   return prefs?.memoryEnabled ?? true;
+}
+
+
+// ============ USER DEVICE FUNCTIONS ============
+
+/**
+ * Generate a device fingerprint from user agent and other factors
+ */
+export function generateDeviceFingerprint(userAgent: string): string {
+  // Create a hash of the user agent as the device fingerprint
+  // We don't include IP because it can change (mobile networks, VPNs)
+  return crypto.createHash("sha256").update(userAgent).digest("hex").substring(0, 64);
+}
+
+/**
+ * Parse user agent to get a human-readable device name
+ */
+export function parseDeviceName(userAgent: string): string {
+  let browser = "Unknown Browser";
+  let os = "Unknown OS";
+
+  // Detect OS
+  if (userAgent.includes("Windows")) os = "Windows";
+  else if (userAgent.includes("Mac OS")) os = "macOS";
+  else if (userAgent.includes("iPhone") || userAgent.includes("iPad")) os = "iOS";
+  else if (userAgent.includes("Android")) os = "Android";
+  else if (userAgent.includes("Linux")) os = "Linux";
+
+  // Detect Browser
+  if (userAgent.includes("Chrome") && !userAgent.includes("Edg")) browser = "Chrome";
+  else if (userAgent.includes("Firefox")) browser = "Firefox";
+  else if (userAgent.includes("Safari") && !userAgent.includes("Chrome")) browser = "Safari";
+  else if (userAgent.includes("Edg")) browser = "Edge";
+  else if (userAgent.includes("Opera") || userAgent.includes("OPR")) browser = "Opera";
+
+  return `${browser} on ${os}`;
+}
+
+/**
+ * Check if a device is known for a user
+ */
+export async function isKnownDevice(userId: number, deviceFingerprint: string): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return true; // Assume known if DB unavailable to avoid spam
+
+  const results = await db.select()
+    .from(userDevices)
+    .where(and(
+      eq(userDevices.userId, userId),
+      eq(userDevices.deviceFingerprint, deviceFingerprint)
+    ))
+    .limit(1);
+
+  return results.length > 0;
+}
+
+/**
+ * Register a new device for a user
+ */
+export async function registerDevice(
+  userId: number, 
+  deviceFingerprint: string, 
+  userAgent: string,
+  ipAddress: string
+): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  const deviceName = parseDeviceName(userAgent);
+
+  await db.insert(userDevices).values({
+    userId,
+    deviceFingerprint,
+    deviceName,
+    lastIpAddress: ipAddress,
+  });
+}
+
+/**
+ * Update last used timestamp for a device
+ */
+export async function updateDeviceLastUsed(
+  userId: number, 
+  deviceFingerprint: string,
+  ipAddress: string
+): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  await db.update(userDevices)
+    .set({ 
+      lastUsedAt: new Date(),
+      lastIpAddress: ipAddress,
+    })
+    .where(and(
+      eq(userDevices.userId, userId),
+      eq(userDevices.deviceFingerprint, deviceFingerprint)
+    ));
+}
+
+/**
+ * Get all devices for a user
+ */
+export async function getUserDevices(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select()
+    .from(userDevices)
+    .where(eq(userDevices.userId, userId))
+    .orderBy(desc(userDevices.lastUsedAt));
 }

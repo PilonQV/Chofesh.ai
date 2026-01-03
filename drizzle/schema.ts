@@ -277,3 +277,21 @@ export const rateLimits = mysqlTable("rate_limits", {
 
 export type RateLimit = typeof rateLimits.$inferSelect;
 export type InsertRateLimit = typeof rateLimits.$inferInsert;
+
+
+/**
+ * User devices table for tracking known login devices.
+ * Used to detect new device logins and send security notifications.
+ */
+export const userDevices = mysqlTable("user_devices", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  deviceFingerprint: varchar("deviceFingerprint", { length: 64 }).notNull(), // SHA-256 hash of user agent + other factors
+  deviceName: varchar("deviceName", { length: 255 }), // Parsed device name (e.g., "Chrome on Windows")
+  lastIpAddress: varchar("lastIpAddress", { length: 45 }),
+  lastUsedAt: timestamp("lastUsedAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type UserDevice = typeof userDevices.$inferSelect;
+export type InsertUserDevice = typeof userDevices.$inferInsert;

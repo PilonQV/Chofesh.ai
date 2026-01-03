@@ -741,3 +741,11 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Ensure proper spacing and layout on small screens
 - [x] Add safe area insets for iOS devices
 - [x] Make header controls responsive (icon-only on mobile)
+
+
+## Phase 35: Login Notification Improvement
+
+- [x] Only send login notification email for new/different devices
+- [x] Track device fingerprint (user agent hash) for each user
+- [x] Compare current login device with known devices
+- [x] Register new devices and update last used timestamp for known devices
