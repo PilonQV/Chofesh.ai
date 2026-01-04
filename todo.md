@@ -942,3 +942,8 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Add quick toggle buttons in chat header
 - [ ] Persist format preference per conversation (future enhancement)
 
+
+## Phase 26: Vision Badge on Homepage
+
+- [x] Add "Vision" feature badge to homepage features section
+- [x] Add "Deep Research" feature badge to homepage features section

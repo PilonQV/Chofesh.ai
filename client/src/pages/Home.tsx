@@ -31,6 +31,8 @@ import {
   FileCode,
   Users,
   Sparkles,
+  Eye,
+  Search,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -256,9 +258,21 @@ export default function Home() {
               badge="Popular"
             />
             <FeatureCard
+              icon={<Eye className="w-6 h-6" />}
+              title="Vision Analysis"
+              description="Upload images and let AI analyze, describe, and discuss them. Extract text, identify objects, and more."
+              badge="New"
+            />
+            <FeatureCard
               icon={<Image className="w-6 h-6" />}
               title="Image Generation"
               description="Generate stunning images with fewer restrictions. Your creativity, your rules."
+            />
+            <FeatureCard
+              icon={<Search className="w-6 h-6" />}
+              title="Deep Research"
+              description="Multi-step research with citations from multiple sources. Get comprehensive answers with references."
+              badge="New"
             />
             <FeatureCard
               icon={<Shield className="w-6 h-6" />}
