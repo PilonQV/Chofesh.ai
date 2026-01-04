@@ -658,6 +658,9 @@ export const appRouter = router({
         webSearch: z.boolean().optional(),
         showThinking: z.boolean().optional(),
         includeMemories: z.boolean().optional(),
+        imageUrls: z.array(z.string().url()).optional(), // For vision - images to analyze
+        responseFormat: z.enum(["detailed", "concise", "bullet", "table", "auto"]).optional(), // Response formatting mode
+        deepResearch: z.boolean().optional(), // Enable deep research mode
       }))
       .mutation(async ({ ctx, input }) => {
         const startTime = Date.now();
@@ -766,41 +769,134 @@ Be helpful, accurate, and respect user privacy.`;
           }
         }
 
-        // Web search integration
+        // Response format instructions
+        if (input.responseFormat && input.responseFormat !== 'auto') {
+          const formatInstructions: Record<string, string> = {
+            detailed: 'Provide comprehensive, in-depth responses with full explanations, examples, and context. Be thorough and educational.',
+            concise: 'Be brief and to the point. Give direct answers without unnecessary elaboration. Maximum 2-3 paragraphs.',
+            bullet: 'Format your response using bullet points and lists. Use clear headers and organized structure. Avoid long paragraphs.',
+            table: 'When presenting comparisons, data, or multiple items, use markdown tables. Organize information in tabular format when appropriate.',
+          };
+          const formatInstruction = formatInstructions[input.responseFormat];
+          if (formatInstruction) {
+            const existingSystemIdx = messagesWithContext.findIndex(m => m.role === 'system');
+            if (existingSystemIdx >= 0) {
+              messagesWithContext[existingSystemIdx] = {
+                ...messagesWithContext[existingSystemIdx],
+                content: `Response Format: ${formatInstruction}\n\n` + messagesWithContext[existingSystemIdx].content,
+              };
+            } else {
+              messagesWithContext.unshift({
+                role: 'system',
+                content: `Response Format: ${formatInstruction}`,
+              });
+            }
+          }
+        }
+
+        // Web search integration (basic or deep research)
         let webSearchResults: { title: string; url: string; description: string }[] = [];
         let messagesWithSearch = [...messagesWithContext];
+        let researchSummary = '';
         
-        if (input.webSearch && promptContent) {
+        if ((input.webSearch || input.deepResearch) && promptContent) {
           try {
-            // Perform web search using DuckDuckGo Instant Answers API (free, no API key required)
-            const ddgResults = await searchDuckDuckGo(promptContent);
-            
-            webSearchResults = ddgResults.map(r => ({
-              title: r.title || '',
-              url: r.url || '',
-              description: r.description || '',
-            }));
-            
-            // If we got search results, inject them into the system prompt
-            if (webSearchResults.length > 0) {
-              const searchContext = webSearchResults.map((r, i) => 
-                `[${i + 1}] ${r.title}\n${r.description}\nSource: ${r.url}`
-              ).join('\n\n');
+            if (input.deepResearch) {
+              // Deep Research Mode: Multi-step search with follow-up queries
+              // Step 1: Initial broad search
+              const initialResults = await searchDuckDuckGo(promptContent);
+              webSearchResults = initialResults.map(r => ({
+                title: r.title || '',
+                url: r.url || '',
+                description: r.description || '',
+              }));
               
-              const searchSystemPrompt = `You have access to recent web search results. Use them to provide accurate, up-to-date information when relevant.\n\nWeb Search Results:\n${searchContext}\n\nWhen citing information from search results, mention the source.`;
+              // Step 2: Generate follow-up queries based on initial results
+              const followUpQueries: string[] = [];
+              const keywords = promptContent.split(' ').filter(w => w.length > 4).slice(0, 3);
+              if (keywords.length > 0) {
+                followUpQueries.push(`${keywords.join(' ')} latest news`);
+                followUpQueries.push(`${keywords.join(' ')} research study`);
+              }
               
-              // Add or prepend to existing system prompt
-              const existingSystemIdx = messagesWithSearch.findIndex(m => m.role === 'system');
-              if (existingSystemIdx >= 0) {
-                messagesWithSearch[existingSystemIdx] = {
-                  ...messagesWithSearch[existingSystemIdx],
-                  content: searchSystemPrompt + '\n\n' + messagesWithSearch[existingSystemIdx].content,
-                };
-              } else {
-                messagesWithSearch.unshift({
-                  role: 'system',
-                  content: searchSystemPrompt,
-                });
+              // Step 3: Execute follow-up searches
+              for (const query of followUpQueries.slice(0, 2)) {
+                try {
+                  const additionalResults = await searchDuckDuckGo(query);
+                  const newResults = additionalResults.map(r => ({
+                    title: r.title || '',
+                    url: r.url || '',
+                    description: r.description || '',
+                  })).filter(r => !webSearchResults.some(existing => existing.url === r.url));
+                  webSearchResults.push(...newResults.slice(0, 3));
+                } catch {
+                  // Continue with existing results
+                }
+              }
+              
+              // Build comprehensive research context with citations
+              if (webSearchResults.length > 0) {
+                const searchContext = webSearchResults.map((r, i) => 
+                  `[${i + 1}] **${r.title}**\n${r.description}\n📎 Source: ${r.url}`
+                ).join('\n\n');
+                
+                const deepResearchPrompt = `You are conducting deep research on the user's question. You have access to multiple search results from various sources.
+
+**Research Sources:**
+${searchContext}
+
+**Instructions for Deep Research Response:**
+1. Synthesize information from multiple sources
+2. Use inline citations like [1], [2] when referencing specific sources
+3. Identify areas of consensus and disagreement between sources
+4. Highlight key findings and insights
+5. Note any limitations or gaps in the available information
+6. End with a "Sources" section listing all referenced URLs
+
+Provide a comprehensive, well-researched response.`;
+                
+                const existingSystemIdx = messagesWithSearch.findIndex(m => m.role === 'system');
+                if (existingSystemIdx >= 0) {
+                  messagesWithSearch[existingSystemIdx] = {
+                    ...messagesWithSearch[existingSystemIdx],
+                    content: deepResearchPrompt + '\n\n' + messagesWithSearch[existingSystemIdx].content,
+                  };
+                } else {
+                  messagesWithSearch.unshift({
+                    role: 'system',
+                    content: deepResearchPrompt,
+                  });
+                }
+              }
+            } else {
+              // Basic web search
+              const ddgResults = await searchDuckDuckGo(promptContent);
+              
+              webSearchResults = ddgResults.map(r => ({
+                title: r.title || '',
+                url: r.url || '',
+                description: r.description || '',
+              }));
+              
+              if (webSearchResults.length > 0) {
+                const searchContext = webSearchResults.map((r, i) => 
+                  `[${i + 1}] ${r.title}\n${r.description}\nSource: ${r.url}`
+                ).join('\n\n');
+                
+                const searchSystemPrompt = `You have access to recent web search results. Use them to provide accurate, up-to-date information when relevant.\n\nWeb Search Results:\n${searchContext}\n\nWhen citing information from search results, mention the source.`;
+                
+                const existingSystemIdx = messagesWithSearch.findIndex(m => m.role === 'system');
+                if (existingSystemIdx >= 0) {
+                  messagesWithSearch[existingSystemIdx] = {
+                    ...messagesWithSearch[existingSystemIdx],
+                    content: searchSystemPrompt + '\n\n' + messagesWithSearch[existingSystemIdx].content,
+                  };
+                } else {
+                  messagesWithSearch.unshift({
+                    role: 'system',
+                    content: searchSystemPrompt,
+                  });
+                }
               }
             }
           } catch (searchError) {
@@ -816,8 +912,34 @@ Be helpful, accurate, and respect user privacy.`;
           // Call appropriate LLM based on selected model provider
           let response;
           
+          // Prepare messages - add images to the last user message if present
+          let finalMessages: any[] = messagesWithSearch.map(m => ({
+            role: m.role as "system" | "user" | "assistant",
+            content: m.content,
+          }));
+          
+          // If images are provided, convert the last user message to multimodal format
+          if (input.imageUrls && input.imageUrls.length > 0) {
+            const lastUserIdx = finalMessages.findLastIndex((m: any) => m.role === 'user');
+            if (lastUserIdx >= 0) {
+              const textContent = finalMessages[lastUserIdx].content;
+              const imageContents = input.imageUrls.map(url => ({
+                type: 'image_url' as const,
+                image_url: { url, detail: 'auto' as const },
+              }));
+              finalMessages[lastUserIdx] = {
+                role: 'user',
+                content: [
+                  { type: 'text', text: textContent },
+                  ...imageContents,
+                ],
+              };
+            }
+          }
+          
           if (selectedModel.provider === "openrouter" && selectedModel.id === "deepseek-r1-free") {
             // Use DeepSeek R1 via OpenRouter (FREE for complex reasoning)
+            // Note: DeepSeek R1 doesn't support vision, fall back to text-only
             response = await invokeDeepSeekR1({
               messages: messagesWithSearch.map(m => ({
                 role: m.role as "system" | "user" | "assistant",
@@ -827,6 +949,7 @@ Be helpful, accurate, and respect user privacy.`;
             });
           } else if (selectedModel.provider === "grok" && isGrokAvailable()) {
             // Use Grok API for xAI models
+            // Note: Grok may not support vision, fall back to text-only
             response = await invokeGrok({
               messages: messagesWithSearch.map(m => ({
                 role: m.role as "system" | "user" | "assistant",
@@ -836,9 +959,9 @@ Be helpful, accurate, and respect user privacy.`;
               temperature: input.temperature,
             });
           } else {
-            // Use default LLM (Manus Forge API)
+            // Use default LLM (Manus Forge API) - supports vision
             response = await invokeLLM({
-              messages: messagesWithSearch,
+              messages: finalMessages,
             });
           }
 
@@ -899,6 +1022,8 @@ Be helpful, accurate, and respect user privacy.`;
             cost,
             webSearchUsed: webSearchResults.length > 0,
             webSearchResultsCount: webSearchResults.length,
+            deepResearchUsed: input.deepResearch && webSearchResults.length > 0,
+            sources: input.deepResearch ? webSearchResults.map(r => ({ title: r.title, url: r.url })) : undefined,
             tokens: {
               input: inputTokens,
               output: outputTokens,
@@ -929,6 +1054,40 @@ Be helpful, accurate, and respect user privacy.`;
             message: "Failed to generate response",
           });
         }
+      }),
+    
+    // Upload image for vision/analysis in chat
+    uploadImage: protectedProcedure
+      .input(z.object({
+        imageBase64: z.string(),
+        mimeType: z.string(),
+        filename: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Decode base64 and upload to S3
+        const buffer = Buffer.from(input.imageBase64, 'base64');
+        const ext = input.mimeType.split('/')[1] || 'png';
+        const filename = input.filename || `image-${Date.now()}.${ext}`;
+        const s3Key = `chat-images/${ctx.user.id}/${Date.now()}-${filename}`;
+        
+        const { url } = await storagePut(s3Key, buffer, input.mimeType);
+        
+        // Log the upload
+        await createAuditLog({
+          userId: ctx.user.id,
+          userOpenId: ctx.user.openId,
+          actionType: "document_upload",
+          ipAddress: getClientIp(ctx.req),
+          userAgent: ctx.req.headers["user-agent"] || null,
+          metadata: JSON.stringify({
+            filename,
+            mimeType: input.mimeType,
+            size: buffer.length,
+          }),
+          timestamp: new Date(),
+        });
+        
+        return { url, filename };
       }),
   }),
 

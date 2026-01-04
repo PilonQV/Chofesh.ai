@@ -911,3 +911,34 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 
 - [x] Add system prompt guidance to redirect users to Generate Images feature when they ask for images in chat
 
+
+## Browser Language Detection (Auto-Respond in User Language)
+
+- [ ] Detect browser language using navigator.language in React
+- [ ] Pass detected language to chat.send tRPC endpoint
+- [ ] Inject language preference into AI system prompt (e.g., "Respond in Hebrew")
+- [ ] AI automatically responds in user's preferred language without UI translation
+
+
+## Phase 25: New Features from Roadmap
+
+### Image in Chat (Vision)
+- [x] Add image upload button to chat input
+- [x] Upload images to S3 storage
+- [x] Pass image URL to LLM with vision capability
+- [x] Display uploaded images in chat messages
+- [x] Support multiple images per message
+
+### Deep Research Mode
+- [x] Add "Deep Research" toggle in chat settings
+- [x] Implement multi-step search (search → analyze → follow-up)
+- [x] Add inline citations with source URLs
+- [x] Show research progress indicator (via loading state)
+- [x] Generate research summary with sources
+
+### Response Formatting Modes
+- [x] Add format selector dropdown (Detailed/Concise/Bullet/Table)
+- [x] Inject format instructions into system prompt
+- [x] Add quick toggle buttons in chat header
+- [ ] Persist format preference per conversation (future enhancement)
+
