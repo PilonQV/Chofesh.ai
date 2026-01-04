@@ -702,6 +702,13 @@ export const appRouter = router({
         const lastUserMessage = input.messages.filter(m => m.role === "user").pop();
         const promptContent = lastUserMessage?.content || "";
         
+        // Base system prompt with platform guidance
+        const baseSystemPrompt = `You are a helpful AI assistant on Chofesh.ai, a privacy-focused AI platform.
+
+IMPORTANT: If the user asks you to create, generate, or make an image, you cannot do this directly in chat. Politely inform them: "I can't generate images directly in chat, but you can use the **Generate Images** feature in the sidebar (or visit /image) to create images with AI!"
+
+Be helpful, accurate, and respect user privacy.`;
+        
         // Memory injection
         let messagesWithContext = [...input.messages];
         if (input.includeMemories !== false) {
@@ -726,6 +733,20 @@ export const appRouter = router({
               }
             }
           }
+        }
+
+        // Add base system prompt with platform guidance
+        const existingSystemIdx = messagesWithContext.findIndex(m => m.role === 'system');
+        if (existingSystemIdx >= 0) {
+          messagesWithContext[existingSystemIdx] = {
+            ...messagesWithContext[existingSystemIdx],
+            content: baseSystemPrompt + '\n\n' + messagesWithContext[existingSystemIdx].content,
+          };
+        } else {
+          messagesWithContext.unshift({
+            role: 'system',
+            content: baseSystemPrompt,
+          });
         }
 
         // Thinking mode - add instruction to show reasoning
