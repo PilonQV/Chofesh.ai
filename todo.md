@@ -889,3 +889,25 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Reduced logo image from 94KB to 1.4KB (48x48 WebP)
 - [x] Lazy loading reduces initial bundle size significantly
 
+
+
+---
+
+## Future Features: Multi-Language Support (i18n)
+
+- [ ] Add language selector dropdown in UI (header/settings)
+- [ ] Implement i18n framework (react-i18next or similar)
+- [ ] Translate UI to Spanish
+- [ ] Translate UI to Hebrew
+- [ ] Translate UI to French
+- [ ] Translate UI to German
+- [ ] Translate UI to Portuguese
+- [ ] Auto-detect user's browser language preference
+- [ ] Add "Chat in any language" messaging to homepage/marketing
+- [ ] Translate landing page content for key markets
+
+
+## Bug Fix: Image Generation Guidance in Chat
+
+- [x] Add system prompt guidance to redirect users to Generate Images feature when they ask for images in chat
+
