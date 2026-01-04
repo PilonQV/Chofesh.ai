@@ -155,6 +155,13 @@ export default function Chat() {
   const [showThinking, setShowThinking] = useState(false);
   const [includeMemories, setIncludeMemories] = useState(true);
   
+  // New features: Vision, Deep Research, Response Format
+  const [uploadedImages, setUploadedImages] = useState<{ url: string; filename: string }[]>([]);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [responseFormat, setResponseFormat] = useState<"auto" | "detailed" | "concise" | "bullet" | "table">("auto");
+  const [deepResearchEnabled, setDeepResearchEnabled] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  
   // Voice features
   const [isListening, setIsListening] = useState(false);
   const [voiceOutputEnabled, setVoiceOutputEnabled] = useState(false);
@@ -195,6 +202,7 @@ export default function Chat() {
   const characters = [...(myCharacters || []), ...(publicCharacters || []).filter(c => !myCharacters?.some(m => m.id === c.id))];
   const chatMutation = trpc.chat.send.useMutation();
   const createShareMutation = trpc.shareLinks.create.useMutation();
+  const uploadImageMutation = trpc.chat.uploadImage.useMutation();
 
   // Initialize speech recognition
   useEffect(() => {
@@ -352,7 +360,13 @@ export default function Chat() {
         webSearch: webSearchEnabled,
         showThinking,
         includeMemories,
+        imageUrls: uploadedImages.length > 0 ? uploadedImages.map(img => img.url) : undefined,
+        responseFormat: responseFormat !== "auto" ? responseFormat : undefined,
+        deepResearch: deepResearchEnabled,
       });
+      
+      // Clear uploaded images after sending
+      setUploadedImages([]);
 
       const content = typeof response.content === 'string' ? response.content : JSON.stringify(response.content);
       addMessage(conv.id, "assistant", content);
@@ -385,6 +399,60 @@ export default function Chat() {
       e.preventDefault();
       handleSend();
     }
+  };
+
+  // Image upload handler for vision feature
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    setIsUploadingImage(true);
+    try {
+      for (const file of Array.from(files)) {
+        if (!file.type.startsWith('image/')) {
+          toast.error(`${file.name} is not an image`);
+          continue;
+        }
+        if (file.size > 10 * 1024 * 1024) {
+          toast.error(`${file.name} is too large (max 10MB)`);
+          continue;
+        }
+        
+        // Convert to base64
+        const base64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const result = reader.result as string;
+            resolve(result.split(',')[1]); // Remove data:image/...;base64, prefix
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+        
+        // Upload to server
+        const result = await uploadImageMutation.mutateAsync({
+          imageBase64: base64,
+          mimeType: file.type,
+          filename: file.name,
+        });
+        
+        setUploadedImages(prev => [...prev, { url: result.url, filename: result.filename }]);
+        toast.success(`Uploaded ${file.name}`);
+      }
+    } catch (error) {
+      toast.error('Failed to upload image');
+      console.error('Image upload error:', error);
+    } finally {
+      setIsUploadingImage(false);
+      // Reset file input
+      if (imageInputRef.current) {
+        imageInputRef.current.value = '';
+      }
+    }
+  };
+
+  const removeUploadedImage = (index: number) => {
+    setUploadedImages(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleNewChat = () => {
@@ -1198,7 +1266,94 @@ export default function Chat() {
         {/* Input Area */}
         <div className="border-t border-border p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
           <div className="max-w-3xl mx-auto">
+            {/* Uploaded Images Preview */}
+            {uploadedImages.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-3">
+                {uploadedImages.map((img, index) => (
+                  <div key={index} className="relative group">
+                    <img
+                      src={img.url}
+                      alt={img.filename}
+                      className="w-16 h-16 object-cover rounded-lg border border-border"
+                    />
+                    <button
+                      onClick={() => removeUploadedImage(index)}
+                      className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {/* Quick Feature Toggles */}
+            <div className="flex flex-wrap gap-2 mb-3">
+              {/* Response Format Selector */}
+              <Select value={responseFormat} onValueChange={(v) => setResponseFormat(v as typeof responseFormat)}>
+                <SelectTrigger className="w-[130px] h-8 text-xs">
+                  <SelectValue placeholder="Format" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="auto">Auto</SelectItem>
+                  <SelectItem value="detailed">Detailed</SelectItem>
+                  <SelectItem value="concise">Concise</SelectItem>
+                  <SelectItem value="bullet">Bullet Points</SelectItem>
+                  <SelectItem value="table">Table</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              {/* Deep Research Toggle */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={deepResearchEnabled ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setDeepResearchEnabled(!deepResearchEnabled)}
+                    className={`h-8 text-xs ${deepResearchEnabled ? "bg-purple-600 hover:bg-purple-700" : ""}`}
+                  >
+                    <Brain className="w-3 h-3 mr-1" />
+                    Deep Research
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Multi-step research with citations from multiple sources
+                </TooltipContent>
+              </Tooltip>
+            </div>
+            
             <div className="flex gap-2">
+              {/* Hidden file input for images */}
+              <input
+                ref={imageInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+              
+              {/* Image Upload Button */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => imageInputRef.current?.click()}
+                    disabled={isUploadingImage || isGenerating}
+                  >
+                    {isUploadingImage ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Image className="w-4 h-4" />
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Upload image for AI to analyze
+                </TooltipContent>
+              </Tooltip>
+              
               {/* Voice Input Button */}
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -1225,11 +1380,11 @@ export default function Chat() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder={isListening ? "Listening..." : "Type your message..."}
+                placeholder={uploadedImages.length > 0 ? "Ask about the image..." : (isListening ? "Listening..." : "Type your message...")}
                 disabled={isGenerating}
                 className="flex-1"
               />
-              <Button onClick={handleSend} disabled={!input.trim() || isGenerating}>
+              <Button onClick={handleSend} disabled={(!input.trim() && uploadedImages.length === 0) || isGenerating}>
                 {isGenerating ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
