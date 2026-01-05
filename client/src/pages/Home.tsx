@@ -1,5 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { getLoginUrl } from "@/const";
 import { Link, useLocation } from "wouter";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -258,6 +259,50 @@ export default function Home() {
             Powerful features designed with privacy and creative freedom in mind.
           </p>
           
+          {/* What's New Section - Highlighted */}
+          <div className="mb-12">
+            <div className="flex items-center gap-2 mb-6">
+              <Sparkles className="w-5 h-5 text-primary" />
+              <h3 className="text-xl font-semibold">What's New</h3>
+              <Badge variant="secondary" className="bg-primary/20 text-primary">Latest Features</Badge>
+            </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <FeatureCard
+                icon={<Link2 className="w-6 h-6" />}
+                title="Ask Dia Links"
+                description="Clickable terms in AI responses for instant follow-up questions. Learn more about any concept with one click."
+                badge="New"
+                highlighted
+              />
+              <FeatureCard
+                icon={<Github className="w-6 h-6" />}
+                title="GitHub Code Review"
+                description="Connect your GitHub repos for automated code review. Multi-file analysis with security scanning."
+                badge="New"
+                highlighted
+              />
+              <FeatureCard
+                icon={<Layers className="w-6 h-6" />}
+                title="Vector Search"
+                description="Semantic search powered by AI embeddings. Find relevant content based on meaning, not just keywords."
+                badge="New"
+                highlighted
+              />
+              <FeatureCard
+                icon={<Database className="w-6 h-6" />}
+                title="Knowledge Base"
+                description="Upload documents and chat with your own data. Semantic search with source citations."
+                badge="New"
+                highlighted
+              />
+            </div>
+          </div>
+
+          {/* All Features */}
+          <div className="flex items-center gap-2 mb-6">
+            <Zap className="w-5 h-5 text-muted-foreground" />
+            <h3 className="text-xl font-semibold text-muted-foreground">All Features</h3>
+          </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             <FeatureCard
               icon={<MessageSquare className="w-6 h-6" />}
@@ -269,7 +314,6 @@ export default function Home() {
               icon={<Eye className="w-6 h-6" />}
               title="Vision Analysis"
               description="Upload images and let AI analyze, describe, and discuss them. Extract text, identify objects, and more."
-              badge="New"
             />
             <FeatureCard
               icon={<Image className="w-6 h-6" />}
@@ -280,7 +324,6 @@ export default function Home() {
               icon={<Search className="w-6 h-6" />}
               title="Deep Research"
               description="Multi-step research with citations from multiple sources. Get comprehensive answers with references."
-              badge="New"
             />
             <FeatureCard
               icon={<Shield className="w-6 h-6" />}
@@ -312,25 +355,21 @@ export default function Home() {
               icon={<Brain className="w-6 h-6" />}
               title="Memory System"
               description="AI remembers your preferences, facts, and instructions across conversations. Personalized experience."
-              badge="New"
             />
             <FeatureCard
               icon={<Lightbulb className="w-6 h-6" />}
               title="Thinking Mode"
               description="See the AI's reasoning process. Understand how it arrives at answers with transparent thinking."
-              badge="New"
             />
             <FeatureCard
               icon={<FileCode className="w-6 h-6" />}
               title="Artifacts Panel"
               description="Create and iterate on documents, code, and diagrams in a dedicated workspace with version history."
-              badge="New"
             />
             <FeatureCard
               icon={<Users className="w-6 h-6" />}
               title="AI Personas"
               description="20+ expert personas: Senior Developer, Creative Writer, Research Assistant, and more. Specialized AI for every task."
-              badge="New"
             />
             <FeatureCard
               icon={<Sparkles className="w-6 h-6" />}
@@ -341,13 +380,11 @@ export default function Home() {
               icon={<Code2 className="w-6 h-6" />}
               title="Code Workspace"
               description="Full-featured code editor with AI assistance. Write, refactor, and debug code with intelligent suggestions."
-              badge="New"
             />
             <FeatureCard
               icon={<Workflow className="w-6 h-6" />}
               title="AI Workflows"
               description="Visual workflow builder for automation. Chain AI tasks together with drag-and-drop simplicity."
-              badge="New"
             />
             <FeatureCard
               icon={<Server className="w-6 h-6" />}
@@ -359,31 +396,6 @@ export default function Home() {
               icon={<ShieldCheck className="w-6 h-6" />}
               title="Code Review Bot"
               description="AI-powered security scanning with severity ratings. Find vulnerabilities, performance issues, and get fix suggestions."
-              badge="New"
-            />
-            <FeatureCard
-              icon={<Database className="w-6 h-6" />}
-              title="Knowledge Base"
-              description="Upload documents and chat with your own data. Semantic search with source citations."
-              badge="New"
-            />
-            <FeatureCard
-              icon={<Link2 className="w-6 h-6" />}
-              title="Ask Dia Links"
-              description="Clickable terms in AI responses for instant follow-up questions. Learn more about any concept with one click."
-              badge="New"
-            />
-            <FeatureCard
-              icon={<Github className="w-6 h-6" />}
-              title="GitHub Code Review"
-              description="Connect your GitHub repos for automated code review. Multi-file analysis with security scanning."
-              badge="New"
-            />
-            <FeatureCard
-              icon={<Layers className="w-6 h-6" />}
-              title="Vector Search"
-              description="Semantic search powered by AI embeddings. Find relevant content based on meaning, not just keywords."
-              badge="New"
             />
           </div>
         </div>
@@ -676,20 +688,30 @@ function FeatureCard({
   title,
   description,
   badge,
+  highlighted,
 }: {
   icon: React.ReactNode;
   title: string;
   description: string;
   badge?: string;
+  highlighted?: boolean;
 }) {
   return (
-    <div className="p-6 rounded-xl bg-card border border-border hover:border-primary/50 transition-colors relative">
+    <div className={`p-6 rounded-xl border transition-all relative ${
+      highlighted 
+        ? 'bg-gradient-to-br from-primary/10 to-primary/5 border-primary/40 hover:border-primary shadow-lg shadow-primary/10' 
+        : 'bg-card border-border hover:border-primary/50'
+    }`}>
       {badge && (
-        <span className="absolute top-4 right-4 px-2 py-1 text-xs font-medium bg-primary/20 text-primary rounded-full">
+        <span className={`absolute top-4 right-4 px-2 py-1 text-xs font-medium rounded-full ${
+          highlighted ? 'bg-primary text-primary-foreground' : 'bg-primary/20 text-primary'
+        }`}>
           {badge}
         </span>
       )}
-      <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-4">
+      <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 ${
+        highlighted ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'
+      }`}>
         {icon}
       </div>
       <h3 className="text-lg font-semibold mb-2">{title}</h3>
