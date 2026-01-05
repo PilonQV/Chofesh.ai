@@ -1395,3 +1395,14 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Evaluate cost and feasibility (Venice.ai requires $18/month Pro, no free option found)
 - [x] Document findings for potential future integration (see uncensored-ai-research.md)
 
+
+
+---
+
+## Phase 45: Fix Venice Uncensored Fallback Detection
+
+- [x] Add "I cannot fulfill this request" to refusal patterns
+- [x] Add "prohibit the creation" to refusal patterns
+- [x] Add "strict safety guidelines" to refusal patterns
+- [x] Add additional NSFW-specific refusal patterns (sexually explicit, adult content, etc.)
+- [x] Test fallback triggers correctly on NSFW refusals (330 tests passing)
