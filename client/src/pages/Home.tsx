@@ -33,6 +33,8 @@ import {
   Sparkles,
   Eye,
   Search,
+  Code2,
+  Workflow,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -328,6 +330,18 @@ export default function Home() {
               icon={<Sparkles className="w-6 h-6" />}
               title="Smart Routing"
               description="Auto-selects the best AI model for your task. GPT-4, Claude, Llama, and more working together."
+            />
+            <FeatureCard
+              icon={<Code2 className="w-6 h-6" />}
+              title="Code Workspace"
+              description="Full-featured code editor with AI assistance. Write, refactor, and debug code with intelligent suggestions."
+              badge="New"
+            />
+            <FeatureCard
+              icon={<Workflow className="w-6 h-6" />}
+              title="AI Workflows"
+              description="Visual workflow builder for automation. Chain AI tasks together with drag-and-drop simplicity."
+              badge="New"
             />
           </div>
         </div>
