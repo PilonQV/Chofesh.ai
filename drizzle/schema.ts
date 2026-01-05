@@ -343,3 +343,35 @@ export const githubConnections = mysqlTable("github_connections", {
 
 export type GithubConnection = typeof githubConnections.$inferSelect;
 export type InsertGithubConnection = typeof githubConnections.$inferInsert;
+
+
+/**
+ * Conversation folders table for organizing chats.
+ * Users can create folders to categorize their conversations by project or topic.
+ */
+export const conversationFolders = mysqlTable("conversation_folders", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  name: varchar("name", { length: 100 }).notNull(),
+  color: varchar("color", { length: 20 }).default("#6366f1"), // Hex color for folder icon
+  icon: varchar("icon", { length: 50 }).default("folder"), // Lucide icon name
+  sortOrder: int("sortOrder").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type ConversationFolder = typeof conversationFolders.$inferSelect;
+export type InsertConversationFolder = typeof conversationFolders.$inferInsert;
+
+/**
+ * Conversation to folder mapping table.
+ * Links conversations (stored locally) to folders via conversation ID.
+ */
+export const conversationFolderMappings = mysqlTable("conversation_folder_mappings", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  folderId: int("folderId").references(() => conversationFolders.id, { onDelete: "cascade" }).notNull(),
+  conversationId: varchar("conversationId", { length: 64 }).notNull(), // Local storage conversation ID
+  addedAt: timestamp("addedAt").defaultNow().notNull(),
+});
+export type ConversationFolderMapping = typeof conversationFolderMappings.$inferSelect;
+export type InsertConversationFolderMapping = typeof conversationFolderMappings.$inferInsert;

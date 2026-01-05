@@ -82,6 +82,17 @@ import {
   upsertGithubConnection,
   updateGithubConnectionLastUsed,
   deleteGithubConnection,
+  // Conversation folder functions
+  createFolder,
+  getFoldersByUser,
+  getFolderById,
+  updateFolder,
+  deleteFolder,
+  addConversationToFolder,
+  removeConversationFromFolder,
+  getConversationFolder,
+  getConversationsInFolder,
+  getAllConversationFolderMappings,
 } from "./db";
 import { invokeLLM } from "./_core/llm";
 import { invokeGrok, isGrokAvailable } from "./_core/grok";
@@ -3079,6 +3090,90 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
         .mutation(async ({ input }) => {
           return await parseConversionRequest(input.text);
         }),
+    }),
+  }),
+
+  // Conversation folders router
+  folders: router({
+    list: protectedProcedure.query(async ({ ctx }) => {
+      return await getFoldersByUser(ctx.user.id);
+    }),
+    
+    create: protectedProcedure
+      .input(z.object({
+        name: z.string().min(1).max(100),
+        color: z.string().optional(),
+        icon: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const folders = await getFoldersByUser(ctx.user.id);
+        const maxOrder = folders.reduce((max, f) => Math.max(max, f.sortOrder), 0);
+        
+        return await createFolder({
+          userId: ctx.user.id,
+          name: input.name,
+          color: input.color || "#6366f1",
+          icon: input.icon || "folder",
+          sortOrder: maxOrder + 1,
+        });
+      }),
+    
+    update: protectedProcedure
+      .input(z.object({
+        folderId: z.number(),
+        name: z.string().min(1).max(100).optional(),
+        color: z.string().optional(),
+        icon: z.string().optional(),
+        sortOrder: z.number().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { folderId, ...updates } = input;
+        await updateFolder(folderId, ctx.user.id, updates);
+        return { success: true };
+      }),
+    
+    delete: protectedProcedure
+      .input(z.object({ folderId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await deleteFolder(input.folderId, ctx.user.id);
+        return { success: true };
+      }),
+    
+    addConversation: protectedProcedure
+      .input(z.object({
+        folderId: z.number(),
+        conversationId: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        await addConversationToFolder({
+          userId: ctx.user.id,
+          folderId: input.folderId,
+          conversationId: input.conversationId,
+        });
+        return { success: true };
+      }),
+    
+    removeConversation: protectedProcedure
+      .input(z.object({ conversationId: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+        await removeConversationFromFolder(ctx.user.id, input.conversationId);
+        return { success: true };
+      }),
+    
+    getConversationFolder: protectedProcedure
+      .input(z.object({ conversationId: z.string() }))
+      .query(async ({ ctx, input }) => {
+        return await getConversationFolder(ctx.user.id, input.conversationId);
+      }),
+    
+    getConversationsInFolder: protectedProcedure
+      .input(z.object({ folderId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        return await getConversationsInFolder(ctx.user.id, input.folderId);
+      }),
+    
+    getAllMappings: protectedProcedure.query(async ({ ctx }) => {
+      return await getAllConversationFolderMappings(ctx.user.id);
     }),
   }),
 });

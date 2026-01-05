@@ -5,7 +5,9 @@ import {
   aiCharacters, InsertAiCharacter, sharedLinks, InsertSharedLink,
   userMemories, InsertUserMemory, artifacts, InsertArtifact, userPreferences, InsertUserPreference,
   userDevices, InsertUserDevice, generatedImages, InsertGeneratedImage,
-  githubConnections, InsertGithubConnection
+  githubConnections, InsertGithubConnection,
+  conversationFolders, InsertConversationFolder, ConversationFolder,
+  conversationFolderMappings, InsertConversationFolderMapping, ConversationFolderMapping
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -1444,4 +1446,139 @@ export async function deleteGithubConnection(userId: number) {
 
   await db.delete(githubConnections)
     .where(eq(githubConnections.userId, userId));
+}
+
+
+// ============ CONVERSATION FOLDER FUNCTIONS ============
+
+export async function createFolder(folder: InsertConversationFolder): Promise<ConversationFolder | null> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(conversationFolders).values(folder);
+  const insertId = result[0].insertId;
+  
+  const [created] = await db.select().from(conversationFolders).where(eq(conversationFolders.id, insertId));
+  return created || null;
+}
+
+export async function getFoldersByUser(userId: number): Promise<ConversationFolder[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select()
+    .from(conversationFolders)
+    .where(eq(conversationFolders.userId, userId))
+    .orderBy(conversationFolders.sortOrder);
+}
+
+export async function getFolderById(folderId: number, userId: number): Promise<ConversationFolder | null> {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const [folder] = await db.select()
+    .from(conversationFolders)
+    .where(and(
+      eq(conversationFolders.id, folderId),
+      eq(conversationFolders.userId, userId)
+    ));
+  return folder || null;
+}
+
+export async function updateFolder(folderId: number, userId: number, updates: Partial<InsertConversationFolder>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(conversationFolders)
+    .set({ ...updates, updatedAt: new Date() })
+    .where(and(
+      eq(conversationFolders.id, folderId),
+      eq(conversationFolders.userId, userId)
+    ));
+}
+
+export async function deleteFolder(folderId: number, userId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Delete folder (mappings will cascade delete)
+  await db.delete(conversationFolders)
+    .where(and(
+      eq(conversationFolders.id, folderId),
+      eq(conversationFolders.userId, userId)
+    ));
+}
+
+export async function addConversationToFolder(mapping: InsertConversationFolderMapping): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Remove from any existing folder first
+  await db.delete(conversationFolderMappings)
+    .where(and(
+      eq(conversationFolderMappings.userId, mapping.userId),
+      eq(conversationFolderMappings.conversationId, mapping.conversationId)
+    ));
+  
+  // Add to new folder
+  await db.insert(conversationFolderMappings).values(mapping);
+}
+
+export async function removeConversationFromFolder(userId: number, conversationId: string): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.delete(conversationFolderMappings)
+    .where(and(
+      eq(conversationFolderMappings.userId, userId),
+      eq(conversationFolderMappings.conversationId, conversationId)
+    ));
+}
+
+export async function getConversationFolder(userId: number, conversationId: string): Promise<ConversationFolder | null> {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const [mapping] = await db.select()
+    .from(conversationFolderMappings)
+    .where(and(
+      eq(conversationFolderMappings.userId, userId),
+      eq(conversationFolderMappings.conversationId, conversationId)
+    ));
+  
+  if (!mapping) return null;
+  
+  const [folder] = await db.select()
+    .from(conversationFolders)
+    .where(eq(conversationFolders.id, mapping.folderId));
+  
+  return folder || null;
+}
+
+export async function getConversationsInFolder(userId: number, folderId: number): Promise<string[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const mappings = await db.select()
+    .from(conversationFolderMappings)
+    .where(and(
+      eq(conversationFolderMappings.userId, userId),
+      eq(conversationFolderMappings.folderId, folderId)
+    ));
+  
+  return mappings.map(m => m.conversationId);
+}
+
+export async function getAllConversationFolderMappings(userId: number): Promise<{ conversationId: string; folderId: number }[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const mappings = await db.select({
+    conversationId: conversationFolderMappings.conversationId,
+    folderId: conversationFolderMappings.folderId,
+  })
+    .from(conversationFolderMappings)
+    .where(eq(conversationFolderMappings.userId, userId));
+  
+  return mappings;
 }
