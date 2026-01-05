@@ -210,7 +210,7 @@ export default function Home() {
           </h1>
           
           <p className="text-base md:text-xl text-muted-foreground max-w-2xl mx-auto mb-6 md:mb-8">
-            Experience creative freedom with uncensored AI. Your conversations stay on your device,
+            Experience creative freedom with uncensored AI (within legal parameters). Your conversations stay on your device,
             encrypted and private. No corporate surveillance.
           </p>
           
@@ -327,7 +327,7 @@ export default function Home() {
             <FeatureCard
               icon={<MessageSquare className="w-6 h-6" />}
               title="Uncensored Chat"
-              description="Have real conversations without arbitrary content restrictions. Create, explore, and discuss freely."
+              description="Have real conversations without arbitrary content restrictions (within legal parameters). Auto-fallback to unrestricted models when needed."
               badge="Popular"
             />
             <FeatureCard

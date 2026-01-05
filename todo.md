@@ -1375,3 +1375,23 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Test auto-fallback flow
 - [x] Verify Venice Uncensored API calls work
 
+
+---
+
+## Phase 44: Marketing Copy Update & Edge Case Testing
+
+### Marketing Copy
+- [x] Add "(within legal parameters)" disclaimer to uncensored claims
+- [x] Update hero section copy to be accurate about capabilities
+- [x] Ensure legal compliance messaging is clear
+
+### Edge Case Testing
+- [x] Test text chat fallback with commonly blocked prompts
+- [x] Verify Venice Uncensored responds appropriately (API key validated, model responds)
+- [x] Document test results (see uncensored-ai-research.md)
+
+### Image Generation Research
+- [x] Research uncensored image generation APIs
+- [x] Evaluate cost and feasibility (Venice.ai requires $18/month Pro, no free option found)
+- [x] Document findings for potential future integration (see uncensored-ai-research.md)
+
