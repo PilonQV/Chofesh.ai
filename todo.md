@@ -1216,3 +1216,23 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 
 ### Future Features (Backlog)
 - [ ] App Builder Mode - Full sandbox with live preview and deployment
+
+
+## Phase 46: Homepage Update & Conversation Folders
+
+### Homepage Updates
+- [x] Scan for duplicate feature cards (found Knowledge Base/Document Chat overlap, Code Review duplicate)
+- [x] Consolidate overlapping features into single cards
+- [x] Add Smart Tools feature card (YouTube, URL, Calculator, Converter)
+- [x] Add Developer Tools feature card (Regex, JSON, API, Diff)
+- [x] Add Conversation Folders feature card
+- [x] Add GitHub OAuth feature card
+- [x] Add New AI Personas feature card
+- [x] Update feature descriptions for clarity
+
+### Conversation Folders
+- [x] Add folders table to database schema (conversation_folders, conversation_folder_mappings)
+- [x] Create folder CRUD operations in db.ts (10 functions)
+- [x] Add folder router endpoints (9 endpoints)
+- [x] Create FolderSidebar component with drag-and-drop
+- [x] Add 15 unit tests for folders functionality

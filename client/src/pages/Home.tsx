@@ -42,6 +42,12 @@ import {
   Link2,
   Github,
   Layers,
+  Wrench,
+  Calculator,
+  Youtube,
+  Braces,
+  GitCompare,
+  FolderTree,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -268,30 +274,44 @@ export default function Home() {
             </div>
             <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
               <FeatureCard
-                icon={<Link2 className="w-6 h-6" />}
-                title="Ask Dia Links"
-                description="Clickable terms in AI responses for instant follow-up questions. Learn more about any concept with one click."
+                icon={<Wrench className="w-6 h-6" />}
+                title="Smart Tools"
+                description="YouTube summarizer, URL analyzer, math calculator, unit converter, regex tester, and more productivity tools."
+                badge="New"
+                highlighted
+              />
+              <FeatureCard
+                icon={<Braces className="w-6 h-6" />}
+                title="Developer Tools"
+                description="JSON formatter, API tester, diff viewer, regex builder. Essential tools for developers in one place."
+                badge="New"
+                highlighted
+              />
+              <FeatureCard
+                icon={<FolderTree className="w-6 h-6" />}
+                title="Conversation Folders"
+                description="Organize your chats by project or topic. Keep your AI conversations structured and easy to find."
                 badge="New"
                 highlighted
               />
               <FeatureCard
                 icon={<Github className="w-6 h-6" />}
-                title="GitHub Code Review"
-                description="Connect your GitHub repos for automated code review. Multi-file analysis with security scanning."
+                title="GitHub OAuth"
+                description="Connect GitHub with one click. OAuth authentication for seamless repo access and code review."
                 badge="New"
                 highlighted
               />
               <FeatureCard
                 icon={<Layers className="w-6 h-6" />}
                 title="Vector Search"
-                description="Semantic search powered by AI embeddings. Find relevant content based on meaning, not just keywords."
+                description="Semantic search powered by AI embeddings. Find content by meaning, not just keywords."
                 badge="New"
                 highlighted
               />
               <FeatureCard
-                icon={<Database className="w-6 h-6" />}
-                title="Knowledge Base"
-                description="Upload documents and chat with your own data. Semantic search with source citations."
+                icon={<Users className="w-6 h-6" />}
+                title="New AI Personas"
+                description="Documentation Writer, Database Expert, API Designer - 3 new specialized personas for developers."
                 badge="New"
                 highlighted
               />
@@ -337,9 +357,9 @@ export default function Home() {
               badge="BYOK"
             />
             <FeatureCard
-              icon={<FileText className="w-6 h-6" />}
-              title="Document Chat"
-              description="Upload PDFs and documents. Ask questions and get intelligent answers."
+              icon={<Database className="w-6 h-6" />}
+              title="Knowledge Base"
+              description="Upload PDFs and documents. Chat with your data using semantic search and source citations."
             />
             <FeatureCard
               icon={<BarChart3 className="w-6 h-6" />}
@@ -393,9 +413,9 @@ export default function Home() {
               badge="Privacy"
             />
             <FeatureCard
-              icon={<ShieldCheck className="w-6 h-6" />}
-              title="Code Review Bot"
-              description="AI-powered security scanning with severity ratings. Find vulnerabilities, performance issues, and get fix suggestions."
+              icon={<Link2 className="w-6 h-6" />}
+              title="Ask Dia Links"
+              description="Clickable terms in AI responses for instant follow-up questions. Learn more about any concept."
             />
           </div>
         </div>
