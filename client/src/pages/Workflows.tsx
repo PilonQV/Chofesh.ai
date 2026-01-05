@@ -248,6 +248,14 @@ export default function Workflows() {
   const [configDialogOpen, setConfigDialogOpen] = useState(false);
   const [nodeConfig, setNodeConfig] = useState<Record<string, unknown>>({});
   
+  // Onboarding state
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    if (typeof window !== "undefined") {
+      return !localStorage.getItem("workflowsOnboardingDone");
+    }
+    return true;
+  });
+  
   const chatMutation = trpc.chat.send.useMutation();
   
   // Load saved workflows from localStorage
@@ -743,6 +751,72 @@ export default function Workflows() {
                 Save Changes
               </Button>
             </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Onboarding Dialog */}
+      <Dialog open={showOnboarding} onOpenChange={(open) => {
+        setShowOnboarding(open);
+        if (!open) {
+          localStorage.setItem("workflowsOnboardingDone", "true");
+        }
+      }}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Workflow className="w-5 h-5 text-primary" />
+              Welcome to AI Workflows!
+            </DialogTitle>
+            <DialogDescription>
+              Build powerful automations by connecting AI nodes visually.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0">
+                <FileInput className="w-4 h-4 text-blue-500" />
+              </div>
+              <div>
+                <h4 className="font-medium">Input Node</h4>
+                <p className="text-sm text-muted-foreground">Start your workflow with text input. This is where your data enters.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center shrink-0">
+                <Sparkles className="w-4 h-4 text-purple-500" />
+              </div>
+              <div>
+                <h4 className="font-medium">AI Process Node</h4>
+                <p className="text-sm text-muted-foreground">Process data with AI. Summarize, translate, analyze, or transform.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center shrink-0">
+                <FileOutput className="w-4 h-4 text-green-500" />
+              </div>
+              <div>
+                <h4 className="font-medium">Output Node</h4>
+                <p className="text-sm text-muted-foreground">Collect results from your workflow. View the final processed output.</p>
+              </div>
+            </div>
+            <div className="bg-muted/50 rounded-lg p-3 text-sm">
+              <p className="font-medium mb-1">Quick Start:</p>
+              <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
+                <li>Drag nodes from the toolbar to the canvas</li>
+                <li>Connect nodes by dragging from one handle to another</li>
+                <li>Click a node to configure its settings</li>
+                <li>Click "Run Workflow" to execute</li>
+              </ol>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => {
+              setShowOnboarding(false);
+              localStorage.setItem("workflowsOnboardingDone", "true");
+            }}>
+              Get Started
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
