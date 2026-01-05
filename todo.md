@@ -1236,3 +1236,21 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Add folder router endpoints (9 endpoints)
 - [x] Create FolderSidebar component with drag-and-drop
 - [x] Add 15 unit tests for folders functionality
+
+
+## Phase 47: Navigation & Comparison Table Fixes
+
+### Navigation Button Visibility
+- [x] Fix Chat, Images, Admin button visibility in light mode (text-primary font-semibold)
+- [x] Fix theme toggle button visibility in light mode (text-primary)
+- [x] Ensure proper contrast in both themes
+
+### Comparison Table Update
+- [x] Add Smart Tools to comparison table
+- [x] Add Developer Tools to comparison table
+- [x] Add Conversation Folders to comparison table
+- [x] Add GitHub OAuth to comparison table
+- [x] Add Vector Search (Document chat with vector search)
+- [x] Add Multiple AI models row
+- [x] Add 25+ AI personas row
+- [x] Update feature descriptions for accuracy (13 rows total)

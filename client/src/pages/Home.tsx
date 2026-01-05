@@ -101,7 +101,7 @@ export default function Home() {
               variant="ghost"
               size="icon"
               onClick={toggleTheme}
-              className="rounded-full text-foreground hover:bg-accent"
+              className="rounded-full text-primary hover:bg-accent hover:text-primary"
               title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
             >
               {theme === "dark" ? (
@@ -115,18 +115,18 @@ export default function Home() {
             ) : isAuthenticated ? (
               <>
                 <Link href="/chat">
-                  <Button variant="ghost" size="sm" className="text-foreground hover:bg-accent">
+                  <Button variant="ghost" size="sm" className="text-primary font-semibold hover:bg-accent hover:text-primary">
                     Chat
                   </Button>
                 </Link>
                 <Link href="/image">
-                  <Button variant="ghost" size="sm" className="text-foreground hover:bg-accent">
+                  <Button variant="ghost" size="sm" className="text-primary font-semibold hover:bg-accent hover:text-primary">
                     Images
                   </Button>
                 </Link>
                 {user?.role === "admin" && (
                   <Link href="/admin">
-                    <Button variant="ghost" size="sm" className="text-foreground hover:bg-accent">
+                    <Button variant="ghost" size="sm" className="text-primary font-semibold hover:bg-accent hover:text-primary">
                       Admin
                     </Button>
                   </Link>
@@ -445,9 +445,15 @@ export default function Home() {
                 <ComparisonRow feature="Local conversation storage" chofesh={true} chatgpt={false} others={false} />
                 <ComparisonRow feature="Fewer content restrictions" chofesh={true} chatgpt={false} others="Varies" />
                 <ComparisonRow feature="Bring your own API keys" chofesh={true} chatgpt={false} others="Varies" />
-                <ComparisonRow feature="Document chat (RAG)" chofesh={true} chatgpt={true} others="Varies" />
-                <ComparisonRow feature="Usage tracking" chofesh={true} chatgpt={false} others="Varies" />
+                <ComparisonRow feature="Document chat with vector search" chofesh={true} chatgpt={true} others="Varies" />
+                <ComparisonRow feature="Smart Tools (YouTube, Calculator)" chofesh={true} chatgpt={false} others="Varies" />
+                <ComparisonRow feature="Developer Tools (JSON, Regex, API)" chofesh={true} chatgpt={false} others="Varies" />
+                <ComparisonRow feature="Conversation folders" chofesh={true} chatgpt={false} others={false} />
+                <ComparisonRow feature="GitHub OAuth integration" chofesh={true} chatgpt={false} others="Varies" />
+                <ComparisonRow feature="Multiple AI models" chofesh={true} chatgpt={false} others="Varies" />
+                <ComparisonRow feature="25+ AI personas" chofesh={true} chatgpt={true} others="Varies" />
                 <ComparisonRow feature="Image generation" chofesh={true} chatgpt={true} others="Varies" />
+                <ComparisonRow feature="Usage tracking dashboard" chofesh={true} chatgpt={false} others="Varies" />
                 <ComparisonRow feature="Free tier available" chofesh={true} chatgpt={true} others="Varies" />
               </tbody>
             </table>
