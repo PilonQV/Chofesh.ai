@@ -38,6 +38,9 @@ import {
   Server,
   Database,
   ShieldCheck,
+  Link2,
+  Github,
+  Layers,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -362,6 +365,24 @@ export default function Home() {
               icon={<Database className="w-6 h-6" />}
               title="Knowledge Base"
               description="Upload documents and chat with your own data. Semantic search with source citations."
+              badge="New"
+            />
+            <FeatureCard
+              icon={<Link2 className="w-6 h-6" />}
+              title="Ask Dia Links"
+              description="Clickable terms in AI responses for instant follow-up questions. Learn more about any concept with one click."
+              badge="New"
+            />
+            <FeatureCard
+              icon={<Github className="w-6 h-6" />}
+              title="GitHub Code Review"
+              description="Connect your GitHub repos for automated code review. Multi-file analysis with security scanning."
+              badge="New"
+            />
+            <FeatureCard
+              icon={<Layers className="w-6 h-6" />}
+              title="Vector Search"
+              description="Semantic search powered by AI embeddings. Find relevant content based on meaning, not just keywords."
               badge="New"
             />
           </div>

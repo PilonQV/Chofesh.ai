@@ -1345,12 +1345,25 @@ Provide a comprehensive, well-researched response.`;
           if (currentChunk) chunkTexts.push(currentChunk.trim());
         }
         
-        // Store chunks
+        // Generate embeddings for each chunk (for semantic search)
+        let embeddings: (string | null)[] = [];
+        try {
+          const { generateEmbeddings } = await import('./_core/embeddings');
+          const embeddingVectors = await generateEmbeddings(chunkTexts);
+          embeddings = embeddingVectors.map(v => JSON.stringify(v));
+          console.log(`[Knowledge Base] Generated ${embeddings.length} embeddings for ${input.filename}`);
+        } catch (error) {
+          console.warn('[Knowledge Base] Failed to generate embeddings, falling back to text search:', error);
+          embeddings = chunkTexts.map(() => null);
+        }
+        
+        // Store chunks with embeddings
         const chunksToInsert = chunkTexts.map((content, index) => ({
           documentId: docId,
           userId: ctx.user.id,
           chunkIndex: index,
           content,
+          embedding: embeddings[index],
         }));
         await createDocumentChunks(chunksToInsert);
         

@@ -52,6 +52,7 @@ import { getLoginUrl } from "@/const";
 import { Link, useLocation } from "wouter";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Streamdown } from "streamdown";
+import { AskDiaLinks } from "@/components/AskDiaLinks";
 import {
   Send,
   Plus,
@@ -400,6 +401,16 @@ export default function Chat() {
       }
     }
   };
+
+  // Handle Ask Dia Links follow-up questions
+  const handleAskFollowUp = useCallback((question: string) => {
+    setInput(question);
+    // Focus the input
+    const inputEl = document.querySelector('textarea[placeholder*="message"]') as HTMLTextAreaElement;
+    if (inputEl) {
+      inputEl.focus();
+    }
+  }, []);
 
   const handleSend = async () => {
     if (!input.trim() || isGenerating) return;
@@ -1401,13 +1412,13 @@ export default function Chat() {
                                     </CollapsibleContent>
                                   </Collapsible>
                                 )}
-                                <Streamdown>{mainContent}</Streamdown>
+                                <AskDiaLinks content={mainContent} onAskFollowUp={handleAskFollowUp} />
                               </>
                             );
                           })()}
                         </>
                       ) : (
-                        <Streamdown>{message.content}</Streamdown>
+                        <AskDiaLinks content={message.content} onAskFollowUp={handleAskFollowUp} />
                       )}
                     </div>
                   ) : (
