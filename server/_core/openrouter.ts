@@ -99,16 +99,27 @@ export async function invokeVeniceUncensored(options: Omit<OpenRouterOptions, 'm
  * Common refusal patterns that indicate a model declined to respond
  */
 export const REFUSAL_PATTERNS = [
-  /I (?:can't|cannot|won't|will not|am not able to|'m not able to) (?:help|assist|provide|generate|create|write)/i,
+  /I (?:can't|cannot|won't|will not|am not able to|'m not able to) (?:help|assist|provide|generate|create|write|fulfill)/i,
   /I (?:don't|do not) (?:feel comfortable|think I should|want to)/i,
   /(?:sorry|apologies|apologize),? (?:but )?I (?:can't|cannot|won't)/i,
   /(?:as an AI|as a language model|as an assistant),? I (?:can't|cannot|shouldn't)/i,
   /(?:this|that|your) (?:request|query|question) (?:violates|goes against|is against)/i,
-  /I'm (?:designed|programmed|built) to (?:avoid|decline|refuse)/i,
+  /I'm (?:designed|programmed|built) to (?:avoid|decline|refuse|follow)/i,
   /(?:content|safety|ethical) (?:policy|guidelines|standards)/i,
   /(?:harmful|dangerous|illegal|unethical|inappropriate) (?:content|material|information)/i,
   /I (?:must|need to) (?:decline|refuse|pass on)/i,
   /(?:outside|beyond) (?:my|the) (?:capabilities|scope|guidelines)/i,
+  // Additional patterns for NSFW refusals
+  /I cannot fulfill this request/i,
+  /prohibit(?:s|ed)? the creation/i,
+  /strict safety guidelines/i,
+  /sexually explicit content/i,
+  /adult content/i,
+  /explicit (?:sexual|adult|mature) (?:content|material)/i,
+  /I am programmed to follow/i,
+  /against my (?:programming|guidelines|policies)/i,
+  /not (?:able|allowed|permitted) to (?:generate|create|write|produce)/i,
+  /unable to (?:comply|assist|help) with/i,
 ];
 
 /**
