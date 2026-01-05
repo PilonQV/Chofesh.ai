@@ -983,3 +983,10 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Connect nodes with visual edges
 - [x] Save/load workflow definitions
 - [x] Execute workflows with real AI calls
+
+## Phase 31: Navigation & Homepage Updates
+
+- [x] Add Code Workspace link to sidebar navigation
+- [x] Add Workflows link to sidebar navigation  
+- [x] Add Code Workspace feature badge to homepage
+- [x] Add Workflows feature badge to homepage

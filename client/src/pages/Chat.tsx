@@ -89,6 +89,8 @@ import {
   Sparkles,
   Star,
   Server,
+  Code2,
+  Workflow,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -842,6 +844,18 @@ export default function Chat() {
               <Button variant="ghost" className="w-full justify-start gap-2">
                 <FileCode className="w-4 h-4" />
                 Artifacts
+              </Button>
+            </Link>
+            <Link href="/code">
+              <Button variant="ghost" className="w-full justify-start gap-2">
+                <Code2 className="w-4 h-4" />
+                Code Workspace
+              </Button>
+            </Link>
+            <Link href="/workflows">
+              <Button variant="ghost" className="w-full justify-start gap-2">
+                <Workflow className="w-4 h-4" />
+                Workflows
               </Button>
             </Link>
             <Link href="/settings">
