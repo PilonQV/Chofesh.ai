@@ -24,9 +24,24 @@ export interface ModelDefinition {
   supportsVision: boolean;
   speed: "fast" | "medium" | "slow";
   isReasoningModel?: boolean; // For complex reasoning tasks
+  isUncensored?: boolean; // For unrestricted content
 }
 
 export const AVAILABLE_MODELS: ModelDefinition[] = [
+  // Venice Uncensored - FREE unrestricted model via OpenRouter
+  {
+    id: "venice-uncensored",
+    name: "Uncensored (Free)",
+    description: "Unrestricted AI - no content filters - FREE",
+    provider: "openrouter",
+    tier: "free",
+    costPer1kInput: 0,
+    costPer1kOutput: 0,
+    maxTokens: 32768,
+    supportsVision: false,
+    speed: "medium",
+    isUncensored: true,
+  },
   // DeepSeek R1 Free - Best for complex reasoning (FREE via OpenRouter)
   {
     id: "deepseek-r1-free",

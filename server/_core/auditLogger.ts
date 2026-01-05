@@ -24,6 +24,7 @@ export type ApiCallLogInput = {
   userAgent?: string;
   status?: "success" | "error" | "rate_limited";
   errorMessage?: string;
+  usedFallback?: boolean; // True if auto-fallback to uncensored model was used
 };
 
 export type ImageAccessLogInput = {
