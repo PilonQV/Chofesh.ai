@@ -1106,3 +1106,51 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Configure Vite build with manual chunks (react-vendor, ui-vendor)
 - [x] Enable esbuild minification with es2020 target
 - [x] Verify production build succeeds (34.5s build time)
+
+
+## Phase 41: Quick Win Features (Manus API Integration)
+
+### YouTube Video Summarizer
+- [ ] Create YouTube transcript fetcher using Data API
+- [ ] Add summarization endpoint using LLM
+- [ ] Integrate into chat with URL detection
+- [ ] Show video thumbnail and metadata
+
+### Smart Conversation Search
+- [ ] Generate embeddings for conversation messages
+- [ ] Store embeddings in database
+- [ ] Add semantic search endpoint
+- [ ] Create search UI in chat sidebar
+
+### Location-Aware Chat
+- [ ] Integrate Google Maps API for place search
+- [ ] Detect location queries in chat
+- [ ] Return formatted place results with maps
+- [ ] Add "near me" functionality with geolocation
+
+### Chat-Integrated Image Generation
+- [ ] Add image generation command in chat (/image)
+- [ ] Detect image generation intent
+- [ ] Display generated images inline in chat
+- [ ] Allow image variations and edits
+
+
+## Phase 42: GitHub OAuth Integration
+
+### Backend Implementation
+- [x] Create GitHub OAuth helper (server/_core/githubOAuth.ts)
+- [x] Add github_connections table to database schema
+- [x] Add OAuth callback endpoint
+- [x] Store encrypted GitHub access tokens
+- [x] Add token encryption/decryption with AES-256-CBC
+
+### Frontend Integration
+- [x] Add "Connect GitHub" button to Code Review page
+- [x] Handle OAuth callback redirect
+- [x] Show connected GitHub account status
+- [x] Allow disconnecting GitHub account
+- [x] Use OAuth token instead of PAT for repo access
+- [x] Fallback to PAT if OAuth not configured
+
+### Testing
+- [x] Add 13 unit tests for GitHub OAuth (encryption, config, router)

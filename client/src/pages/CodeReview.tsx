@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { Link } from "wouter";
+import { Link, useLocation, useSearch } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -30,7 +30,9 @@ import {
   ChevronRight,
   ChevronDown,
   RefreshCw,
-  ExternalLink
+  ExternalLink,
+  UserCircle,
+  LogOut
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -85,13 +87,15 @@ interface GitHubFile {
 
 export default function CodeReview() {
   const { isAuthenticated, loading: authLoading } = useAuth();
+  const [, setLocation] = useLocation();
+  const searchString = useSearch();
   const [code, setCode] = useState("");
   const [language, setLanguage] = useState("auto");
   const [isReviewing, setIsReviewing] = useState(false);
   const [result, setResult] = useState<ReviewResult | null>(null);
   const [activeTab, setActiveTab] = useState("all");
   
-  // GitHub integration state
+  // GitHub integration state (legacy PAT support)
   const [githubToken, setGithubToken] = useState("");
   const [repoUrl, setRepoUrl] = useState("");
   const [repoFiles, setRepoFiles] = useState<GitHubFile[]>([]);
@@ -101,8 +105,60 @@ export default function CodeReview() {
   const [showGithubDialog, setShowGithubDialog] = useState(false);
   const [multiFileResults, setMultiFileResults] = useState<Map<string, ReviewResult>>(new Map());
   const [reviewMode, setReviewMode] = useState<"paste" | "github">("paste");
+  const [selectedRepo, setSelectedRepo] = useState<{ owner: string; repo: string } | null>(null);
+  const [showRepoSelector, setShowRepoSelector] = useState(false);
 
   const reviewMutation = trpc.codeReview.analyze.useMutation();
+  
+  // GitHub OAuth queries and mutations
+  const githubConfigured = trpc.github.isConfigured.useQuery();
+  const githubConnection = trpc.github.getConnection.useQuery(undefined, {
+    enabled: isAuthenticated,
+  });
+  const githubAuthUrl = trpc.github.getAuthUrl.useQuery(undefined, {
+    enabled: isAuthenticated && !githubConnection.data?.connected,
+  });
+  const githubRepos = trpc.github.listRepos.useQuery(
+    { page: 1, perPage: 50 },
+    { enabled: isAuthenticated && githubConnection.data?.connected }
+  );
+  const githubRepoContents = trpc.github.getRepoContents.useQuery(
+    { owner: selectedRepo?.owner || '', repo: selectedRepo?.repo || '', path: '' },
+    { enabled: !!selectedRepo && githubConnection.data?.connected }
+  );
+  const handleOAuthCallback = trpc.github.handleCallback.useMutation({
+    onSuccess: () => {
+      githubConnection.refetch();
+      // Clear URL params
+      setLocation('/code-review');
+    },
+  });
+  const disconnectGithub = trpc.github.disconnect.useMutation({
+    onSuccess: () => {
+      githubConnection.refetch();
+      setSelectedRepo(null);
+      setRepoFiles([]);
+      setReviewMode('paste');
+    },
+  });
+
+  // Handle OAuth callback
+  useEffect(() => {
+    const params = new URLSearchParams(searchString);
+    const code = params.get('code');
+    const state = params.get('state');
+    
+    if (code && state && isAuthenticated) {
+      handleOAuthCallback.mutate({ code, state });
+    }
+  }, [searchString, isAuthenticated]);
+
+  // Update githubConnected based on OAuth connection
+  useEffect(() => {
+    if (githubConnection.data?.connected) {
+      setGithubConnected(true);
+    }
+  }, [githubConnection.data]);
 
   const handleReview = useCallback(async () => {
     if (!code.trim()) return;
@@ -432,7 +488,42 @@ ${result.recommendations.map((rec, i) => `${i + 1}. ${rec}`).join("\n")}
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {!githubConnected ? (
+            {/* GitHub OAuth Connection */}
+            {githubConnection.data?.connected ? (
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/30 flex items-center gap-1">
+                  {githubConnection.data.avatarUrl ? (
+                    <img src={githubConnection.data.avatarUrl} alt="" className="w-4 h-4 rounded-full" />
+                  ) : (
+                    <Github className="w-3 h-3" />
+                  )}
+                  {githubConnection.data.username}
+                </Badge>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => disconnectGithub.mutate()}
+                  disabled={disconnectGithub.isPending}
+                >
+                  <LogOut className="w-4 h-4" />
+                </Button>
+              </div>
+            ) : githubConfigured.data?.configured ? (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => {
+                  if (githubAuthUrl.data?.authUrl) {
+                    window.location.href = githubAuthUrl.data.authUrl;
+                  }
+                }}
+                disabled={!githubAuthUrl.data?.authUrl}
+              >
+                <Github className="w-4 h-4 mr-2" />
+                Connect GitHub
+              </Button>
+            ) : (
+              // Fallback to PAT-based connection if OAuth not configured
               <Dialog open={showGithubDialog} onOpenChange={setShowGithubDialog}>
                 <DialogTrigger asChild>
                   <Button variant="outline" size="sm">
@@ -480,10 +571,6 @@ ${result.recommendations.map((rec, i) => `${i + 1}. ${rec}`).join("\n")}
                   </div>
                 </DialogContent>
               </Dialog>
-            ) : (
-              <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/30">
-                <Github className="w-3 h-3 mr-1" /> Connected
-              </Badge>
             )}
             {result && (
               <Button variant="outline" size="sm" onClick={exportReport}>

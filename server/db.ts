@@ -4,7 +4,8 @@ import {
   InsertUser, users, auditLogs, InsertAuditLog, userSettings, InsertUserSettings,
   aiCharacters, InsertAiCharacter, sharedLinks, InsertSharedLink,
   userMemories, InsertUserMemory, artifacts, InsertArtifact, userPreferences, InsertUserPreference,
-  userDevices, InsertUserDevice, generatedImages, InsertGeneratedImage
+  userDevices, InsertUserDevice, generatedImages, InsertGeneratedImage,
+  githubConnections, InsertGithubConnection
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -1393,4 +1394,54 @@ export async function deleteGeneratedImage(imageId: number) {
   if (!db) throw new Error("Database not available");
 
   await db.delete(generatedImages).where(eq(generatedImages.id, imageId));
+}
+
+
+// ============ GITHUB CONNECTION FUNCTIONS ============
+
+export async function getGithubConnectionByUserId(userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.select()
+    .from(githubConnections)
+    .where(eq(githubConnections.userId, userId))
+    .limit(1);
+  
+  return result[0];
+}
+
+export async function upsertGithubConnection(connection: InsertGithubConnection) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.insert(githubConnections)
+    .values(connection)
+    .onDuplicateKeyUpdate({
+      set: {
+        githubUsername: connection.githubUsername,
+        githubEmail: connection.githubEmail,
+        avatarUrl: connection.avatarUrl,
+        encryptedAccessToken: connection.encryptedAccessToken,
+        tokenScope: connection.tokenScope,
+        updatedAt: new Date(),
+      },
+    });
+}
+
+export async function updateGithubConnectionLastUsed(userId: number) {
+  const db = await getDb();
+  if (!db) return;
+
+  await db.update(githubConnections)
+    .set({ lastUsedAt: new Date() })
+    .where(eq(githubConnections.userId, userId));
+}
+
+export async function deleteGithubConnection(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.delete(githubConnections)
+    .where(eq(githubConnections.userId, userId));
 }
