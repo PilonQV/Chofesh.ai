@@ -1027,3 +1027,27 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Implement citation to specific pages/sections
 - [x] Add semantic search across all documents
 - [x] Create chat interface for knowledge base queries
+
+
+## Phase 37: Ask Dia Links, GitHub Code Review, Vector Embeddings
+
+### Ask Dia Links
+- [x] Parse AI responses for key terms/concepts
+- [x] Make terms clickable to trigger follow-up questions
+- [x] Add visual styling for clickable terms (dotted underline + icon)
+- [x] Handle click to auto-populate chat input
+
+### GitHub Integration for Code Review
+- [x] Add GitHub token-based authentication
+- [x] Fetch repository file tree
+- [x] Allow selecting files/folders for review
+- [x] Multi-file analysis with cross-file context
+- [x] Show results organized by file
+
+### Vector Embeddings for Knowledge Base
+- [x] Integrate OpenAI embeddings API (using Forge API)
+- [x] Store embeddings in database with document chunks
+- [x] Implement cosine similarity search
+- [x] Replace text search with vector similarity
+- [x] Show relevance scores based on actual similarity
+

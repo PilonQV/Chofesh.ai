@@ -610,26 +610,51 @@ export async function searchDocumentChunks(userId: number, query: string, limit:
   const db = await getDb();
   if (!db) return [];
 
-  // Simple text search with document name - in production, use vector similarity
-  const results = await db.select({
+  // Get all chunks for this user with embeddings
+  const allChunks = await db.select({
     id: documentChunks.id,
     documentId: documentChunks.documentId,
     content: documentChunks.content,
     chunkIndex: documentChunks.chunkIndex,
+    embedding: documentChunks.embedding,
     documentName: userDocuments.filename,
   })
     .from(documentChunks)
     .leftJoin(userDocuments, eq(documentChunks.documentId, userDocuments.id))
-    .where(and(
-      eq(documentChunks.userId, userId),
-      sql`LOWER(${documentChunks.content}) LIKE LOWER(${'%' + query + '%'})`
-    ))
-    .limit(limit);
+    .where(eq(documentChunks.userId, userId));
+
+  // Check if we have embeddings to use vector search
+  const chunksWithEmbeddings = allChunks.filter(c => c.embedding);
   
-  // Add similarity score (placeholder - in production use vector similarity)
-  return results.map(r => ({
+  if (chunksWithEmbeddings.length > 0) {
+    // Use vector similarity search
+    try {
+      const { generateEmbedding, cosineSimilarity } = await import('./_core/embeddings');
+      const queryEmbedding = await generateEmbedding(query);
+      
+      const scored = chunksWithEmbeddings.map(chunk => {
+        const chunkEmbedding = JSON.parse(chunk.embedding!) as number[];
+        const similarity = cosineSimilarity(queryEmbedding, chunkEmbedding);
+        return { ...chunk, similarity, embedding: undefined };
+      });
+      
+      // Sort by similarity and return top results
+      scored.sort((a, b) => b.similarity - a.similarity);
+      return scored.slice(0, limit);
+    } catch (error) {
+      console.warn('[Vector Search] Falling back to text search:', error);
+    }
+  }
+  
+  // Fallback to text search if no embeddings or error
+  const textResults = allChunks.filter(c => 
+    c.content.toLowerCase().includes(query.toLowerCase())
+  ).slice(0, limit);
+  
+  return textResults.map(r => ({
     ...r,
-    similarity: 0.85, // Placeholder similarity score
+    embedding: undefined,
+    similarity: 0.7, // Lower score for text match
   }));
 }
 
