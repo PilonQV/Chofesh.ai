@@ -48,13 +48,17 @@ export const OPENROUTER_MODELS = {
 export async function invokeOpenRouter(options: OpenRouterOptions): Promise<OpenRouterResponse> {
   const { messages, model = OPENROUTER_MODELS.DEEPSEEK_R1, temperature = 0.7, max_tokens = 4096, top_p = 1 } = options;
   
+  // Get API key from environment
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  
   const response = await fetch(OPENROUTER_API_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "HTTP-Referer": "https://chofesh.ai",
       "X-Title": "Chofesh.ai",
-      // OpenRouter free tier doesn't require API key for free models
+      // API key required for authentication even on free models
+      ...(apiKey && { "Authorization": `Bearer ${apiKey}` }),
     },
     body: JSON.stringify({
       model,
