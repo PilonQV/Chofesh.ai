@@ -95,7 +95,7 @@ export default function Home() {
               variant="ghost"
               size="icon"
               onClick={toggleTheme}
-              className="rounded-full"
+              className="rounded-full text-foreground hover:bg-accent"
               title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
             >
               {theme === "dark" ? (
@@ -109,18 +109,18 @@ export default function Home() {
             ) : isAuthenticated ? (
               <>
                 <Link href="/chat">
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" className="text-foreground hover:bg-accent">
                     Chat
                   </Button>
                 </Link>
                 <Link href="/image">
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" className="text-foreground hover:bg-accent">
                     Images
                   </Button>
                 </Link>
                 {user?.role === "admin" && (
                   <Link href="/admin">
-                    <Button variant="ghost" size="sm">
+                    <Button variant="ghost" size="sm" className="text-foreground hover:bg-accent">
                       Admin
                     </Button>
                   </Link>

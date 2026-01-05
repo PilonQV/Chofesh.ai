@@ -1165,3 +1165,11 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Optimize privacy card size on mobile (aspect-auto, smaller padding)
 - [x] Reduce gap between pricing section and features (gap-3 on mobile)
 - [x] Make content visible without excessive scrolling (2-column pricing grid)
+
+
+## Phase 44: Navigation Button Visibility Fix
+
+### Light Mode Contrast Issues
+- [x] Fix Chat, Images, Admin button visibility in light mode (added text-foreground class)
+- [x] Fix theme toggle button visibility in light mode (added text-foreground class)
+- [x] Ensure proper contrast ratio for accessibility (using semantic foreground color)
