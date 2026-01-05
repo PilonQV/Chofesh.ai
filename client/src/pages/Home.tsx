@@ -188,7 +188,7 @@ export default function Home() {
 
       {/* Hero Section */}
       <main role="main">
-      <section className="pt-32 pb-20 px-4 relative overflow-hidden" aria-labelledby="hero-heading">
+      <section className="pt-24 pb-12 md:pt-32 md:pb-20 px-4 relative overflow-hidden" aria-labelledby="hero-heading">
         {/* Background gradient effects */}
         <div className="absolute top-20 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-accent/20 rounded-full blur-3xl" />
@@ -199,11 +199,11 @@ export default function Home() {
             Privacy-First AI Platform
           </div>
           
-          <h1 id="hero-heading" className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
+          <h1 id="hero-heading" className="text-3xl md:text-6xl lg:text-7xl font-bold mb-4 md:mb-6 leading-tight">
             AI Without <span className="gradient-text">Limits</span>
           </h1>
           
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
+          <p className="text-base md:text-xl text-muted-foreground max-w-2xl mx-auto mb-6 md:mb-8">
             Experience creative freedom with uncensored AI. Your conversations stay on your device,
             encrypted and private. No corporate surveillance.
           </p>
@@ -232,7 +232,7 @@ export default function Home() {
           </div>
           
           {/* Trust badges */}
-          <div className="flex flex-wrap items-center justify-center gap-6 mt-12 text-sm text-muted-foreground">
+          <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 mt-8 md:mt-12 text-xs md:text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <Lock className="w-4 h-4" />
               <span>End-to-end encrypted</span>
@@ -250,23 +250,23 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 px-4" aria-labelledby="features-heading">
+      <section id="features" className="py-12 md:py-20 px-4" aria-labelledby="features-heading">
         <div className="container mx-auto">
           <h2 id="features-heading" className="text-3xl md:text-4xl font-bold text-center mb-4">
             Everything You Need for <span className="gradient-text">AI Freedom</span>
           </h2>
-          <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-12">
+          <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-8 md:mb-12">
             Powerful features designed with privacy and creative freedom in mind.
           </p>
           
           {/* What's New Section - Highlighted */}
-          <div className="mb-12">
+          <div className="mb-8 md:mb-12">
             <div className="flex items-center gap-2 mb-6">
               <Sparkles className="w-5 h-5 text-primary" />
               <h3 className="text-xl font-semibold">What's New</h3>
               <Badge variant="secondary" className="bg-primary/20 text-primary">Latest Features</Badge>
             </div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
               <FeatureCard
                 icon={<Link2 className="w-6 h-6" />}
                 title="Ask Dia Links"
@@ -303,7 +303,7 @@ export default function Home() {
             <Zap className="w-5 h-5 text-muted-foreground" />
             <h3 className="text-xl font-semibold text-muted-foreground">All Features</h3>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
             <FeatureCard
               icon={<MessageSquare className="w-6 h-6" />}
               title="Uncensored Chat"
@@ -402,12 +402,12 @@ export default function Home() {
       </section>
 
       {/* Comparison Section */}
-      <section className="py-20 px-4 bg-card/50">
+      <section className="py-12 md:py-20 px-4 bg-card/50">
         <div className="container mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
             Why <span className="gradient-text">Chofesh</span>?
           </h2>
-          <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-12">
+          <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-8 md:mb-12">
             See how we compare to other AI platforms.
           </p>
           
@@ -436,9 +436,9 @@ export default function Home() {
       </section>
 
       {/* How Privacy Works */}
-      <section className="py-20 px-4">
+      <section className="py-12 md:py-20 px-4">
         <div className="container mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="grid lg:grid-cols-2 gap-8 md:gap-12 items-center">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold mb-6">
                 Your Data <span className="gradient-text">Stays Yours</span>
@@ -474,8 +474,8 @@ export default function Home() {
               </div>
             </div>
             <div className="relative">
-              <div className="aspect-square rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 p-8 flex items-center justify-center">
-                <div className="w-full h-full rounded-xl bg-card border border-border p-6 space-y-4">
+              <div className="aspect-auto md:aspect-square rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 p-4 md:p-8 flex items-center justify-center">
+                <div className="w-full h-full rounded-xl bg-card border border-border p-4 md:p-6 space-y-3 md:space-y-4">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
                       <Check className="w-5 h-5 text-green-500" />
@@ -508,7 +508,7 @@ export default function Home() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-20 px-4 bg-card/50" aria-labelledby="pricing-heading">
+      <section id="pricing" className="py-12 md:py-20 px-4 bg-card/50" aria-labelledby="pricing-heading">
         <div className="container mx-auto">
           <h2 id="pricing-heading" className="text-3xl md:text-4xl font-bold text-center mb-4">
             Simple, <span className="gradient-text">Transparent</span> Pricing
@@ -520,7 +520,7 @@ export default function Home() {
             Save 20% with annual billing
           </p>
           
-          <div className="grid md:grid-cols-5 gap-5 max-w-7xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-5 max-w-7xl mx-auto">
             <PricingCard
               title="Free"
               price="$0"
@@ -697,25 +697,25 @@ function FeatureCard({
   highlighted?: boolean;
 }) {
   return (
-    <div className={`p-6 rounded-xl border transition-all relative ${
+    <div className={`p-4 md:p-6 rounded-xl border transition-all relative ${
       highlighted 
         ? 'bg-gradient-to-br from-primary/10 to-primary/5 border-primary/40 hover:border-primary shadow-lg shadow-primary/10' 
         : 'bg-card border-border hover:border-primary/50'
     }`}>
       {badge && (
-        <span className={`absolute top-4 right-4 px-2 py-1 text-xs font-medium rounded-full ${
+        <span className={`absolute top-3 right-3 md:top-4 md:right-4 px-2 py-0.5 md:py-1 text-xs font-medium rounded-full ${
           highlighted ? 'bg-primary text-primary-foreground' : 'bg-primary/20 text-primary'
         }`}>
           {badge}
         </span>
       )}
-      <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 ${
+      <div className={`w-10 h-10 md:w-12 md:h-12 rounded-lg flex items-center justify-center mb-3 md:mb-4 ${
         highlighted ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'
       }`}>
         {icon}
       </div>
-      <h3 className="text-lg font-semibold mb-2">{title}</h3>
-      <p className="text-muted-foreground text-sm">{description}</p>
+      <h3 className="text-base md:text-lg font-semibold mb-1.5 md:mb-2">{title}</h3>
+      <p className="text-muted-foreground text-xs md:text-sm">{description}</p>
     </div>
   );
 }
@@ -839,28 +839,28 @@ function PricingCard({
 
   return (
     <div
-      className={`p-6 rounded-xl border ${
+      className={`p-4 md:p-6 rounded-xl border ${
         highlighted
           ? "bg-primary/5 border-primary"
           : "bg-card border-border"
       } relative`}
     >
       {highlighted && (
-        <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 text-xs font-medium bg-primary text-primary-foreground rounded-full">
+        <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-2 md:px-3 py-0.5 md:py-1 text-xs font-medium bg-primary text-primary-foreground rounded-full">
           Most Popular
         </span>
       )}
-      <h3 className="text-xl font-bold mb-2">{title}</h3>
-      <div className="mb-2">
-        <span className="text-4xl font-bold">{price}</span>
-        {period && <span className="text-muted-foreground">{period}</span>}
+      <h3 className="text-lg md:text-xl font-bold mb-1 md:mb-2">{title}</h3>
+      <div className="mb-1 md:mb-2">
+        <span className="text-2xl md:text-4xl font-bold">{price}</span>
+        {period && <span className="text-muted-foreground text-xs md:text-base">{period}</span>}
       </div>
-      <p className="text-sm text-muted-foreground mb-6">{description}</p>
-      <ul className="space-y-3 mb-6">
+      <p className="text-xs md:text-sm text-muted-foreground mb-3 md:mb-6 line-clamp-2">{description}</p>
+      <ul className="space-y-1.5 md:space-y-3 mb-4 md:mb-6">
         {features.map((feature, index) => (
-          <li key={index} className="flex items-center gap-2 text-sm">
-            <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-            <span>{feature}</span>
+          <li key={index} className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm">
+            <Check className="w-3 h-3 md:w-4 md:h-4 text-green-500 flex-shrink-0" />
+            <span className="line-clamp-1">{feature}</span>
           </li>
         ))}
       </ul>
