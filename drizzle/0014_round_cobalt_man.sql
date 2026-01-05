@@ -1,0 +1,1 @@
+ALTER TABLE `usage_records` MODIFY COLUMN `actionType` enum('chat','image_generation','document_chat','youtube_summary','url_analysis','math_solve','code_review') NOT NULL;
