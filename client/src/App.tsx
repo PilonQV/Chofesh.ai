@@ -31,6 +31,8 @@ const Register = lazy(() => import("./pages/Register"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
+const CodeWorkspace = lazy(() => import("./pages/CodeWorkspace"));
+const Workflows = lazy(() => import("./pages/Workflows"));
 
 // Loading fallback component
 function PageLoader() {
@@ -60,6 +62,8 @@ function Router() {
         <Route path="/artifacts" component={Artifacts} />
         <Route path="/subscription" component={Subscription} />
         <Route path="/gallery" component={MyGallery} />
+        <Route path="/code" component={CodeWorkspace} />
+        <Route path="/workflows" component={Workflows} />
         <Route path="/login" component={Login} />
         <Route path="/register" component={Register} />
         <Route path="/forgot-password" component={ForgotPassword} />
