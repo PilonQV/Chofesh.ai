@@ -2404,6 +2404,196 @@ Provide a comprehensive, well-researched response.`;
         return { success: true };
       }),
   }),
+
+  // Knowledge Base / RAG
+  knowledge: router({
+    search: protectedProcedure
+      .input(z.object({
+        query: z.string().min(1),
+        limit: z.number().min(1).max(20).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Search across all user documents using semantic search
+        const results = await searchDocumentChunks(
+          ctx.user.id,
+          input.query,
+          input.limit || 10
+        );
+        
+        return results.map(r => ({
+          documentName: r.documentName || "Unknown",
+          content: r.content,
+          relevance: r.similarity || 0.8,
+          page: r.chunkIndex,
+        }));
+      }),
+
+    chat: protectedProcedure
+      .input(z.object({
+        query: z.string().min(1),
+        history: z.array(z.object({
+          role: z.enum(["user", "assistant"]),
+          content: z.string(),
+        })).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { invokeLLM } = await import("./_core/llm");
+        
+        // Search for relevant chunks
+        const relevantChunks = await searchDocumentChunks(
+          ctx.user.id,
+          input.query,
+          5
+        );
+        
+        // Build context from relevant chunks
+        const context = relevantChunks.map((chunk, i) => 
+          `[Source ${i + 1}: ${chunk.documentName}]\n${chunk.content}`
+        ).join("\n\n");
+        
+        const systemPrompt = `You are a helpful AI assistant that answers questions based on the user's knowledge base. 
+Use the following context from the user's documents to answer their question. 
+If the context doesn't contain relevant information, say so honestly.
+Always cite which source you're using when providing information.
+
+Context from user's documents:
+${context}`;
+
+        const messages: { role: "system" | "user" | "assistant"; content: string }[] = [
+          { role: "system", content: systemPrompt },
+        ];
+        
+        // Add history
+        if (input.history) {
+          for (const msg of input.history) {
+            messages.push({ role: msg.role, content: msg.content });
+          }
+        }
+        
+        messages.push({ role: "user", content: input.query });
+        
+        const response = await invokeLLM({ messages });
+        const answer = typeof response.choices[0]?.message?.content === "string" 
+          ? response.choices[0].message.content 
+          : "I couldn't generate a response.";
+        
+        return {
+          answer,
+          sources: relevantChunks.map(chunk => ({
+            docName: chunk.documentName || "Unknown",
+            chunk: chunk.content.substring(0, 100) + "...",
+            relevance: chunk.similarity || 0.8,
+          })),
+        };
+      }),
+  }),
+
+  // Code Review Bot
+  codeReview: router({
+    analyze: protectedProcedure
+      .input(z.object({
+        code: z.string().min(1).max(50000),
+        language: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { invokeLLM } = await import("./_core/llm");
+        
+        const systemPrompt = `You are an expert code reviewer. Analyze the provided code for:
+1. Security vulnerabilities (SQL injection, XSS, CSRF, authentication issues, etc.)
+2. Performance issues (inefficient algorithms, memory leaks, N+1 queries, etc.)
+3. Code style and best practices
+4. Potential bugs and logic errors
+
+Respond with a JSON object in this exact format:
+{
+  "summary": "Brief overall assessment",
+  "score": 0-100,
+  "issues": [
+    {
+      "severity": "critical" | "warning" | "info",
+      "category": "security" | "performance" | "style" | "bug",
+      "line": number or null,
+      "title": "Short issue title",
+      "description": "Detailed explanation",
+      "suggestion": "How to fix it",
+      "code": "Fixed code snippet if applicable"
+    }
+  ],
+  "recommendations": ["General improvement suggestions"]
+}
+
+Be thorough but practical. Focus on real issues, not nitpicks.`;
+
+        const userPrompt = `Review this ${input.language || 'code'}:\n\n\`\`\`${input.language || ''}\n${input.code}\n\`\`\``;
+
+        try {
+          const response = await invokeLLM({
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: userPrompt },
+            ],
+            response_format: {
+              type: "json_schema",
+              json_schema: {
+                name: "code_review",
+                strict: true,
+                schema: {
+                  type: "object",
+                  properties: {
+                    summary: { type: "string" },
+                    score: { type: "integer" },
+                    issues: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          severity: { type: "string", enum: ["critical", "warning", "info"] },
+                          category: { type: "string", enum: ["security", "performance", "style", "bug"] },
+                          line: { type: ["integer", "null"] },
+                          title: { type: "string" },
+                          description: { type: "string" },
+                          suggestion: { type: "string" },
+                          code: { type: ["string", "null"] },
+                        },
+                        required: ["severity", "category", "title", "description"],
+                        additionalProperties: false,
+                      },
+                    },
+                    recommendations: {
+                      type: "array",
+                      items: { type: "string" },
+                    },
+                  },
+                  required: ["summary", "score", "issues", "recommendations"],
+                  additionalProperties: false,
+                },
+              },
+            },
+          });
+
+          const rawContent = response.choices[0]?.message?.content;
+          const content = typeof rawContent === "string" ? rawContent : JSON.stringify(rawContent) || "{}";
+          const result = JSON.parse(content);
+          
+          // Log usage
+          await createUsageRecord({
+            userId: ctx.user.id,
+            actionType: "chat",
+            inputTokens: response.usage?.prompt_tokens || 0,
+            outputTokens: response.usage?.completion_tokens || 0,
+            model: "grok-3-fast",
+          });
+
+          return result;
+        } catch (error) {
+          console.error("Code review error:", error);
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to analyze code",
+          });
+        }
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;
