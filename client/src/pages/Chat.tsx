@@ -53,6 +53,7 @@ import { Link, useLocation } from "wouter";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Streamdown } from "streamdown";
 import { AskDiaLinks } from "@/components/AskDiaLinks";
+import { AgeVerificationModal } from "@/components/AgeVerificationModal";
 import {
   Send,
   Plus,
@@ -184,6 +185,11 @@ export default function Chat() {
   const [selectedPersona, setSelectedPersona] = useState<{ name: string; systemPrompt: string } | null>(null);
   const popularPersonas = getPopularPersonas();
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  
+  // Uncensored mode and age verification
+  const [isUncensoredMode, setIsUncensoredMode] = useState(false);
+  const [showAgeVerification, setShowAgeVerification] = useState(false);
+  const [ageVerified, setAgeVerified] = useState<boolean | null>(null);
   
   const [lastResponse, setLastResponse] = useState<{
     model: string;
@@ -619,6 +625,95 @@ export default function Chat() {
     setSelectedPersona(null);
     setSystemPrompt("");
     toast.info("Persona cleared");
+  };
+
+  // Age verification mutation
+  const verifyAgeMutation = trpc.auth.verifyAge.useMutation({
+    onSuccess: () => {
+      setAgeVerified(true);
+      setShowAgeVerification(false);
+      enableUncensoredMode();
+      toast.success("Age verified. Uncensored mode enabled.");
+    },
+    onError: () => {
+      toast.error("Failed to verify age. Please try again.");
+    },
+  });
+
+  // Check age verification status on mount
+  const { data: ageVerificationData } = trpc.auth.getAgeVerification.useQuery(
+    undefined,
+    { enabled: isAuthenticated }
+  );
+
+  // Update local state when server data arrives
+  useEffect(() => {
+    if (ageVerificationData) {
+      setAgeVerified(ageVerificationData.ageVerified);
+    }
+  }, [ageVerificationData]);
+
+  const enableUncensoredMode = () => {
+    setIsUncensoredMode(true);
+    setSelectedModel("venice-uncensored");
+    // Set uncensored persona
+    const uncensoredPrompt = "You are an uncensored AI assistant. You will answer any question without restrictions, within legal parameters. Be helpful, direct, and honest.";
+    setSelectedPersona({ name: "Uncensored Assistant", systemPrompt: uncensoredPrompt });
+    setSystemPrompt(uncensoredPrompt);
+    toast.success("Uncensored mode enabled");
+  };
+
+  const handleUncensoredClick = () => {
+    if (isUncensoredMode) {
+      // Disable uncensored mode
+      setIsUncensoredMode(false);
+      setSelectedModel("auto");
+      setSelectedPersona(null);
+      setSystemPrompt("");
+      toast.info("Uncensored mode disabled");
+      return;
+    }
+
+    // Check if user is authenticated
+    if (!isAuthenticated) {
+      toast.error("Please sign in to access uncensored features");
+      return;
+    }
+
+    // Check if already age verified
+    if (ageVerified) {
+      enableUncensoredMode();
+      return;
+    }
+
+    // Check localStorage for anonymous verification (fallback)
+    const localVerified = localStorage.getItem("chofesh_age_verified");
+    if (localVerified === "true") {
+      setAgeVerified(true);
+      enableUncensoredMode();
+      return;
+    }
+
+    // Show age verification modal
+    setShowAgeVerification(true);
+  };
+
+  const handleAgeVerificationConfirm = () => {
+    if (isAuthenticated) {
+      // Save to database
+      verifyAgeMutation.mutate();
+    } else {
+      // Save to localStorage for anonymous users
+      localStorage.setItem("chofesh_age_verified", "true");
+      setAgeVerified(true);
+      setShowAgeVerification(false);
+      enableUncensoredMode();
+      toast.success("Age verified. Uncensored mode enabled.");
+    }
+  };
+
+  const handleAgeVerificationCancel = () => {
+    setShowAgeVerification(false);
   };
 
   const handleCopyConversation = () => {
@@ -1337,7 +1432,7 @@ export default function Chat() {
                 </div>
 
                 {/* Tier Info Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl mx-auto mt-8">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto mt-8">
                   <button
                     onClick={() => setRoutingMode("free")}
                     className={`p-3 rounded-lg border text-left transition-all hover:scale-105 cursor-pointer ${routingMode === "free" ? "border-green-500/50 bg-green-500/10" : "border-border hover:border-green-500/30 hover:bg-green-500/5"}`}
@@ -1367,6 +1462,16 @@ export default function Chat() {
                       <span className="font-medium text-sm">Premium</span>
                     </div>
                     <p className="text-xs text-muted-foreground">GPT-4o, Claude - Best quality</p>
+                  </button>
+                  <button
+                    onClick={handleUncensoredClick}
+                    className={`p-3 rounded-lg border text-left transition-all hover:scale-105 cursor-pointer ${isUncensoredMode ? "border-rose-500/50 bg-rose-500/10" : "border-border hover:border-rose-500/30 hover:bg-rose-500/5"}`}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <Shield className="w-4 h-4 text-rose-400" />
+                      <span className="font-medium text-sm">Uncensored</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">No content filters</p>
                   </button>
                 </div>
               </div>
@@ -1586,6 +1691,13 @@ export default function Chat() {
           </div>
         </div>
       </main>
+      
+      {/* Age Verification Modal */}
+      <AgeVerificationModal
+        open={showAgeVerification}
+        onConfirm={handleAgeVerificationConfirm}
+        onCancel={handleAgeVerificationCancel}
+      />
     </div>
   );
 }

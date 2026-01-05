@@ -107,6 +107,9 @@ import {
   deleteOldImageAccessLogs,
   deleteUserAuditLogs,
 } from "./db";
+import { getDb } from "./db";
+import { users } from "../drizzle/schema";
+import { eq } from "drizzle-orm";
 import { invokeLLM } from "./_core/llm";
 import { invokeGrok, isGrokAvailable } from "./_core/grok";
 import { invokeDeepSeekR1, invokeVeniceUncensored, isComplexReasoningQuery, isRefusalResponse, OPENROUTER_MODELS } from "./_core/openrouter";
@@ -519,6 +522,39 @@ export const appRouter = router({
         }
         
         return { success: true, message: "If an unverified account exists with this email, a new verification link has been sent." };
+      }),
+    
+    // Age verification for adult content
+    verifyAge: protectedProcedure
+      .mutation(async ({ ctx }) => {
+        const db = await getDb();
+        await db!.update(users)
+          .set({
+            ageVerified: true,
+            ageVerifiedAt: new Date(),
+          })
+          .where(eq(users.id, ctx.user.id));
+        
+        // Log the age verification
+        await createAuditLog({
+          userId: ctx.user.id,
+          userOpenId: ctx.user.openId,
+          actionType: "settings_change",
+          ipAddress: getClientIp(ctx.req),
+          userAgent: ctx.req.headers["user-agent"] || null,
+          metadata: JSON.stringify({ action: "age_verification", verified: true }),
+          timestamp: new Date(),
+        });
+        
+        return { success: true, ageVerified: true };
+      }),
+    
+    getAgeVerification: protectedProcedure
+      .query(async ({ ctx }) => {
+        return {
+          ageVerified: ctx.user.ageVerified || false,
+          ageVerifiedAt: ctx.user.ageVerifiedAt || null,
+        };
       }),
   }),
 
