@@ -60,6 +60,7 @@ import {
   ExternalLink,
   ImageIcon,
   X,
+  ScrollText,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -392,6 +393,12 @@ export default function AdminDashboard() {
               <Button variant="ghost" size="sm">
                 <Image className="w-4 h-4 mr-2" />
                 Images
+              </Button>
+            </Link>
+            <Link href="/admin/audit-logs">
+              <Button variant="ghost" size="sm">
+                <ScrollText className="w-4 h-4 mr-2" />
+                Audit Logs
               </Button>
             </Link>
           </div>
