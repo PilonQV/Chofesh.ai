@@ -954,3 +954,32 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Real-time speech capture as user speaks
 - [x] Auto-populate input field with transcribed text
 - [x] Visual feedback during continuous listening (pulsing mic button, red border on input)
+
+## Phase 28: Local Models (Ollama Integration)
+
+- [x] Add Ollama settings section in Settings page
+- [x] Allow users to configure local Ollama endpoint URL
+- [x] Detect available local models from Ollama API
+- [x] Add "Local" option to model selector in chat
+- [x] Route chat requests to local Ollama when selected
+- [x] Show connection status indicator for local models
+- [x] Handle offline/unavailable Ollama gracefully
+
+## Phase 29: Code Workspace (Monaco Editor)
+
+- [x] Create /code route and CodeWorkspace page
+- [x] Integrate Monaco editor for code editing
+- [x] Add file tree sidebar with virtual file system
+- [x] Implement AI code assistance (explain, refactor, generate)
+- [x] Add syntax highlighting for multiple languages
+- [x] Support creating, editing, deleting files
+- [x] Add code execution preview (for HTML/JS)
+
+### Phase 30: Workflows (Visual Builder)
+- [x] Create /workflows route and Workflows page
+- [x] Build visual node-based workflow editor
+- [x] Implement workflow nodes: Input, AI, Condition, Output, Transform
+- [x] Add drag-and-drop node placement
+- [x] Connect nodes with visual edges
+- [x] Save/load workflow definitions
+- [x] Execute workflows with real AI calls

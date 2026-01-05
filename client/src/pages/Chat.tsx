@@ -88,6 +88,7 @@ import {
   Moon,
   Sparkles,
   Star,
+  Server,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -167,6 +168,12 @@ export default function Chat() {
   const [voiceOutputEnabled, setVoiceOutputEnabled] = useState(false);
   const [interimTranscript, setInterimTranscript] = useState("");
   const [finalTranscript, setFinalTranscript] = useState("");
+  
+  // Ollama local models
+  const [ollamaEnabled, setOllamaEnabled] = useState(false);
+  const [ollamaEndpoint, setOllamaEndpoint] = useState('http://localhost:11434');
+  const [ollamaModels, setOllamaModels] = useState<string[]>([]);
+  const [ollamaConnected, setOllamaConnected] = useState(false);
   
   // Persona/Character selection
   const [selectedPersona, setSelectedPersona] = useState<{ name: string; systemPrompt: string } | null>(null);
@@ -277,6 +284,31 @@ export default function Chat() {
       setLocation("/");
     }
   }, [authLoading, isAuthenticated, setLocation]);
+
+  // Load Ollama settings from localStorage and check connection
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const enabled = localStorage.getItem('ollamaEnabled') === 'true';
+      const endpoint = localStorage.getItem('ollamaEndpoint') || 'http://localhost:11434';
+      setOllamaEnabled(enabled);
+      setOllamaEndpoint(endpoint);
+      
+      if (enabled) {
+        // Check Ollama connection and get models
+        fetch(`${endpoint}/api/tags`)
+          .then(res => res.json())
+          .then(data => {
+            const models = data.models?.map((m: { name: string }) => m.name) || [];
+            setOllamaModels(models);
+            setOllamaConnected(true);
+          })
+          .catch(() => {
+            setOllamaConnected(false);
+            setOllamaModels([]);
+          });
+      }
+    }
+  }, []);
 
   // Auto-scroll to bottom when messages change or when generating
   const scrollToBottom = useCallback(() => {
@@ -390,6 +422,56 @@ export default function Chat() {
         ...conv.messages.map((m) => ({ role: m.role as "system" | "user" | "assistant", content: m.content })),
         { role: "user" as const, content: userMessage }
       );
+
+      // Check if using local Ollama model
+      const isOllamaModel = selectedModel.startsWith('ollama:');
+      
+      if (isOllamaModel && ollamaEnabled && ollamaConnected) {
+        // Route to local Ollama
+        const ollamaModelName = selectedModel.replace('ollama:', '');
+        const ollamaResponse = await fetch(`${ollamaEndpoint}/api/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: ollamaModelName,
+            messages: messages.map(m => ({ role: m.role, content: m.content })),
+            stream: false,
+            options: {
+              temperature,
+              top_p: topP,
+            },
+          }),
+        });
+        
+        if (!ollamaResponse.ok) {
+          throw new Error('Ollama request failed');
+        }
+        
+        const ollamaData = await ollamaResponse.json();
+        const content = ollamaData.message?.content || 'No response from local model';
+        
+        addMessage(conv.id, "assistant", content);
+        
+        if (voiceOutputEnabled) {
+          speakText(content);
+        }
+        
+        setLastResponse({
+          model: `ollama:${ollamaModelName}`,
+          modelName: `${ollamaModelName} (Local)`,
+          tier: "local",
+          cost: 0,
+          cached: false,
+          tokens: {
+            input: ollamaData.prompt_eval_count || 0,
+            output: ollamaData.eval_count || 0,
+            total: (ollamaData.prompt_eval_count || 0) + (ollamaData.eval_count || 0),
+          },
+        });
+        
+        setIsGenerating(false);
+        return;
+      }
 
       const response = await chatMutation.mutateAsync({
         messages,
@@ -1001,6 +1083,7 @@ export default function Chat() {
                   <SelectValue placeholder="Select model" />
                 </SelectTrigger>
                 <SelectContent>
+                  {/* Cloud models */}
                   {models.map((model) => (
                     <SelectItem key={model.id} value={model.id}>
                       <div className="flex items-center gap-2">
@@ -1009,6 +1092,25 @@ export default function Chat() {
                       </div>
                     </SelectItem>
                   ))}
+                  {/* Local Ollama models */}
+                  {ollamaEnabled && ollamaConnected && ollamaModels.length > 0 && (
+                    <>
+                      <SelectItem disabled value="__ollama_divider__">
+                        <span className="text-xs text-muted-foreground">── Local Models ──</span>
+                      </SelectItem>
+                      {ollamaModels.map((model) => (
+                        <SelectItem key={`ollama:${model}`} value={`ollama:${model}`}>
+                          <div className="flex items-center gap-2">
+                            <Server className="w-3 h-3 text-green-500" />
+                            <span>{model}</span>
+                            <Badge variant="outline" className="text-[10px] bg-green-500/20 text-green-500 border-green-500/30 ml-1">
+                              Local
+                            </Badge>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </>
+                  )}
                 </SelectContent>
               </Select>
             )}

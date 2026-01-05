@@ -51,6 +51,10 @@ import {
   Sparkles,
   Clock,
   Brain,
+  Server,
+  Wifi,
+  WifiOff,
+  RefreshCw,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -74,6 +78,23 @@ export default function Settings() {
   const [newKeyValue, setNewKeyValue] = useState("");
   const [showKey, setShowKey] = useState(false);
   const [validating, setValidating] = useState(false);
+  
+  // Ollama local model settings
+  const [ollamaEndpoint, setOllamaEndpoint] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('ollamaEndpoint') || 'http://localhost:11434';
+    }
+    return 'http://localhost:11434';
+  });
+  const [ollamaEnabled, setOllamaEnabled] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('ollamaEnabled') === 'true';
+    }
+    return false;
+  });
+  const [ollamaModels, setOllamaModels] = useState<string[]>([]);
+  const [ollamaStatus, setOllamaStatus] = useState<'checking' | 'connected' | 'disconnected'>('disconnected');
+  const [checkingOllama, setCheckingOllama] = useState(false);
 
   const utils = trpc.useUtils();
   
@@ -117,6 +138,51 @@ export default function Settings() {
       setLocation("/");
     }
   }, [authLoading, isAuthenticated, setLocation]);
+
+  // Check Ollama connection and get available models
+  const checkOllamaConnection = async () => {
+    setCheckingOllama(true);
+    setOllamaStatus('checking');
+    try {
+      // Try to connect to Ollama API
+      const response = await fetch(`${ollamaEndpoint}/api/tags`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        const models = data.models?.map((m: { name: string }) => m.name) || [];
+        setOllamaModels(models);
+        setOllamaStatus('connected');
+        toast.success(`Connected to Ollama! Found ${models.length} model(s)`);
+      } else {
+        setOllamaStatus('disconnected');
+        setOllamaModels([]);
+        toast.error('Could not connect to Ollama');
+      }
+    } catch (error) {
+      setOllamaStatus('disconnected');
+      setOllamaModels([]);
+      toast.error('Ollama not reachable. Make sure it\'s running locally.');
+    } finally {
+      setCheckingOllama(false);
+    }
+  };
+
+  // Save Ollama settings to localStorage
+  const saveOllamaSettings = () => {
+    localStorage.setItem('ollamaEndpoint', ollamaEndpoint);
+    localStorage.setItem('ollamaEnabled', ollamaEnabled.toString());
+    toast.success('Ollama settings saved');
+  };
+
+  // Check Ollama on mount if enabled
+  useEffect(() => {
+    if (ollamaEnabled) {
+      checkOllamaConnection();
+    }
+  }, []);
 
   const handleAddKey = async () => {
     if (!newKeyValue.trim()) {
@@ -543,6 +609,129 @@ export default function Settings() {
                     Add Your First Key
                   </Button>
                 </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Local Models (Ollama) Card */}
+          <Card className="mb-6 border-green-500/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Server className="w-5 h-5" />
+                Local Models (Ollama)
+                <span className="ml-auto flex items-center gap-2 text-sm font-normal">
+                  {ollamaStatus === 'connected' && (
+                    <span className="flex items-center gap-1 text-green-500">
+                      <Wifi className="w-4 h-4" />
+                      Connected
+                    </span>
+                  )}
+                  {ollamaStatus === 'disconnected' && (
+                    <span className="flex items-center gap-1 text-muted-foreground">
+                      <WifiOff className="w-4 h-4" />
+                      Disconnected
+                    </span>
+                  )}
+                  {ollamaStatus === 'checking' && (
+                    <span className="flex items-center gap-1 text-yellow-500">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Checking...
+                    </span>
+                  )}
+                </span>
+              </CardTitle>
+              <CardDescription>
+                Run AI models locally on your computer for maximum privacy. No data leaves your machine.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
+                    <Server className="w-5 h-5 text-green-500" />
+                  </div>
+                  <div>
+                    <div className="font-medium">Enable Local Models</div>
+                    <div className="text-sm text-muted-foreground">Use Ollama for completely private AI</div>
+                  </div>
+                </div>
+                <Button
+                  variant={ollamaEnabled ? "default" : "outline"}
+                  onClick={() => {
+                    const newValue = !ollamaEnabled;
+                    setOllamaEnabled(newValue);
+                    localStorage.setItem('ollamaEnabled', newValue.toString());
+                    if (newValue) {
+                      checkOllamaConnection();
+                    }
+                  }}
+                >
+                  {ollamaEnabled ? "Enabled" : "Disabled"}
+                </Button>
+              </div>
+
+              {ollamaEnabled && (
+                <>
+                  <div className="space-y-2">
+                    <Label>Ollama Endpoint URL</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        value={ollamaEndpoint}
+                        onChange={(e) => setOllamaEndpoint(e.target.value)}
+                        placeholder="http://localhost:11434"
+                        className="flex-1"
+                      />
+                      <Button
+                        variant="outline"
+                        onClick={checkOllamaConnection}
+                        disabled={checkingOllama}
+                      >
+                        {checkingOllama ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <RefreshCw className="w-4 h-4" />
+                        )}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Default: http://localhost:11434. Make sure Ollama is running.
+                    </p>
+                  </div>
+
+                  {ollamaModels.length > 0 && (
+                    <div className="space-y-2">
+                      <Label>Available Models ({ollamaModels.length})</Label>
+                      <div className="flex flex-wrap gap-2">
+                        {ollamaModels.map((model) => (
+                          <span
+                            key={model}
+                            className="px-3 py-1 rounded-full text-sm bg-green-500/20 text-green-500"
+                          >
+                            {model}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="p-4 rounded-lg border border-green-500/20 bg-green-500/5">
+                    <div className="flex items-start gap-3">
+                      <Shield className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <h4 className="font-semibold text-green-500 mb-1">Maximum Privacy</h4>
+                        <p className="text-sm text-muted-foreground">
+                          When using local models, your conversations never leave your computer. 
+                          Perfect for sensitive data and complete privacy.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-sm text-muted-foreground">
+                    <p className="mb-2">Don't have Ollama? <a href="https://ollama.ai" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Download it here</a></p>
+                    <p>Popular models: <code className="bg-muted px-1 rounded">ollama pull llama3.2</code>, <code className="bg-muted px-1 rounded">ollama pull mistral</code>, <code className="bg-muted px-1 rounded">ollama pull codellama</code></p>
+                  </div>
+                </>
               )}
             </CardContent>
           </Card>
