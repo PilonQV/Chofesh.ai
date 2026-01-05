@@ -858,6 +858,12 @@ export default function Chat() {
                 Workflows
               </Button>
             </Link>
+            <Link href="/settings#ollama">
+              <Button variant="ghost" className="w-full justify-start gap-2">
+                <Server className="w-4 h-4" />
+                Local Models
+              </Button>
+            </Link>
             <Link href="/settings">
               <Button variant="ghost" className="w-full justify-start gap-2">
                 <Settings className="w-4 h-4" />
