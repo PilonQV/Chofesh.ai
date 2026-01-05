@@ -35,6 +35,7 @@ import {
   Search,
   Code2,
   Workflow,
+  Server,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -64,9 +65,9 @@ export default function Home() {
           </Link>
           
           <div className="hidden md:flex items-center gap-6">
-            <a href="#features" className="text-sm text-foreground/70 hover:text-foreground transition-colors font-medium">Features</a>
-            <a href="#pricing" className="text-sm text-foreground/70 hover:text-foreground transition-colors font-medium">Pricing</a>
-            <Link href="/privacy" className="text-sm text-foreground/70 hover:text-foreground transition-colors font-medium">Privacy Policy</Link>
+            <a href="#features" className="text-sm text-foreground hover:text-primary transition-colors font-medium">Features</a>
+            <a href="#pricing" className="text-sm text-foreground hover:text-primary transition-colors font-medium">Pricing</a>
+            <Link href="/privacy" className="text-sm text-foreground hover:text-primary transition-colors font-medium">Privacy Policy</Link>
           </div>
           
           <div className="flex items-center gap-4">
@@ -342,6 +343,12 @@ export default function Home() {
               title="AI Workflows"
               description="Visual workflow builder for automation. Chain AI tasks together with drag-and-drop simplicity."
               badge="New"
+            />
+            <FeatureCard
+              icon={<Server className="w-6 h-6" />}
+              title="Local Models"
+              description="Run AI completely offline with Ollama. Maximum privacy - your data never leaves your device."
+              badge="Privacy"
             />
           </div>
         </div>

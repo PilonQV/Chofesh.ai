@@ -282,6 +282,14 @@ export default function CodeWorkspace() {
   const [newFileType, setNewFileType] = useState<"file" | "folder">("file");
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   
+  // Onboarding state
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    if (typeof window !== "undefined") {
+      return !localStorage.getItem("codeWorkspaceOnboardingDone");
+    }
+    return true;
+  });
+  
   const chatMutation = trpc.chat.send.useMutation();
   
   // Save files to localStorage
@@ -954,6 +962,63 @@ export default function CodeWorkspace() {
               Cancel
             </Button>
             <Button onClick={createNewFile}>Create</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Onboarding Dialog */}
+      <Dialog open={showOnboarding} onOpenChange={(open) => {
+        setShowOnboarding(open);
+        if (!open) {
+          localStorage.setItem("codeWorkspaceOnboardingDone", "true");
+        }
+      }}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Code2 className="w-5 h-5 text-primary" />
+              Welcome to Code Workspace!
+            </DialogTitle>
+            <DialogDescription>
+              Your AI-powered code editor with intelligent assistance.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <FileCode className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <h4 className="font-medium">File Management</h4>
+                <p className="text-sm text-muted-foreground">Create, edit, and organize files in the sidebar. Supports 20+ languages.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <Sparkles className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <h4 className="font-medium">AI Assistance</h4>
+                <p className="text-sm text-muted-foreground">Click the AI button to explain, refactor, fix bugs, or generate code.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <Play className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <h4 className="font-medium">Live Preview</h4>
+                <p className="text-sm text-muted-foreground">Click Preview to see your HTML/CSS/JS code running in real-time.</p>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => {
+              setShowOnboarding(false);
+              localStorage.setItem("codeWorkspaceOnboardingDone", "true");
+            }}>
+              Get Started
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

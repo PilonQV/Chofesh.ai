@@ -990,3 +990,10 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Add Workflows link to sidebar navigation  
 - [x] Add Code Workspace feature badge to homepage
 - [x] Add Workflows feature badge to homepage
+
+## Phase 32: Homepage & UX Improvements
+
+- [x] Fix header visibility in light mode (buttons hard to see against light background)
+- [x] Add Local Models (Ollama) feature badge to homepage
+- [x] Create onboarding tooltips for Code Workspace on first visit
+- [x] Create onboarding tooltips for Workflows on first visit
