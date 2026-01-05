@@ -100,7 +100,7 @@ export type InsertUserApiKey = typeof userApiKeys.$inferInsert;
 export const usageRecords = mysqlTable("usage_records", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
-  actionType: mysqlEnum("actionType", ["chat", "image_generation", "document_chat"]).notNull(),
+  actionType: mysqlEnum("actionType", ["chat", "image_generation", "document_chat", "youtube_summary", "url_analysis", "math_solve", "code_review"]).notNull(),
   model: varchar("model", { length: 64 }),
   inputTokens: int("inputTokens").default(0),
   outputTokens: int("outputTokens").default(0),

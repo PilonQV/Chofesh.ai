@@ -110,6 +110,22 @@ import Stripe from "stripe";
 import { SUBSCRIPTION_TIERS, getDailyLimit, isOverLimit, getSlowdownDelay, type SubscriptionTier } from "./stripe/products";
 import crypto from "crypto";
 import {
+  scrapeUrl,
+  analyzeUrl,
+  evaluateMath,
+  solveMathProblem,
+  convertUnits,
+  convertCurrency,
+  convertTimezone,
+  parseConversionRequest,
+} from "./_core/smartTools";
+import {
+  extractVideoId,
+  containsYouTubeUrl,
+  getVideoInfo,
+  summarizeVideo,
+} from "./_core/youtube";
+import {
   AVAILABLE_MODELS,
   analyzeQueryComplexity,
   selectModel,
@@ -2918,8 +2934,152 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
             message: "Failed to analyze code",
           });
         }
-      }),
+       }),
+  }),
+
+  // Smart Tools Router
+  tools: router({
+    // YouTube Summarizer
+    youtube: router({
+      extractVideoId: publicProcedure
+        .input(z.object({ url: z.string() }))
+        .query(({ input }) => {
+          const videoId = extractVideoId(input.url);
+          return { videoId, isValid: !!videoId };
+        }),
+
+      getVideoInfo: protectedProcedure
+        .input(z.object({ videoId: z.string() }))
+        .query(async ({ input }) => {
+          return await getVideoInfo(input.videoId);
+        }),
+
+      summarize: protectedProcedure
+        .input(z.object({ url: z.string() }))
+        .mutation(async ({ ctx, input }) => {
+          const videoId = extractVideoId(input.url);
+          if (!videoId) {
+            throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid YouTube URL" });
+          }
+          const summary = await summarizeVideo(videoId);
+          if (!summary) {
+            throw new TRPCError({ code: "NOT_FOUND", message: "Could not summarize video" });
+          }
+          // Log usage
+          await createUsageRecord({
+            userId: ctx.user.id,
+            actionType: "youtube_summary",
+            inputTokens: 500,
+            outputTokens: 300,
+            model: "gemini-2.5-flash",
+          });
+          return summary;
+        }),
+    }),
+
+    // URL Scraper
+    scraper: router({
+      scrape: protectedProcedure
+        .input(z.object({ url: z.string().url() }))
+        .mutation(async ({ ctx, input }) => {
+          const result = await scrapeUrl(input.url);
+          if (!result) {
+            throw new TRPCError({ code: "BAD_REQUEST", message: "Failed to scrape URL" });
+          }
+          return result;
+        }),
+
+      analyze: protectedProcedure
+        .input(z.object({ url: z.string().url() }))
+        .mutation(async ({ ctx, input }) => {
+          const result = await analyzeUrl(input.url);
+          if (!result) {
+            throw new TRPCError({ code: "BAD_REQUEST", message: "Failed to analyze URL" });
+          }
+          await createUsageRecord({
+            userId: ctx.user.id,
+            actionType: "url_analysis",
+            inputTokens: 400,
+            outputTokens: 200,
+            model: "gemini-2.5-flash",
+          });
+          return result;
+        }),
+    }),
+
+    // Calculator / Math Solver
+    math: router({
+      evaluate: publicProcedure
+        .input(z.object({ expression: z.string() }))
+        .query(({ input }) => {
+          return evaluateMath(input.expression);
+        }),
+
+      solve: protectedProcedure
+        .input(z.object({ problem: z.string() }))
+        .mutation(async ({ ctx, input }) => {
+          const result = await solveMathProblem(input.problem);
+          await createUsageRecord({
+            userId: ctx.user.id,
+            actionType: "math_solve",
+            inputTokens: 100,
+            outputTokens: 200,
+            model: "gemini-2.5-flash",
+          });
+          return result;
+        }),
+    }),
+
+    // Unit Converter
+    converter: router({
+      units: publicProcedure
+        .input(z.object({
+          value: z.number(),
+          fromUnit: z.string(),
+          toUnit: z.string(),
+        }))
+        .query(({ input }) => {
+          const result = convertUnits(input.value, input.fromUnit, input.toUnit);
+          if (!result) {
+            throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid unit conversion" });
+          }
+          return result;
+        }),
+
+      currency: publicProcedure
+        .input(z.object({
+          amount: z.number(),
+          fromCurrency: z.string(),
+          toCurrency: z.string(),
+        }))
+        .query(({ input }) => {
+          const result = convertCurrency(input.amount, input.fromCurrency, input.toCurrency);
+          if (!result) {
+            throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid currency conversion" });
+          }
+          return result;
+        }),
+
+      timezone: publicProcedure
+        .input(z.object({
+          time: z.string(),
+          fromTimezone: z.string(),
+          toTimezone: z.string(),
+        }))
+        .query(({ input }) => {
+          const result = convertTimezone(input.time, input.fromTimezone, input.toTimezone);
+          if (!result) {
+            throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid timezone conversion" });
+          }
+          return result;
+        }),
+
+      parse: protectedProcedure
+        .input(z.object({ text: z.string() }))
+        .mutation(async ({ input }) => {
+          return await parseConversionRequest(input.text);
+        }),
+    }),
   }),
 });
-
 export type AppRouter = typeof appRouter;

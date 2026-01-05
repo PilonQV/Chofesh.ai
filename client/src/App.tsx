@@ -36,6 +36,7 @@ const Workflows = lazy(() => import("./pages/Workflows"));
 const CodeReview = lazy(() => import("./pages/CodeReview"));
 const KnowledgeBase = lazy(() => import("./pages/KnowledgeBase"));
 const ComponentShowcase = lazy(() => import("./pages/ComponentShowcase"));
+const Tools = lazy(() => import("./pages/Tools"));
 
 // Loading fallback component
 function PageLoader() {
@@ -70,6 +71,7 @@ function Router() {
         <Route path="/code-review" component={CodeReview} />
         <Route path="/knowledge" component={KnowledgeBase} />
         <Route path="/showcase" component={ComponentShowcase} />
+        <Route path="/tools" component={Tools} />
         <Route path="/login" component={Login} />
         <Route path="/register" component={Register} />
         <Route path="/forgot-password" component={ForgotPassword} />

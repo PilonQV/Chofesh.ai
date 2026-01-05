@@ -444,6 +444,47 @@ export const PROMPT_TEMPLATES: PromptTemplate[] = [
     prompt: "Compare these options: {{options}}\n\nProvide a detailed comparison covering key factors, advantages, and disadvantages of each.",
     variables: ["options"],
   },
+  // AI Enhancements
+  {
+    id: "translate",
+    name: "Translate Text",
+    category: "productivity",
+    description: "Translate text to another language",
+    prompt: `Translate the following text to {{language}}. Preserve the tone and meaning as closely as possible.\n\nText:\n{{text}}\n\nProvide:\n1. **Translation**: The translated text\n2. **Notes**: Any cultural or linguistic nuances to be aware of`,
+    variables: ["language", "text"],
+  },
+  {
+    id: "tone-adjuster",
+    name: "Adjust Tone",
+    category: "productivity",
+    description: "Rewrite text in a different tone",
+    prompt: `Rewrite the following text in a {{tone}} tone. Keep the core message but adjust the style.\n\nOriginal:\n{{text}}\n\nTone options: professional, casual, friendly, formal, humorous, empathetic, assertive, diplomatic`,
+    variables: ["tone", "text"],
+  },
+  {
+    id: "summarize-thread",
+    name: "Summarize Conversation",
+    category: "productivity",
+    description: "Condense a long conversation into key points",
+    prompt: `Summarize this conversation into key points:\n\n{{conversation}}\n\nProvide:\n1. **Main Topics**: What was discussed\n2. **Key Decisions**: Any conclusions or agreements\n3. **Action Items**: Tasks or next steps mentioned\n4. **Open Questions**: Unresolved issues`,
+    variables: ["conversation"],
+  },
+  {
+    id: "expand-text",
+    name: "Expand Text",
+    category: "productivity",
+    description: "Elaborate on brief text with more detail",
+    prompt: `Expand the following brief text into a more detailed version:\n\n{{text}}\n\nAdd:\n- More context and background\n- Examples or illustrations\n- Supporting details\n- Smooth transitions\n\nMaintain the original meaning and intent.`,
+    variables: ["text"],
+  },
+  {
+    id: "simplify",
+    name: "Simplify Text",
+    category: "productivity",
+    description: "Make complex text easier to understand",
+    prompt: `Simplify this text for a general audience:\n\n{{text}}\n\nRules:\n- Use simple, everyday words\n- Break down complex concepts\n- Keep sentences short\n- Explain jargon if unavoidable\n- Maintain accuracy`,
+    variables: ["text"],
+  },
   // Creative
   {
     id: "brainstorm",
