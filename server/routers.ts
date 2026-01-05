@@ -77,6 +77,11 @@ import {
   getGeneratedImageStats,
   getGeneratedImageById,
   deleteGeneratedImage,
+  // GitHub connection functions
+  getGithubConnectionByUserId,
+  upsertGithubConnection,
+  updateGithubConnectionLastUsed,
+  deleteGithubConnection,
 } from "./db";
 import { invokeLLM } from "./_core/llm";
 import { invokeGrok, isGrokAvailable } from "./_core/grok";
@@ -86,6 +91,20 @@ import { transcribeAudio } from "./_core/voiceTranscription";
 import { callDataApi } from "./_core/dataApi";
 import { searchDuckDuckGo } from "./_core/duckduckgo";
 import { notifyOwner } from "./_core/notification";
+import {
+  isGitHubOAuthConfigured,
+  getGitHubAuthUrl,
+  exchangeCodeForToken,
+  getGitHubUser,
+  encryptToken,
+  decryptToken,
+  listUserRepos,
+  getRepoContents,
+  getFileContent,
+  getRepoBranches,
+  getRepoPullRequests,
+  getPullRequestFiles,
+} from "./_core/githubOAuth";
 import { storagePut } from "./storage";
 import Stripe from "stripe";
 import { SUBSCRIPTION_TIERS, getDailyLimit, isOverLimit, getSlowdownDelay, type SubscriptionTier } from "./stripe/products";
@@ -2498,6 +2517,300 @@ ${context}`;
             relevance: chunk.similarity || 0.8,
           })),
         };
+      }),
+  }),
+
+  // GitHub OAuth Integration
+  github: router({
+    // Check if GitHub OAuth is configured
+    isConfigured: publicProcedure.query(() => {
+      return { configured: isGitHubOAuthConfigured() };
+    }),
+
+    // Get current user's GitHub connection status
+    getConnection: protectedProcedure.query(async ({ ctx }) => {
+      const connection = await getGithubConnectionByUserId(ctx.user.id);
+      if (!connection) {
+        return { connected: false };
+      }
+      return {
+        connected: true,
+        username: connection.githubUsername,
+        email: connection.githubEmail,
+        avatarUrl: connection.avatarUrl,
+        connectedAt: connection.createdAt,
+      };
+    }),
+
+    // Get OAuth authorization URL
+    getAuthUrl: protectedProcedure.query(({ ctx }) => {
+      // Use user ID as state for security
+      const state = Buffer.from(JSON.stringify({
+        userId: ctx.user.id,
+        timestamp: Date.now(),
+      })).toString('base64');
+      
+      const authUrl = getGitHubAuthUrl(state);
+      if (!authUrl) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "GitHub OAuth is not configured. Please set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET.",
+        });
+      }
+      return { authUrl, state };
+    }),
+
+    // Handle OAuth callback (exchange code for token)
+    handleCallback: protectedProcedure
+      .input(z.object({
+        code: z.string(),
+        state: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Verify state
+        try {
+          const stateData = JSON.parse(Buffer.from(input.state, 'base64').toString());
+          if (stateData.userId !== ctx.user.id) {
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: "Invalid OAuth state",
+            });
+          }
+          // Check timestamp (5 minute expiry)
+          if (Date.now() - stateData.timestamp > 5 * 60 * 1000) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "OAuth state expired",
+            });
+          }
+        } catch (e) {
+          if (e instanceof TRPCError) throw e;
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Invalid OAuth state",
+          });
+        }
+
+        // Exchange code for token
+        const tokenResponse = await exchangeCodeForToken(input.code);
+        if (!tokenResponse) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to exchange code for token",
+          });
+        }
+
+        // Get GitHub user info
+        const githubUser = await getGitHubUser(tokenResponse.access_token);
+        if (!githubUser) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to get GitHub user info",
+          });
+        }
+
+        // Store encrypted token
+        await upsertGithubConnection({
+          userId: ctx.user.id,
+          githubId: String(githubUser.id),
+          githubUsername: githubUser.login,
+          githubEmail: githubUser.email,
+          avatarUrl: githubUser.avatar_url,
+          encryptedAccessToken: encryptToken(tokenResponse.access_token),
+          tokenScope: tokenResponse.scope,
+        });
+
+        return {
+          success: true,
+          username: githubUser.login,
+          email: githubUser.email,
+          avatarUrl: githubUser.avatar_url,
+        };
+      }),
+
+    // Disconnect GitHub account
+    disconnect: protectedProcedure.mutation(async ({ ctx }) => {
+      await deleteGithubConnection(ctx.user.id);
+      return { success: true };
+    }),
+
+    // List user's repositories
+    listRepos: protectedProcedure
+      .input(z.object({
+        page: z.number().default(1),
+        perPage: z.number().default(30),
+      }))
+      .query(async ({ ctx, input }) => {
+        const connection = await getGithubConnectionByUserId(ctx.user.id);
+        if (!connection) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: "GitHub account not connected",
+          });
+        }
+
+        const accessToken = decryptToken(connection.encryptedAccessToken);
+        const repos = await listUserRepos(accessToken, input.page, input.perPage);
+        
+        await updateGithubConnectionLastUsed(ctx.user.id);
+
+        return repos.map((repo: any) => ({
+          id: repo.id,
+          name: repo.name,
+          fullName: repo.full_name,
+          description: repo.description,
+          private: repo.private,
+          htmlUrl: repo.html_url,
+          language: repo.language,
+          stargazersCount: repo.stargazers_count,
+          forksCount: repo.forks_count,
+          updatedAt: repo.updated_at,
+          defaultBranch: repo.default_branch,
+        }));
+      }),
+
+    // Get repository contents
+    getRepoContents: protectedProcedure
+      .input(z.object({
+        owner: z.string(),
+        repo: z.string(),
+        path: z.string().default(""),
+      }))
+      .query(async ({ ctx, input }) => {
+        const connection = await getGithubConnectionByUserId(ctx.user.id);
+        if (!connection) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: "GitHub account not connected",
+          });
+        }
+
+        const accessToken = decryptToken(connection.encryptedAccessToken);
+        const contents = await getRepoContents(accessToken, input.owner, input.repo, input.path);
+        
+        return contents.map((item: any) => ({
+          name: item.name,
+          path: item.path,
+          type: item.type, // 'file' or 'dir'
+          size: item.size,
+          sha: item.sha,
+        }));
+      }),
+
+    // Get file content
+    getFileContent: protectedProcedure
+      .input(z.object({
+        owner: z.string(),
+        repo: z.string(),
+        path: z.string(),
+      }))
+      .query(async ({ ctx, input }) => {
+        const connection = await getGithubConnectionByUserId(ctx.user.id);
+        if (!connection) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: "GitHub account not connected",
+          });
+        }
+
+        const accessToken = decryptToken(connection.encryptedAccessToken);
+        const content = await getFileContent(accessToken, input.owner, input.repo, input.path);
+        
+        if (content === null) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "File not found",
+          });
+        }
+
+        return { content };
+      }),
+
+    // Get repository branches
+    getBranches: protectedProcedure
+      .input(z.object({
+        owner: z.string(),
+        repo: z.string(),
+      }))
+      .query(async ({ ctx, input }) => {
+        const connection = await getGithubConnectionByUserId(ctx.user.id);
+        if (!connection) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: "GitHub account not connected",
+          });
+        }
+
+        const accessToken = decryptToken(connection.encryptedAccessToken);
+        const branches = await getRepoBranches(accessToken, input.owner, input.repo);
+        
+        return branches.map((branch: any) => ({
+          name: branch.name,
+          protected: branch.protected,
+        }));
+      }),
+
+    // Get pull requests
+    getPullRequests: protectedProcedure
+      .input(z.object({
+        owner: z.string(),
+        repo: z.string(),
+        state: z.enum(["open", "closed", "all"]).default("open"),
+      }))
+      .query(async ({ ctx, input }) => {
+        const connection = await getGithubConnectionByUserId(ctx.user.id);
+        if (!connection) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: "GitHub account not connected",
+          });
+        }
+
+        const accessToken = decryptToken(connection.encryptedAccessToken);
+        const prs = await getRepoPullRequests(accessToken, input.owner, input.repo, input.state);
+        
+        return prs.map((pr: any) => ({
+          number: pr.number,
+          title: pr.title,
+          state: pr.state,
+          user: pr.user?.login,
+          createdAt: pr.created_at,
+          updatedAt: pr.updated_at,
+          htmlUrl: pr.html_url,
+          additions: pr.additions,
+          deletions: pr.deletions,
+          changedFiles: pr.changed_files,
+        }));
+      }),
+
+    // Get PR files for review
+    getPRFiles: protectedProcedure
+      .input(z.object({
+        owner: z.string(),
+        repo: z.string(),
+        pullNumber: z.number(),
+      }))
+      .query(async ({ ctx, input }) => {
+        const connection = await getGithubConnectionByUserId(ctx.user.id);
+        if (!connection) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: "GitHub account not connected",
+          });
+        }
+
+        const accessToken = decryptToken(connection.encryptedAccessToken);
+        const files = await getPullRequestFiles(accessToken, input.owner, input.repo, input.pullNumber);
+        
+        return files.map((file: any) => ({
+          filename: file.filename,
+          status: file.status,
+          additions: file.additions,
+          deletions: file.deletions,
+          changes: file.changes,
+          patch: file.patch,
+          contentsUrl: file.contents_url,
+        }));
       }),
   }),
 

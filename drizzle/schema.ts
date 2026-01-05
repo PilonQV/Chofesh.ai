@@ -321,3 +321,25 @@ export const generatedImages = mysqlTable("generated_images", {
 
 export type GeneratedImage = typeof generatedImages.$inferSelect;
 export type InsertGeneratedImage = typeof generatedImages.$inferInsert;
+
+
+/**
+ * GitHub OAuth connections table.
+ * Stores encrypted GitHub access tokens for seamless integration.
+ */
+export const githubConnections = mysqlTable("github_connections", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").references(() => users.id, { onDelete: "cascade" }).notNull().unique(),
+  githubId: varchar("githubId", { length: 64 }).notNull(), // GitHub user ID
+  githubUsername: varchar("githubUsername", { length: 100 }).notNull(),
+  githubEmail: varchar("githubEmail", { length: 320 }),
+  avatarUrl: text("avatarUrl"),
+  encryptedAccessToken: text("encryptedAccessToken").notNull(),
+  tokenScope: text("tokenScope"), // Comma-separated scopes
+  lastUsedAt: timestamp("lastUsedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type GithubConnection = typeof githubConnections.$inferSelect;
+export type InsertGithubConnection = typeof githubConnections.$inferInsert;
