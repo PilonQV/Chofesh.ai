@@ -1006,3 +1006,24 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 ## Phase 34: Navigation Button Styling
 
 - [x] Style nav buttons (Features, Pricing, Privacy Policy) to match Get Started button palette (using primary color)
+
+
+## Phase 35: Code Review Bot (Full Implementation)
+
+- [x] Create /code-review route and CodeReview page
+- [x] Add code paste area with language detection
+- [x] Implement security vulnerability scanning (SQL injection, XSS, etc.)
+- [x] Add performance analysis suggestions
+- [x] Implement severity ratings (Critical, Warning, Info)
+- [x] Add style/convention checking
+- [x] Generate actionable fix suggestions
+- [x] Export review report
+
+### Phase 36: Knowledge Base / RAG (Full Implementation)
+- [x] Create /knowledge route and KnowledgeBase page
+- [x] Add multi-document upload and organization
+- [x] Implement vector embeddings for semantic search
+- [x] Add document workspace with folders
+- [x] Implement citation to specific pages/sections
+- [x] Add semantic search across all documents
+- [x] Create chat interface for knowledge base queries

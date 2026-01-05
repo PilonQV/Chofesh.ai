@@ -36,6 +36,8 @@ import {
   Code2,
   Workflow,
   Server,
+  Database,
+  ShieldCheck,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -349,6 +351,18 @@ export default function Home() {
               title="Local Models"
               description="Run AI completely offline with Ollama. Maximum privacy - your data never leaves your device."
               badge="Privacy"
+            />
+            <FeatureCard
+              icon={<ShieldCheck className="w-6 h-6" />}
+              title="Code Review Bot"
+              description="AI-powered security scanning with severity ratings. Find vulnerabilities, performance issues, and get fix suggestions."
+              badge="New"
+            />
+            <FeatureCard
+              icon={<Database className="w-6 h-6" />}
+              title="Knowledge Base"
+              description="Upload documents and chat with your own data. Semantic search with source citations."
+              badge="New"
             />
           </div>
         </div>

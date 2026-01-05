@@ -91,6 +91,8 @@ import {
   Server,
   Code2,
   Workflow,
+  Shield,
+  Database,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -856,6 +858,18 @@ export default function Chat() {
               <Button variant="ghost" className="w-full justify-start gap-2">
                 <Workflow className="w-4 h-4" />
                 Workflows
+              </Button>
+            </Link>
+            <Link href="/code-review">
+              <Button variant="ghost" className="w-full justify-start gap-2">
+                <Shield className="w-4 h-4" />
+                Code Review
+              </Button>
+            </Link>
+            <Link href="/knowledge">
+              <Button variant="ghost" className="w-full justify-start gap-2">
+                <Database className="w-4 h-4" />
+                Knowledge Base
               </Button>
             </Link>
             <Link href="/settings#ollama">

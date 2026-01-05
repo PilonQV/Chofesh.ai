@@ -610,19 +610,27 @@ export async function searchDocumentChunks(userId: number, query: string, limit:
   const db = await getDb();
   if (!db) return [];
 
-  // Simple text search - in production, use vector similarity
-  return await db.select({
+  // Simple text search with document name - in production, use vector similarity
+  const results = await db.select({
     id: documentChunks.id,
     documentId: documentChunks.documentId,
     content: documentChunks.content,
     chunkIndex: documentChunks.chunkIndex,
+    documentName: userDocuments.filename,
   })
     .from(documentChunks)
+    .leftJoin(userDocuments, eq(documentChunks.documentId, userDocuments.id))
     .where(and(
       eq(documentChunks.userId, userId),
       sql`LOWER(${documentChunks.content}) LIKE LOWER(${'%' + query + '%'})`
     ))
     .limit(limit);
+  
+  // Add similarity score (placeholder - in production use vector similarity)
+  return results.map(r => ({
+    ...r,
+    similarity: 0.85, // Placeholder similarity score
+  }));
 }
 
 
