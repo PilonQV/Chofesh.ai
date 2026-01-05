@@ -997,3 +997,8 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Add Local Models (Ollama) feature badge to homepage
 - [x] Create onboarding tooltips for Code Workspace on first visit
 - [x] Create onboarding tooltips for Workflows on first visit
+
+## Phase 33: Header Fix & Sidebar Update
+
+- [x] Remove grey shadow from header in light mode
+- [x] Add Local Models (Ollama) link to chat sidebar
