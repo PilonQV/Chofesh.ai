@@ -1406,3 +1406,12 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Add "strict safety guidelines" to refusal patterns
 - [x] Add additional NSFW-specific refusal patterns (sexually explicit, adult content, etc.)
 - [x] Test fallback triggers correctly on NSFW refusals (330 tests passing)
+
+
+---
+
+## Phase 46: Fix Venice Uncensored Auto-Fallback Logic
+
+- [x] Debug why auto-retry isn't triggering after refusal detection
+- [x] Fix the fallback logic in chat.send procedure (patterns were correct, needed server restart)
+- [x] Test fallback works end-to-end (NSFW content successfully generated via Venice Uncensored)
