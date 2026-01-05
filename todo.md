@@ -1088,3 +1088,21 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 ### Report Delivery
 - [x] Compile comprehensive expert report
 - [x] Provide actionable recommendations
+
+
+## Phase 40: Dependency Updates & Performance Optimizations
+
+### Dependency Updates
+- [x] Update esbuild to 0.25.12
+- [x] Update vite to 7.3.0
+- [x] Update streamdown to 1.6.10
+- [x] Update vitest to 4.0.16
+- [x] Update tailwindcss/vite to 4.1.18
+- [x] Run pnpm audit - reduced from 8 to 3 vulnerabilities (remaining are in drizzle-kit transitive deps)
+
+### Performance Optimizations
+- [x] Implement React.lazy for route-based code splitting (22 pages lazy loaded)
+- [x] Add Suspense boundaries with loading fallbacks (PageLoader component)
+- [x] Configure Vite build with manual chunks (react-vendor, ui-vendor)
+- [x] Enable esbuild minification with es2020 target
+- [x] Verify production build succeeds (34.5s build time)
