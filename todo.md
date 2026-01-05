@@ -1002,3 +1002,7 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 
 - [x] Remove grey shadow from header in light mode
 - [x] Add Local Models (Ollama) link to chat sidebar
+
+## Phase 34: Navigation Button Styling
+
+- [x] Style nav buttons (Features, Pricing, Privacy Policy) to match Get Started button palette (using primary color)
