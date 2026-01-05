@@ -375,3 +375,86 @@ export const conversationFolderMappings = mysqlTable("conversation_folder_mappin
 });
 export type ConversationFolderMapping = typeof conversationFolderMappings.$inferSelect;
 export type InsertConversationFolderMapping = typeof conversationFolderMappings.$inferInsert;
+
+
+/**
+ * Detailed API call logs for admin auditing.
+ * Stores full prompts and responses in plain text for readability.
+ * Used for debugging, abuse detection, and support investigations.
+ */
+export const apiCallLogs = mysqlTable("api_call_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  userEmail: varchar("userEmail", { length: 320 }),
+  userName: varchar("userName", { length: 255 }),
+  
+  // Request details
+  actionType: mysqlEnum("actionType", [
+    "chat", "image_generation", "image_edit", "document_chat", 
+    "code_review", "web_search", "voice_transcription", "embedding"
+  ]).notNull(),
+  modelUsed: varchar("modelUsed", { length: 64 }),
+  prompt: text("prompt"), // Full prompt in plain text
+  systemPrompt: text("systemPrompt"), // System prompt if any
+  
+  // Response details
+  response: text("response"), // Full response in plain text
+  tokensInput: int("tokensInput"),
+  tokensOutput: int("tokensOutput"),
+  durationMs: int("durationMs"), // Request duration in milliseconds
+  
+  // Context
+  conversationId: varchar("conversationId", { length: 64 }),
+  personaUsed: varchar("personaUsed", { length: 64 }),
+  ipAddress: varchar("ipAddress", { length: 45 }),
+  userAgent: text("userAgent"),
+  
+  // Status
+  status: mysqlEnum("status", ["success", "error", "rate_limited"]).default("success").notNull(),
+  errorMessage: text("errorMessage"),
+  
+  // Timestamps
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ApiCallLog = typeof apiCallLogs.$inferSelect;
+export type InsertApiCallLog = typeof apiCallLogs.$inferInsert;
+
+/**
+ * Image access logs for tracking image generation and views.
+ */
+export const imageAccessLogs = mysqlTable("image_access_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  userEmail: varchar("userEmail", { length: 320 }),
+  
+  // Image details
+  imageUrl: text("imageUrl").notNull(),
+  imageKey: varchar("imageKey", { length: 255 }),
+  prompt: text("prompt"), // Generation prompt
+  
+  // Action
+  actionType: mysqlEnum("actionType", ["generate", "view", "download", "delete"]).notNull(),
+  
+  // Context
+  ipAddress: varchar("ipAddress", { length: 45 }),
+  
+  // Timestamps
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ImageAccessLog = typeof imageAccessLogs.$inferSelect;
+export type InsertImageAccessLog = typeof imageAccessLogs.$inferInsert;
+
+/**
+ * Audit retention settings for configurable log cleanup.
+ */
+export const auditSettings = mysqlTable("audit_settings", {
+  id: int("id").autoincrement().primaryKey(),
+  settingKey: varchar("settingKey", { length: 64 }).notNull().unique(),
+  settingValue: text("settingValue").notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AuditSetting = typeof auditSettings.$inferSelect;
+export type InsertAuditSetting = typeof auditSettings.$inferInsert;

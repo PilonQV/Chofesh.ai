@@ -7,7 +7,10 @@ import {
   userDevices, InsertUserDevice, generatedImages, InsertGeneratedImage,
   githubConnections, InsertGithubConnection,
   conversationFolders, InsertConversationFolder, ConversationFolder,
-  conversationFolderMappings, InsertConversationFolderMapping, ConversationFolderMapping
+  conversationFolderMappings, InsertConversationFolderMapping, ConversationFolderMapping,
+  apiCallLogs, InsertApiCallLog, ApiCallLog,
+  imageAccessLogs, InsertImageAccessLog, ImageAccessLog,
+  auditSettings, InsertAuditSetting
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -1581,4 +1584,239 @@ export async function getAllConversationFolderMappings(userId: number): Promise<
     .where(eq(conversationFolderMappings.userId, userId));
   
   return mappings;
+}
+
+
+// ============ API CALL LOGGING FUNCTIONS ============
+
+export async function logApiCall(log: InsertApiCallLog): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot log API call: database not available");
+    return;
+  }
+  
+  try {
+    await db.insert(apiCallLogs).values(log);
+  } catch (error) {
+    console.error("[Database] Failed to log API call:", error);
+  }
+}
+
+export async function getApiCallLogs(options: {
+  userId?: number;
+  actionType?: string;
+  startDate?: Date;
+  endDate?: Date;
+  limit?: number;
+  offset?: number;
+}): Promise<ApiCallLog[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const conditions = [];
+  
+  if (options.userId) {
+    conditions.push(eq(apiCallLogs.userId, options.userId));
+  }
+  if (options.actionType) {
+    conditions.push(eq(apiCallLogs.actionType, options.actionType as any));
+  }
+  if (options.startDate) {
+    conditions.push(gte(apiCallLogs.createdAt, options.startDate));
+  }
+  if (options.endDate) {
+    conditions.push(lte(apiCallLogs.createdAt, options.endDate));
+  }
+  
+  const query = db.select()
+    .from(apiCallLogs)
+    .where(conditions.length > 0 ? and(...conditions) : undefined)
+    .orderBy(desc(apiCallLogs.createdAt))
+    .limit(options.limit || 100)
+    .offset(options.offset || 0);
+  
+  return await query;
+}
+
+export async function getApiCallLogsByUser(userId: number, limit: number = 50): Promise<ApiCallLog[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select()
+    .from(apiCallLogs)
+    .where(eq(apiCallLogs.userId, userId))
+    .orderBy(desc(apiCallLogs.createdAt))
+    .limit(limit);
+}
+
+export async function getApiCallStats(): Promise<{
+  totalCalls: number;
+  callsByType: Record<string, number>;
+  callsByUser: { userId: number; userName: string | null; count: number }[];
+}> {
+  const db = await getDb();
+  if (!db) return { totalCalls: 0, callsByType: {}, callsByUser: [] };
+  
+  // Total calls
+  const totalResult = await db.select({ count: sql<number>`count(*)` }).from(apiCallLogs);
+  const totalCalls = totalResult[0]?.count || 0;
+  
+  // Calls by type
+  const typeResult = await db.select({
+    actionType: apiCallLogs.actionType,
+    count: sql<number>`count(*)`
+  })
+    .from(apiCallLogs)
+    .groupBy(apiCallLogs.actionType);
+  
+  const callsByType: Record<string, number> = {};
+  for (const row of typeResult) {
+    callsByType[row.actionType] = row.count;
+  }
+  
+  // Calls by user (top 20)
+  const userResult = await db.select({
+    userId: apiCallLogs.userId,
+    userName: apiCallLogs.userName,
+    count: sql<number>`count(*)`
+  })
+    .from(apiCallLogs)
+    .groupBy(apiCallLogs.userId, apiCallLogs.userName)
+    .orderBy(desc(sql`count(*)`))
+    .limit(20);
+  
+  return {
+    totalCalls,
+    callsByType,
+    callsByUser: userResult.map(r => ({ userId: r.userId, userName: r.userName, count: r.count }))
+  };
+}
+
+// ============ IMAGE ACCESS LOGGING FUNCTIONS ============
+
+export async function logImageAccess(log: InsertImageAccessLog): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot log image access: database not available");
+    return;
+  }
+  
+  try {
+    await db.insert(imageAccessLogs).values(log);
+  } catch (error) {
+    console.error("[Database] Failed to log image access:", error);
+  }
+}
+
+export async function getImageAccessLogs(options: {
+  userId?: number;
+  actionType?: string;
+  startDate?: Date;
+  endDate?: Date;
+  limit?: number;
+  offset?: number;
+}): Promise<ImageAccessLog[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const conditions = [];
+  
+  if (options.userId) {
+    conditions.push(eq(imageAccessLogs.userId, options.userId));
+  }
+  if (options.actionType) {
+    conditions.push(eq(imageAccessLogs.actionType, options.actionType as any));
+  }
+  if (options.startDate) {
+    conditions.push(gte(imageAccessLogs.createdAt, options.startDate));
+  }
+  if (options.endDate) {
+    conditions.push(lte(imageAccessLogs.createdAt, options.endDate));
+  }
+  
+  return await db.select()
+    .from(imageAccessLogs)
+    .where(conditions.length > 0 ? and(...conditions) : undefined)
+    .orderBy(desc(imageAccessLogs.createdAt))
+    .limit(options.limit || 100)
+    .offset(options.offset || 0);
+}
+
+export async function getImageAccessLogsByUser(userId: number, limit: number = 50): Promise<ImageAccessLog[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select()
+    .from(imageAccessLogs)
+    .where(eq(imageAccessLogs.userId, userId))
+    .orderBy(desc(imageAccessLogs.createdAt))
+    .limit(limit);
+}
+
+// ============ AUDIT SETTINGS FUNCTIONS ============
+
+export async function getAuditSetting(key: string): Promise<string | null> {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db.select()
+    .from(auditSettings)
+    .where(eq(auditSettings.settingKey, key))
+    .limit(1);
+  
+  return result[0]?.settingValue || null;
+}
+
+export async function setAuditSetting(key: string, value: string): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  
+  await db.insert(auditSettings)
+    .values({ settingKey: key, settingValue: value })
+    .onDuplicateKeyUpdate({ set: { settingValue: value } });
+}
+
+// ============ AUDIT CLEANUP FUNCTIONS ============
+
+export async function deleteOldApiCallLogs(olderThanDays: number): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - olderThanDays);
+  
+  const result = await db.delete(apiCallLogs)
+    .where(lte(apiCallLogs.createdAt, cutoffDate));
+  
+  return (result as any).affectedRows || 0;
+}
+
+export async function deleteOldImageAccessLogs(olderThanDays: number): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - olderThanDays);
+  
+  const result = await db.delete(imageAccessLogs)
+    .where(lte(imageAccessLogs.createdAt, cutoffDate));
+  
+  return (result as any).affectedRows || 0;
+}
+
+export async function deleteUserAuditLogs(userId: number): Promise<{ apiCalls: number; imageAccess: number }> {
+  const db = await getDb();
+  if (!db) return { apiCalls: 0, imageAccess: 0 };
+  
+  const apiResult = await db.delete(apiCallLogs)
+    .where(eq(apiCallLogs.userId, userId));
+  
+  const imageResult = await db.delete(imageAccessLogs)
+    .where(eq(imageAccessLogs.userId, userId));
+  
+  return {
+    apiCalls: (apiResult as any).affectedRows || 0,
+    imageAccess: (imageResult as any).affectedRows || 0
+  };
 }

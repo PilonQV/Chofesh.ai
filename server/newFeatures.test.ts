@@ -38,6 +38,19 @@ vi.mock("./db", () => ({
   getGeneratedImageStats: vi.fn().mockResolvedValue({ total: 0, last24h: 0, last7d: 0, byModel: {} }),
   getGeneratedImageById: vi.fn().mockResolvedValue(null),
   deleteGeneratedImage: vi.fn().mockResolvedValue(undefined),
+  // Audit logging functions
+  logApiCall: vi.fn().mockResolvedValue(1),
+  getApiCallLogs: vi.fn().mockResolvedValue([]),
+  getApiCallLogsByUser: vi.fn().mockResolvedValue([]),
+  getApiCallStats: vi.fn().mockResolvedValue({ totalCalls: 0, callsByType: {}, callsByUser: [] }),
+  logImageAccess: vi.fn().mockResolvedValue(1),
+  getImageAccessLogs: vi.fn().mockResolvedValue([]),
+  getImageAccessLogsByUser: vi.fn().mockResolvedValue([]),
+  getAuditSetting: vi.fn().mockResolvedValue("90"),
+  setAuditSetting: vi.fn().mockResolvedValue(undefined),
+  deleteOldApiCallLogs: vi.fn().mockResolvedValue(0),
+  deleteOldImageAccessLogs: vi.fn().mockResolvedValue(0),
+  deleteUserAuditLogs: vi.fn().mockResolvedValue({ apiCallLogsDeleted: 0, imageAccessLogsDeleted: 0 }),
 }));
 
 // Mock storage

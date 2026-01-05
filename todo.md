@@ -1254,3 +1254,80 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Add Multiple AI models row
 - [x] Add 25+ AI personas row
 - [x] Update feature descriptions for accuracy (13 rows total)
+
+
+## Phase 48: Admin Audit Logging System
+
+### Database Schema
+- [x] Create api_call_logs table (19 columns: user_id, prompt, response, model, tokens, etc.)
+- [x] Create image_access_logs table (9 columns: user_id, image_url, action, prompt, etc.)
+- [x] Create audit_settings table for retention configuration
+- [x] Database migration applied successfully
+
+### API Call Logging
+- [x] Add logging middleware for LLM API calls (auditLogApiCall helper)
+- [x] Store prompts and responses in plain text (readable)
+- [x] Include user context (email, name, IP, user agent)
+- [x] Track model used, tokens, duration
+- [x] Integrated into main chat.send procedureteri### Image Access Logging
+- [x] Log image generation events (generate action)
+- [x] Log image edit events (generate action with edit context)
+- [x] Include prompt used for generation
+- [ ] Log image view/download events (future - requires frontend integration)### Admin UI
+- [ ] Create audit logs page in Admin panel
+- [ ] Add user search/filter functionality
+- [ ] Display API calls with full prompt/response
+- [ ] Show image access history
+- [ ] Add export functionality
+
+### Retention Policy
+- [ ] Add configurable retention period (default 30 days)
+- [ ] Implement auto-cleanup job
+- [ ] Add manual purge option for admins
+
+
+---
+
+## Phase 41: Admin Audit Logging System
+
+### Database Schema
+- [x] Create api_call_logs table (userId, timestamp, model, prompt, response, tokens, duration)
+- [x] Create image_access_logs table (userId, timestamp, imageUrl, prompt, actionType)
+- [x] Create audit_settings table for retention configuration
+- [x] Add indexes for efficient querying by userId and timestamp
+
+### Backend Implementation
+- [x] Create logApiCall function for chat API logging
+- [x] Create logImageAccess function for image generation logging
+- [x] Create getApiCallLogs with filtering (userId, actionType, date range)
+- [x] Create getImageAccessLogs with filtering
+- [x] Create getApiCallStats for dashboard metrics
+- [x] Create cleanup functions for old logs based on retention policy
+- [x] Add audit middleware to chat.send endpoint
+- [x] Add audit middleware to image.generate endpoint
+
+### Admin UI
+- [x] Create AdminAuditLogs page at /admin/audit-logs
+- [x] Add API Calls tab with full prompt/response display
+- [x] Add Image Access tab with thumbnail previews
+- [x] Add Settings tab for retention policy configuration
+- [x] Add filtering by user ID and action type
+- [x] Add pagination for large log sets
+- [x] Add log detail modal for full content view
+- [x] Add link to Audit Logs in Admin Dashboard header
+
+### Router Endpoints
+- [x] adminAudit.getApiCallLogs - query logs with filters
+- [x] adminAudit.getApiCallLogsByUser - get logs for specific user
+- [x] adminAudit.getApiCallStats - get statistics
+- [x] adminAudit.getImageAccessLogs - query image logs
+- [x] adminAudit.getRetentionDays - get retention setting
+- [x] adminAudit.setRetentionDays - update retention setting
+- [x] adminAudit.cleanupOldLogs - manual cleanup mutation
+- [x] adminAudit.deleteUserLogs - delete all logs for a user
+
+### Tests
+- [x] Unit tests for database functions (13 tests)
+- [x] Update existing test mocks for new audit functions
+- [x] All 318 tests passing
+

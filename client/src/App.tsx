@@ -37,6 +37,7 @@ const CodeReview = lazy(() => import("./pages/CodeReview"));
 const KnowledgeBase = lazy(() => import("./pages/KnowledgeBase"));
 const ComponentShowcase = lazy(() => import("./pages/ComponentShowcase"));
 const Tools = lazy(() => import("./pages/Tools"));
+const AdminAuditLogs = lazy(() => import("./pages/AdminAuditLogs"));
 
 // Loading fallback component
 function PageLoader() {
@@ -55,6 +56,7 @@ function Router() {
         <Route path="/chat" component={Chat} />
         <Route path="/image" component={ImageGen} />
         <Route path="/admin" component={AdminDashboard} />
+        <Route path="/admin/audit-logs" component={AdminAuditLogs} />
         <Route path="/privacy" component={Privacy} />
         <Route path="/terms" component={Terms} />
         <Route path="/settings" component={Settings} />

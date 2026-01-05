@@ -93,6 +93,19 @@ import {
   getConversationFolder,
   getConversationsInFolder,
   getAllConversationFolderMappings,
+  // Audit logging functions
+  logApiCall,
+  getApiCallLogs,
+  getApiCallLogsByUser,
+  getApiCallStats,
+  logImageAccess,
+  getImageAccessLogs,
+  getImageAccessLogsByUser,
+  getAuditSetting,
+  setAuditSetting,
+  deleteOldApiCallLogs,
+  deleteOldImageAccessLogs,
+  deleteUserAuditLogs,
 } from "./db";
 import { invokeLLM } from "./_core/llm";
 import { invokeGrok, isGrokAvailable } from "./_core/grok";
@@ -117,6 +130,7 @@ import {
   getPullRequestFiles,
 } from "./_core/githubOAuth";
 import { storagePut } from "./storage";
+import { auditLogApiCall, auditLogImageAccess, getUserAgent } from "./_core/auditLogger";
 import Stripe from "stripe";
 import { SUBSCRIPTION_TIERS, getDailyLimit, isOverLimit, getSlowdownDelay, type SubscriptionTier } from "./stripe/products";
 import crypto from "crypto";
@@ -1057,6 +1071,24 @@ Provide a comprehensive, well-researched response.`;
             }),
             timestamp: new Date(),
           });
+          
+          // Create detailed API call log (full content for admin review)
+          auditLogApiCall({
+            userId: ctx.user.id,
+            userEmail: ctx.user.email || undefined,
+            userName: ctx.user.name || undefined,
+            actionType: "chat",
+            modelUsed: selectedModel.id,
+            prompt: promptContent,
+            systemPrompt: baseSystemPrompt || undefined,
+            response: assistantContent,
+            tokensInput: inputTokens,
+            tokensOutput: outputTokens,
+            durationMs: Date.now() - startTime,
+            ipAddress: getClientIp(ctx.req),
+            userAgent: getUserAgent(ctx.req),
+            status: "success",
+          });
 
           return {
             content: assistantContent,
@@ -1204,6 +1236,18 @@ Provide a comprehensive, well-researched response.`;
             }),
             timestamp: new Date(),
           });
+          
+          // Log image generation for admin review (with full prompt)
+          if (result.url) {
+            auditLogImageAccess({
+              userId: ctx.user.id,
+              userEmail: ctx.user.email || undefined,
+              imageUrl: result.url,
+              prompt: input.prompt,
+              actionType: "generate",
+              ipAddress: getClientIp(ctx.req),
+            });
+          }
 
           return {
             url: result.url,
@@ -2131,6 +2175,18 @@ Provide a comprehensive, well-researched response.`;
             }),
             timestamp: new Date(),
           });
+          
+          // Log image edit for admin review (with full prompt)
+          if (result.url) {
+            auditLogImageAccess({
+              userId: ctx.user.id,
+              userEmail: ctx.user.email || undefined,
+              imageUrl: result.url,
+              prompt: input.prompt,
+              actionType: "generate",
+              ipAddress: getClientIp(ctx.req),
+            });
+          }
           
           return {
             url: result.url,
@@ -3175,6 +3231,140 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
     getAllMappings: protectedProcedure.query(async ({ ctx }) => {
       return await getAllConversationFolderMappings(ctx.user.id);
     }),
+  }),
+  
+  // Admin Audit Logs - Full content logging for admin review
+  adminAudit: router({
+    // Get API call logs with filtering
+    getApiCallLogs: protectedProcedure
+      .input(z.object({
+        userId: z.number().optional(),
+        actionType: z.string().optional(),
+        startDate: z.string().optional(),
+        endDate: z.string().optional(),
+        limit: z.number().min(1).max(500).optional(),
+        offset: z.number().min(0).optional(),
+      }))
+      .query(async ({ ctx, input }) => {
+        // Admin only
+        if (ctx.user.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
+        }
+        
+        return await getApiCallLogs({
+          userId: input.userId,
+          actionType: input.actionType,
+          startDate: input.startDate ? new Date(input.startDate) : undefined,
+          endDate: input.endDate ? new Date(input.endDate) : undefined,
+          limit: input.limit || 100,
+          offset: input.offset || 0,
+        });
+      }),
+    
+    // Get API call logs for a specific user
+    getApiCallLogsByUser: protectedProcedure
+      .input(z.object({
+        userId: z.number(),
+        limit: z.number().min(1).max(500).optional(),
+      }))
+      .query(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
+        }
+        return await getApiCallLogsByUser(input.userId, input.limit || 50);
+      }),
+    
+    // Get API call statistics
+    getApiCallStats: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
+      }
+      return await getApiCallStats();
+    }),
+    
+    // Get image access logs with filtering
+    getImageAccessLogs: protectedProcedure
+      .input(z.object({
+        userId: z.number().optional(),
+        actionType: z.string().optional(),
+        startDate: z.string().optional(),
+        endDate: z.string().optional(),
+        limit: z.number().min(1).max(500).optional(),
+        offset: z.number().min(0).optional(),
+      }))
+      .query(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
+        }
+        
+        return await getImageAccessLogs({
+          userId: input.userId,
+          actionType: input.actionType,
+          startDate: input.startDate ? new Date(input.startDate) : undefined,
+          endDate: input.endDate ? new Date(input.endDate) : undefined,
+          limit: input.limit || 100,
+          offset: input.offset || 0,
+        });
+      }),
+    
+    // Get image access logs for a specific user
+    getImageAccessLogsByUser: protectedProcedure
+      .input(z.object({
+        userId: z.number(),
+        limit: z.number().min(1).max(500).optional(),
+      }))
+      .query(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
+        }
+        return await getImageAccessLogsByUser(input.userId, input.limit || 50);
+      }),
+    
+    // Get/set audit retention settings
+    getRetentionDays: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
+      }
+      const days = await getAuditSetting("retention_days");
+      return { days: days ? parseInt(days) : 90 }; // Default 90 days
+    }),
+    
+    setRetentionDays: protectedProcedure
+      .input(z.object({ days: z.number().min(7).max(365) }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
+        }
+        await setAuditSetting("retention_days", input.days.toString());
+        return { success: true };
+      }),
+    
+    // Manual cleanup of old logs
+    cleanupOldLogs: protectedProcedure
+      .input(z.object({ olderThanDays: z.number().min(7) }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
+        }
+        
+        const apiDeleted = await deleteOldApiCallLogs(input.olderThanDays);
+        const imageDeleted = await deleteOldImageAccessLogs(input.olderThanDays);
+        
+        return {
+          apiCallLogsDeleted: apiDeleted,
+          imageAccessLogsDeleted: imageDeleted,
+        };
+      }),
+    
+    // Delete all audit logs for a specific user
+    deleteUserLogs: protectedProcedure
+      .input(z.object({ userId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
+        }
+        return await deleteUserAuditLogs(input.userId);
+      }),
   }),
 });
 export type AppRouter = typeof appRouter;
