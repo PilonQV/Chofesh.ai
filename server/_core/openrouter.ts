@@ -1,6 +1,6 @@
 /**
- * OpenRouter API Helper for DeepSeek R1 Free
- * Provides access to DeepSeek R1 reasoning model via OpenRouter's free tier
+ * OpenRouter API Helper for DeepSeek R1 Free and Venice Uncensored
+ * Provides access to DeepSeek R1 reasoning model and Venice Uncensored via OpenRouter's free tier
  */
 
 const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
@@ -35,15 +35,18 @@ export interface OpenRouterResponse {
   };
 }
 
+// OpenRouter model IDs
+export const OPENROUTER_MODELS = {
+  DEEPSEEK_R1: "deepseek/deepseek-r1-0528:free",
+  VENICE_UNCENSORED: "cognitivecomputations/dolphin-mistral-24b-venice-edition:free",
+} as const;
+
 /**
- * Invoke DeepSeek R1 via OpenRouter's free tier
+ * Invoke a model via OpenRouter's free tier
  * Note: Free tier has rate limits and may have availability constraints
  */
-export async function invokeDeepSeekR1(options: OpenRouterOptions): Promise<OpenRouterResponse> {
-  const { messages, temperature = 0.7, max_tokens = 4096, top_p = 1 } = options;
-  
-  // Use the free DeepSeek R1 model on OpenRouter
-  const model = "deepseek/deepseek-r1-0528:free";
+export async function invokeOpenRouter(options: OpenRouterOptions): Promise<OpenRouterResponse> {
+  const { messages, model = OPENROUTER_MODELS.DEEPSEEK_R1, temperature = 0.7, max_tokens = 4096, top_p = 1 } = options;
   
   const response = await fetch(OPENROUTER_API_URL, {
     method: "POST",
@@ -70,6 +73,54 @@ export async function invokeDeepSeekR1(options: OpenRouterOptions): Promise<Open
 
   const data = await response.json();
   return data as OpenRouterResponse;
+}
+
+/**
+ * Invoke DeepSeek R1 via OpenRouter's free tier
+ * @deprecated Use invokeOpenRouter with model parameter instead
+ */
+export async function invokeDeepSeekR1(options: OpenRouterOptions): Promise<OpenRouterResponse> {
+  return invokeOpenRouter({ ...options, model: OPENROUTER_MODELS.DEEPSEEK_R1 });
+}
+
+/**
+ * Invoke Venice Uncensored via OpenRouter's free tier
+ * This model has no content filters and can handle unrestricted requests
+ */
+export async function invokeVeniceUncensored(options: Omit<OpenRouterOptions, 'model'>): Promise<OpenRouterResponse> {
+  return invokeOpenRouter({ ...options, model: OPENROUTER_MODELS.VENICE_UNCENSORED });
+}
+
+/**
+ * Common refusal patterns that indicate a model declined to respond
+ */
+export const REFUSAL_PATTERNS = [
+  /I (?:can't|cannot|won't|will not|am not able to|'m not able to) (?:help|assist|provide|generate|create|write)/i,
+  /I (?:don't|do not) (?:feel comfortable|think I should|want to)/i,
+  /(?:sorry|apologies|apologize),? (?:but )?I (?:can't|cannot|won't)/i,
+  /(?:as an AI|as a language model|as an assistant),? I (?:can't|cannot|shouldn't)/i,
+  /(?:this|that|your) (?:request|query|question) (?:violates|goes against|is against)/i,
+  /I'm (?:designed|programmed|built) to (?:avoid|decline|refuse)/i,
+  /(?:content|safety|ethical) (?:policy|guidelines|standards)/i,
+  /(?:harmful|dangerous|illegal|unethical|inappropriate) (?:content|material|information)/i,
+  /I (?:must|need to) (?:decline|refuse|pass on)/i,
+  /(?:outside|beyond) (?:my|the) (?:capabilities|scope|guidelines)/i,
+];
+
+/**
+ * Check if a response indicates the model refused to answer
+ */
+export function isRefusalResponse(response: string): boolean {
+  // Check the entire response for short responses, or first 500 chars for longer ones
+  const textToCheck = response.length > 500 ? response.substring(0, 500) : response;
+  
+  for (const pattern of REFUSAL_PATTERNS) {
+    if (pattern.test(textToCheck)) {
+      return true;
+    }
+  }
+  
+  return false;
 }
 
 /**

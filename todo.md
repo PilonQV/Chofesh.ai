@@ -1331,3 +1331,47 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Update existing test mocks for new audit functions
 - [x] All 318 tests passing
 
+
+
+---
+
+## Phase 42: Honest Marketing Copy Review
+
+### Analysis
+- [ ] Review current technical stack and API limitations
+- [ ] Identify what content restrictions actually exist from upstream APIs
+- [ ] Document what we CAN honestly claim vs what's misleading
+
+### Copy Updates
+- [ ] Update "Uncensored Chat" feature card to be realistic
+- [ ] Update hero section messaging if needed
+- [ ] Update comparison table claims
+- [ ] Review all "no restrictions" / "uncensored" language
+- [ ] Ensure all marketing aligns with actual user experience
+
+
+
+---
+
+## Phase 43: Venice Uncensored Integration with Auto-Fallback
+
+### Model Integration
+- [x] Add Venice Uncensored model to TEXT_MODELS list
+- [x] Add OpenRouter helper for Venice Uncensored calls
+- [x] Configure model as "Uncensored" tier option
+
+### Auto-Fallback System
+- [x] Create refusal detection patterns (common refusal phrases)
+- [x] Implement auto-retry logic when model refuses
+- [x] Add fallback to Venice Uncensored on refusal
+
+### User Experience
+- [x] Show friendly message when switching models ("I found a different approach to help you with that.")
+- [x] Indicate when response came from uncensored model (usedFallback flag in response)
+- [x] Keep branding clean (no vendor disclosure)
+
+### Testing
+- [x] Test refusal detection accuracy
+- [x] Test auto-fallback flow
+- [x] Verify Venice Uncensored API calls work
+

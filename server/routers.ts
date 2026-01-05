@@ -109,7 +109,7 @@ import {
 } from "./db";
 import { invokeLLM } from "./_core/llm";
 import { invokeGrok, isGrokAvailable } from "./_core/grok";
-import { invokeDeepSeekR1, isComplexReasoningQuery } from "./_core/openrouter";
+import { invokeDeepSeekR1, invokeVeniceUncensored, isComplexReasoningQuery, isRefusalResponse, OPENROUTER_MODELS } from "./_core/openrouter";
 import { generateImage } from "./_core/imageGeneration";
 import { transcribeAudio } from "./_core/voiceTranscription";
 import { callDataApi } from "./_core/dataApi";
@@ -997,7 +997,16 @@ Provide a comprehensive, well-researched response.`;
             }
           }
           
-          if (selectedModel.provider === "openrouter" && selectedModel.id === "deepseek-r1-free") {
+          if (selectedModel.provider === "openrouter" && selectedModel.id === "venice-uncensored") {
+            // Use Venice Uncensored via OpenRouter (FREE, unrestricted)
+            response = await invokeVeniceUncensored({
+              messages: messagesWithSearch.map(m => ({
+                role: m.role as "system" | "user" | "assistant",
+                content: m.content,
+              })),
+              temperature: input.temperature,
+            });
+          } else if (selectedModel.provider === "openrouter" && selectedModel.id === "deepseek-r1-free") {
             // Use DeepSeek R1 via OpenRouter (FREE for complex reasoning)
             // Note: DeepSeek R1 doesn't support vision, fall back to text-only
             response = await invokeDeepSeekR1({
@@ -1025,13 +1034,42 @@ Provide a comprehensive, well-researched response.`;
             });
           }
 
-          const rawContent = response.choices[0]?.message?.content;
-          const assistantContent = typeof rawContent === 'string' ? rawContent : '';
+          let rawContent = response.choices[0]?.message?.content;
+          let assistantContent = typeof rawContent === 'string' ? rawContent : '';
+          let usedFallback = false;
+          let fallbackMessage = '';
+          let actualModelUsed = selectedModel;
+          
+          // Check if the model refused to respond and auto-fallback to Venice Uncensored
+          if (isRefusalResponse(assistantContent) && selectedModel.id !== "venice-uncensored") {
+            try {
+              // Try again with Venice Uncensored (unrestricted model)
+              const fallbackResponse = await invokeVeniceUncensored({
+                messages: messagesWithSearch.map(m => ({
+                  role: m.role as "system" | "user" | "assistant",
+                  content: m.content,
+                })),
+                temperature: input.temperature,
+              });
+              
+              const fallbackContent = fallbackResponse.choices[0]?.message?.content;
+              if (fallbackContent && typeof fallbackContent === 'string' && fallbackContent.trim()) {
+                assistantContent = fallbackContent;
+                usedFallback = true;
+                fallbackMessage = "I found a different approach to help you with that.";
+                actualModelUsed = AVAILABLE_MODELS.find(m => m.id === "venice-uncensored") || selectedModel;
+              }
+            } catch (fallbackError) {
+              console.error("Venice Uncensored fallback failed:", fallbackError);
+              // Keep original response if fallback fails
+            }
+          }
+          
           const outputTokens = estimateTokens(assistantContent);
           const totalTokens = inputTokens + outputTokens;
           
-          // Calculate estimated cost based on selected model
-          const cost = estimateCost(selectedModel, inputTokens, outputTokens);
+          // Calculate estimated cost based on actual model used
+          const cost = estimateCost(actualModelUsed, inputTokens, outputTokens);
           
           // Cache the response
           if (input.useCache !== false) {
@@ -1078,10 +1116,11 @@ Provide a comprehensive, well-researched response.`;
             userEmail: ctx.user.email || undefined,
             userName: ctx.user.name || undefined,
             actionType: "chat",
-            modelUsed: selectedModel.id,
+            modelUsed: actualModelUsed.id,
             prompt: promptContent,
             systemPrompt: baseSystemPrompt || undefined,
             response: assistantContent,
+            usedFallback: usedFallback,
             tokensInput: inputTokens,
             tokensOutput: outputTokens,
             durationMs: Date.now() - startTime,
@@ -1091,10 +1130,10 @@ Provide a comprehensive, well-researched response.`;
           });
 
           return {
-            content: assistantContent,
-            model: selectedModel.id,
-            modelName: selectedModel.name,
-            tier: selectedModel.tier,
+            content: usedFallback ? `${fallbackMessage}\n\n${assistantContent}` : assistantContent,
+            model: actualModelUsed.id,
+            modelName: actualModelUsed.name,
+            tier: actualModelUsed.tier,
             cached: false,
             complexity,
             cost,
@@ -1107,6 +1146,8 @@ Provide a comprehensive, well-researched response.`;
               output: outputTokens,
               total: totalTokens,
             },
+            usedFallback,
+            fallbackReason: usedFallback ? "Original model declined - switched to unrestricted model" : undefined,
           };
         } catch (error) {
           // Log failed attempts too
