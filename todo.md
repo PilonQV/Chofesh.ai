@@ -1051,3 +1051,10 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Replace text search with vector similarity
 - [x] Show relevance scores based on actual similarity
 
+
+## Phase 38: Homepage Feature Showcase Update
+
+- [x] Review and reorganize feature cards for better visibility
+- [x] Highlight newest features (Ask Dia Links, GitHub Code Review, Vector Search)
+- [x] Improve feature card descriptions and badges
+- [x] Ensure consistent layout and visual hierarchy
