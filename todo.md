@@ -947,3 +947,10 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 
 - [x] Add "Vision" feature badge to homepage features section
 - [x] Add "Deep Research" feature badge to homepage features section
+
+## Phase 27: Improve Voice Capture Speed
+
+- [x] Implement continuous voice recognition mode
+- [x] Real-time speech capture as user speaks
+- [x] Auto-populate input field with transcribed text
+- [x] Visual feedback during continuous listening (pulsing mic button, red border on input)

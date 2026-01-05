@@ -165,6 +165,8 @@ export default function Chat() {
   // Voice features
   const [isListening, setIsListening] = useState(false);
   const [voiceOutputEnabled, setVoiceOutputEnabled] = useState(false);
+  const [interimTranscript, setInterimTranscript] = useState("");
+  const [finalTranscript, setFinalTranscript] = useState("");
   
   // Persona/Character selection
   const [selectedPersona, setSelectedPersona] = useState<{ name: string; systemPrompt: string } | null>(null);
@@ -204,30 +206,60 @@ export default function Chat() {
   const createShareMutation = trpc.shareLinks.create.useMutation();
   const uploadImageMutation = trpc.chat.uploadImage.useMutation();
 
-  // Initialize speech recognition
+  // Initialize speech recognition with continuous mode for faster capture
   useEffect(() => {
     if (typeof window !== "undefined") {
       const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (SpeechRecognitionAPI) {
         recognitionRef.current = new SpeechRecognitionAPI();
-        recognitionRef.current.continuous = false;
-        recognitionRef.current.interimResults = true;
+        recognitionRef.current.continuous = true; // Enable continuous listening
+        recognitionRef.current.interimResults = true; // Show results as user speaks
         recognitionRef.current.lang = "en-US";
         
         recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
-          const transcript = Array.from(event.results)
-            .map(result => result[0].transcript)
-            .join("");
-          setInput(transcript);
+          let interim = "";
+          let final = "";
+          
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const result = event.results[i];
+            if (result.isFinal) {
+              final += result[0].transcript;
+            } else {
+              interim += result[0].transcript;
+            }
+          }
+          
+          if (final) {
+            // Append final transcript to existing input
+            setFinalTranscript(prev => prev + final + " ");
+            setInput(prev => (prev + final + " ").trim());
+          }
+          setInterimTranscript(interim);
         };
         
-        recognitionRef.current.onerror = () => {
+        recognitionRef.current.onerror = (event: Event) => {
+          const errorEvent = event as SpeechRecognitionEvent & { error: string };
+          // Don't show error for aborted or no-speech - these are normal
+          if (errorEvent.error !== "aborted" && errorEvent.error !== "no-speech") {
+            toast.error("Voice recognition error. Please try again.");
+          }
           setIsListening(false);
-          toast.error("Voice recognition error. Please try again.");
+          setInterimTranscript("");
         };
         
         recognitionRef.current.onend = () => {
-          setIsListening(false);
+          // Auto-restart if still in listening mode (for continuous capture)
+          if (isListening && recognitionRef.current) {
+            try {
+              recognitionRef.current.start();
+            } catch (e) {
+              // Ignore if already started
+              setIsListening(false);
+            }
+          } else {
+            setIsListening(false);
+            setInterimTranscript("");
+          }
         };
       }
     }
@@ -237,7 +269,7 @@ export default function Chat() {
         recognitionRef.current.abort();
       }
     };
-  }, []);
+  }, [isListening]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -317,10 +349,19 @@ export default function Chat() {
     if (isListening) {
       recognitionRef.current.stop();
       setIsListening(false);
+      setInterimTranscript("");
+      setFinalTranscript("");
     } else {
-      recognitionRef.current.start();
-      setIsListening(true);
-      toast.info("Listening... Speak now");
+      // Reset transcripts when starting new session
+      setInterimTranscript("");
+      setFinalTranscript("");
+      try {
+        recognitionRef.current.start();
+        setIsListening(true);
+        toast.info("Listening continuously... Click mic to stop");
+      } catch (e) {
+        toast.error("Could not start voice recognition");
+      }
     }
   };
 
@@ -1361,7 +1402,7 @@ export default function Chat() {
                     variant={isListening ? "default" : "outline"}
                     size="icon"
                     onClick={toggleVoiceInput}
-                    className={isListening ? "bg-red-500 hover:bg-red-600" : ""}
+                    className={isListening ? "bg-red-500 hover:bg-red-600 animate-pulse" : ""}
                   >
                     {isListening ? (
                       <MicOff className="w-4 h-4" />
@@ -1371,18 +1412,18 @@ export default function Chat() {
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  {isListening ? "Stop listening" : "Voice input"}
+                  {isListening ? "Stop listening (continuous mode)" : "Voice input (continuous)"}
                 </TooltipContent>
               </Tooltip>
 
               <Input
                 ref={inputRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
+                value={isListening && interimTranscript ? input + interimTranscript : input}
+                onChange={(e) => !isListening && setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder={uploadedImages.length > 0 ? "Ask about the image..." : (isListening ? "Listening..." : "Type your message...")}
-                disabled={isGenerating}
-                className="flex-1"
+                placeholder={uploadedImages.length > 0 ? "Ask about the image..." : (isListening ? "Listening... speak now" : "Type your message...")}
+                disabled={isGenerating || isListening}
+                className={`flex-1 ${isListening ? "bg-red-500/10 border-red-500/50" : ""}`}
               />
               <Button onClick={handleSend} disabled={(!input.trim() && uploadedImages.length === 0) || isGenerating}>
                 {isGenerating ? (
