@@ -26,6 +26,9 @@ export const users = mysqlTable("users", {
   dailyQueries: int("dailyQueries").default(0).notNull(),
   dailyQueriesResetAt: timestamp("dailyQueriesResetAt").defaultNow().notNull(),
   lastQueryAt: timestamp("lastQueryAt"),
+  // Age verification for adult content
+  ageVerified: boolean("ageVerified").default(false).notNull(),
+  ageVerifiedAt: timestamp("ageVerifiedAt"),
   // Timestamps
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

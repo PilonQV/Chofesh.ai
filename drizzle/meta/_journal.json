@@ -120,6 +120,13 @@
       "when": 1767644539553,
       "tag": "0016_striped_loa",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "5",
+      "when": 1767655371440,
+      "tag": "0017_hard_riptide",
+      "breakpoints": true
     }
   ]
 }

@@ -1415,3 +1415,28 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Debug why auto-retry isn't triggering after refusal detection
 - [x] Fix the fallback logic in chat.send procedure (patterns were correct, needed server restart)
 - [x] Test fallback works end-to-end (NSFW content successfully generated via Venice Uncensored)
+
+
+---
+
+## Phase 47: Age Verification Gate for Uncensored Features
+
+### Age Verification Modal
+- [x] Create AgeVerificationModal component with 18+ confirmation
+- [x] Add clear terms and legal disclaimer
+- [x] Link to terms of service explaining content nature
+
+### Visible Uncensored Button
+- [x] Add prominent "Uncensored" quick button in chat UI (not in dropdown)
+- [x] Style button distinctively (rose/pink color with Shield icon)
+- [x] Button triggers age verification if not yet confirmed
+
+### Consent Storage
+- [x] Store age confirmation in user's database record (for logged-in users)
+- [x] Store in localStorage for anonymous users
+- [x] Check consent before allowing uncensored features
+
+### Integration
+- [x] Gate Uncensored Assistant persona behind age verification
+- [x] Gate Venice Uncensored model selection behind age verification
+- [x] Show appropriate messaging when age not verified
