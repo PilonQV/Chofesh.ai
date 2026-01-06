@@ -1820,3 +1820,150 @@ export async function deleteUserAuditLogs(userId: number): Promise<{ apiCalls: n
     imageAccess: (imageResult as any).affectedRows || 0
   };
 }
+
+
+// ============ NSFW SUBSCRIPTION FUNCTIONS ============
+
+/**
+ * Update user's NSFW subscription status
+ */
+export async function updateNsfwSubscription(
+  userId: number,
+  data: {
+    nsfwSubscriptionId?: string | null;
+    nsfwSubscriptionStatus?: "active" | "canceled" | "past_due" | "none";
+  }
+): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  await db.update(users)
+    .set(data)
+    .where(eq(users.id, userId));
+}
+
+/**
+ * Get user's NSFW subscription status
+ */
+export async function getNsfwSubscriptionStatus(userId: number): Promise<{
+  hasNsfwSubscription: boolean;
+  nsfwSubscriptionStatus: string;
+  nsfwImagesUsed: number;
+  nsfwImagesLimit: number;
+  ageVerified: boolean;
+} | null> {
+  const db = await getDb();
+  if (!db) return null;
+
+  const result = await db.select({
+    nsfwSubscriptionStatus: users.nsfwSubscriptionStatus,
+    nsfwImagesUsed: users.nsfwImagesUsed,
+    nsfwImagesResetAt: users.nsfwImagesResetAt,
+    ageVerified: users.ageVerified,
+  }).from(users).where(eq(users.id, userId)).limit(1);
+
+  if (result.length === 0) return null;
+
+  const user = result[0];
+  const NSFW_IMAGES_LIMIT = 100; // 100 images per month
+
+  return {
+    hasNsfwSubscription: user.nsfwSubscriptionStatus === "active",
+    nsfwSubscriptionStatus: user.nsfwSubscriptionStatus,
+    nsfwImagesUsed: user.nsfwImagesUsed,
+    nsfwImagesLimit: NSFW_IMAGES_LIMIT,
+    ageVerified: user.ageVerified,
+  };
+}
+
+/**
+ * Increment NSFW image usage counter
+ * Returns true if user has remaining quota, false if limit reached
+ */
+export async function incrementNsfwImageUsage(userId: number): Promise<{
+  success: boolean;
+  imagesUsed: number;
+  imagesLimit: number;
+}> {
+  const db = await getDb();
+  if (!db) return { success: false, imagesUsed: 0, imagesLimit: 100 };
+
+  const NSFW_IMAGES_LIMIT = 100;
+
+  // Get current usage
+  const result = await db.select({
+    nsfwImagesUsed: users.nsfwImagesUsed,
+    nsfwImagesResetAt: users.nsfwImagesResetAt,
+    nsfwSubscriptionStatus: users.nsfwSubscriptionStatus,
+  }).from(users).where(eq(users.id, userId)).limit(1);
+
+  if (result.length === 0) {
+    return { success: false, imagesUsed: 0, imagesLimit: NSFW_IMAGES_LIMIT };
+  }
+
+  const user = result[0];
+
+  // Check if subscription is active
+  if (user.nsfwSubscriptionStatus !== "active") {
+    return { success: false, imagesUsed: user.nsfwImagesUsed, imagesLimit: NSFW_IMAGES_LIMIT };
+  }
+
+  // Check if we need to reset the counter (monthly reset)
+  const now = new Date();
+  const resetAt = user.nsfwImagesResetAt;
+  let currentUsage = user.nsfwImagesUsed;
+
+  if (!resetAt || now.getMonth() !== resetAt.getMonth() || now.getFullYear() !== resetAt.getFullYear()) {
+    // Reset counter for new month
+    currentUsage = 0;
+    await db.update(users)
+      .set({ 
+        nsfwImagesUsed: 1, 
+        nsfwImagesResetAt: now 
+      })
+      .where(eq(users.id, userId));
+    return { success: true, imagesUsed: 1, imagesLimit: NSFW_IMAGES_LIMIT };
+  }
+
+  // Check if limit reached
+  if (currentUsage >= NSFW_IMAGES_LIMIT) {
+    return { success: false, imagesUsed: currentUsage, imagesLimit: NSFW_IMAGES_LIMIT };
+  }
+
+  // Increment counter
+  await db.update(users)
+    .set({ nsfwImagesUsed: currentUsage + 1 })
+    .where(eq(users.id, userId));
+
+  return { success: true, imagesUsed: currentUsage + 1, imagesLimit: NSFW_IMAGES_LIMIT };
+}
+
+/**
+ * Verify user's age (18+)
+ */
+export async function verifyUserAge(userId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  await db.update(users)
+    .set({ 
+      ageVerified: true, 
+      ageVerifiedAt: new Date() 
+    })
+    .where(eq(users.id, userId));
+}
+
+/**
+ * Check if user is age verified
+ */
+export async function isUserAgeVerified(userId: number): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+
+  const result = await db.select({ ageVerified: users.ageVerified })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  return result.length > 0 && result[0].ageVerified;
+}

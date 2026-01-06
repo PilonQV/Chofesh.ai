@@ -1532,3 +1532,130 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Fix model selection to always use venice-uncensored when isUncensoredMode is ON
 - [x] Ensure Venice Uncensored is used regardless of routingMode setting
 - [x] Test NSFW prompts work correctly with Uncensored mode enabled (343 tests passing)
+
+---
+
+## Phase 52: Venice API Uncensored Images Integration
+
+### Research & Planning
+- [ ] Research NSFW pricing strategies from competitors (Venice, CivitAI, NovelAI, etc.)
+- [ ] Design NSFW pricing model for Chofesh.ai
+
+### Venice API Integration
+- [ ] Create Venice image API helper (server/_core/veniceImage.ts)
+- [ ] Add Lustify SDXL and Lustify v7 models for NSFW
+- [ ] Add Venice SD35 model for uncensored content
+- [ ] Implement image generation via Venice API
+
+### NSFW Subscription Tier
+- [ ] Add NSFW add-on product to Stripe
+- [ ] Create nsfw_subscription field in users table
+- [ ] Add NSFW subscription checkout flow
+- [ ] Handle NSFW subscription webhooks
+
+### UI Implementation
+- [ ] Add NSFW toggle in image generation page (after age verification)
+- [ ] Show NSFW model options when toggle is ON
+- [ ] Add usage tracking for NSFW images
+- [ ] Display NSFW subscription status in settings
+
+### Testing & Deployment
+- [ ] Test full NSFW image flow
+- [ ] Save checkpoint
+
+---
+
+## Phase 53: Comprehensive Platform Audit & NSFW Integration
+
+### UX/UI Audit
+- [ ] Audit Home page design and user flow
+- [ ] Audit Chat page UX (sidebar, input, messages)
+- [ ] Audit Image Generation page UX
+- [ ] Audit Settings page organization
+- [ ] Audit Admin dashboard UX
+- [ ] Audit mobile responsiveness across all pages
+- [ ] Identify outdated UI patterns
+- [ ] Document all UX issues found
+
+### Functionality Audit
+- [ ] Test all chat features (models, personas, memory, thinking mode)
+- [ ] Test all image generation features
+- [ ] Test authentication flows (Google, email/password)
+- [ ] Test subscription/payment flows
+- [ ] Test admin features
+- [ ] Test voice input/output
+- [ ] Test web search integration
+- [ ] Test document chat/RAG
+- [ ] Document all broken/missing features
+
+### Venice NSFW Integration
+- [ ] Create Venice image API helper
+- [ ] Add Lustify SDXL/v7 models
+- [ ] Implement NSFW image generation endpoint
+
+### NSFW Subscription ($7.99 add-on)
+- [ ] Create Stripe product for NSFW add-on
+- [ ] Add nsfw_subscription fields to database
+- [ ] Implement subscription checkout flow
+- [ ] Handle webhook events
+
+### NSFW UI Flow
+- [ ] Add NSFW toggle in image generation (after age verification)
+- [ ] Show NSFW model options when enabled
+- [ ] Track NSFW image usage
+- [ ] Display subscription status
+
+### UI/UX Redesign
+- [ ] Implement identified UX improvements
+- [ ] Update outdated UI components
+- [ ] Improve mobile experience
+- [ ] Add missing micro-interactions
+
+### Testing & Deployment
+- [ ] Run all unit tests
+- [ ] Manual testing of all flows
+- [ ] Save checkpoint
+
+
+---
+
+## Phase 42: Venice NSFW Image Integration & UX Audit
+
+### Venice API Integration
+- [x] Create Venice image generation helper (server/_core/veniceImage.ts)
+- [x] Add Venice API key to environment configuration
+- [x] Implement NSFW model detection (Lustify SDXL, Lustify v7)
+- [x] Add Venice image generation tests (15 tests passing)
+
+### NSFW Subscription System
+- [x] Add NSFW subscription fields to users table
+- [x] Create NSFW subscription helper functions in db.ts
+- [x] Add NSFW router endpoints (getStatus, verifyAge, createCheckout, cancelSubscription, generate, getModels)
+- [x] Implement $7.99/month NSFW add-on pricing
+- [x] Add 18 NSFW subscription tests
+
+### Age Verification Flow
+- [x] Add age verification status to user profile
+- [x] Create age verification modal in Settings page
+- [x] Gate NSFW content behind age verification
+
+### Image Generation NSFW UI
+- [x] Add 18+ toggle button to ImageGen page header
+- [x] Add NSFW unlock modal with status indicators
+- [x] Show Venice models when NSFW mode enabled
+- [x] Update handleGenerate to support Venice/NSFW generation
+- [x] Display NSFW usage counter
+
+### Settings Page NSFW Section
+- [x] Add NsfwSubscriptionSection component
+- [x] Show age verification status
+- [x] Show NSFW subscription status and usage
+- [x] Add subscribe/cancel buttons
+
+### UX/UI Improvements
+- [x] Cookie banner redesign (compact corner position, less intrusive)
+- [x] Feature card hover animations (micro-interactions)
+- [x] Route alias /images → /image (fix navigation mismatch)
+- [x] Chat message actions (copy button, regenerate button on hover)
+- [x] Admin link already role-gated in navigation
+

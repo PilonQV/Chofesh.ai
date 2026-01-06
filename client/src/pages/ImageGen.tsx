@@ -59,6 +59,10 @@ import {
   Edit,
   Upload,
   X,
+  Lock,
+  ShieldAlert,
+  AlertCircle,
+  CheckCircle2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -105,6 +109,15 @@ export default function ImageGen() {
   const generateMutation = trpc.image.generate.useMutation();
   const editMutation = trpc.imageEdit.edit.useMutation();
   
+  // NSFW state and queries
+  const [nsfwMode, setNsfwMode] = useState(false);
+  const [showNsfwModal, setShowNsfwModal] = useState(false);
+  const { data: nsfwStatus } = trpc.nsfw.getStatus.useQuery(undefined, {
+    enabled: isAuthenticated,
+  });
+  const { data: veniceModels } = trpc.nsfw.getModels.useQuery();
+  const nsfwGenerateMutation = trpc.nsfw.generate.useMutation();
+  
   // Image editing state
   const [editMode, setEditMode] = useState(false);
   const [editImageUrl, setEditImageUrl] = useState<string | null>(null);
@@ -142,11 +155,59 @@ export default function ImageGen() {
   };
 
   const handleGenerate = async () => {
-    if (!prompt.trim() || generateMutation.isPending) return;
+    if (!prompt.trim() || generateMutation.isPending || nsfwGenerateMutation.isPending) return;
 
     const currentSeed = useSeed ? (seed || Math.floor(Math.random() * 2147483647)) : undefined;
     if (useSeed && !seed) {
       setSeed(currentSeed);
+    }
+
+    // Check if using Venice/NSFW model
+    const isVeniceModel = nsfwMode || model.includes('lustify') || model.includes('venice') || 
+      model === 'hidream' || model === 'flux-2-pro' || model === 'wai-Illustrious' || model === 'z-image-turbo';
+    
+    if (isVeniceModel) {
+      try {
+        // Map aspect ratio to Venice size format
+        const sizeMap: Record<string, string> = {
+          '1:1': '1024x1024',
+          '16:9': '1536x1024',
+          '9:16': '1024x1536',
+          '4:3': '1024x1024',
+          '3:4': '1024x1024',
+          '21:9': '1792x1024',
+        };
+        const veniceSize = sizeMap[aspectRatio] || '1024x1024';
+        
+        const result = await nsfwGenerateMutation.mutateAsync({
+          prompt: prompt.trim(),
+          model,
+          size: veniceSize,
+          negativePrompt: negativePrompt.trim() || undefined,
+        });
+
+        const newImage: GeneratedImage = {
+          id: crypto.randomUUID(),
+          url: result.url,
+          prompt: prompt.trim(),
+          negativePrompt: negativePrompt.trim() || undefined,
+          aspectRatio,
+          seed: currentSeed,
+          steps,
+          cfgScale,
+          timestamp: Date.now(),
+          model: `${result.model}${result.isNsfw ? ' (NSFW)' : ''}`,
+        };
+
+        saveImages([newImage, ...images]);
+        setSelectedImage(newImage);
+        toast.success(result.isNsfw ? "NSFW image generated!" : "Venice image generated!");
+        return;
+      } catch (error: any) {
+        console.error("Venice image error:", error);
+        toast.error(error.message || "Failed to generate image. Please try again.");
+        return;
+      }
     }
 
     // Check if using Puter.js image model
@@ -482,28 +543,88 @@ export default function ImageGen() {
             <h1 className="font-semibold">Image Generation</h1>
           </div>
           <div className="flex items-center gap-2">
+            {/* NSFW Toggle */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={nsfwMode ? "default" : "outline"}
+                  size="sm"
+                  className={`gap-2 ${nsfwMode ? "bg-pink-500 hover:bg-pink-600" : ""}`}
+                  onClick={() => {
+                    if (!nsfwStatus?.ageVerified || !nsfwStatus?.hasNsfwSubscription) {
+                      setShowNsfwModal(true);
+                    } else {
+                      setNsfwMode(!nsfwMode);
+                      if (!nsfwMode) {
+                        setModel("lustify-sdxl");
+                      } else {
+                        setModel("flux");
+                      }
+                    }
+                  }}
+                >
+                  {nsfwStatus?.hasNsfwSubscription && nsfwStatus?.ageVerified ? (
+                    <ShieldAlert className="w-4 h-4" />
+                  ) : (
+                    <Lock className="w-4 h-4" />
+                  )}
+                  18+
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                {nsfwStatus?.hasNsfwSubscription && nsfwStatus?.ageVerified
+                  ? `NSFW Mode: ${nsfwMode ? "ON" : "OFF"} (${nsfwStatus.nsfwImagesUsed}/${nsfwStatus.nsfwImagesLimit} used)`
+                  : "Unlock NSFW Image Generation"}
+              </TooltipContent>
+            </Tooltip>
+            
             <Select value={model} onValueChange={setModel}>
-              <SelectTrigger className="w-32">
+              <SelectTrigger className="w-40">
                 <SelectValue placeholder="Model" />
               </SelectTrigger>
               <SelectContent>
-                {/* Server-side models */}
-                {models?.map((m) => (
-                  <SelectItem key={m.id} value={m.id}>
-                    {m.name}
-                  </SelectItem>
-                ))}
-                {/* Puter.js FREE image models */}
-                {isPuterAvailable() && (
+                {/* NSFW Models (Venice) */}
+                {nsfwMode && veniceModels && (
                   <>
-                    <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground border-t mt-1 pt-2">
-                      Free via Puter.js
+                    <div className="px-2 py-1.5 text-xs font-semibold text-pink-500 border-b mb-1 pb-2">
+                      🔞 NSFW Models
                     </div>
-                    {PUTER_IMAGE_MODELS.map((m) => (
-                      <SelectItem key={`puter-${m.id}`} value={`puter-${m.id}`}>
-                        {m.name} (Free)
+                    {veniceModels.nsfwModels.map((m) => (
+                      <SelectItem key={m.id} value={m.id}>
+                        {m.name}
                       </SelectItem>
                     ))}
+                    <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground border-t mt-1 pt-2">
+                      Venice SFW
+                    </div>
+                    {veniceModels.sfwModels.map((m) => (
+                      <SelectItem key={m.id} value={m.id}>
+                        {m.name}
+                      </SelectItem>
+                    ))}
+                  </>
+                )}
+                {/* Standard models */}
+                {!nsfwMode && (
+                  <>
+                    {models?.map((m) => (
+                      <SelectItem key={m.id} value={m.id}>
+                        {m.name}
+                      </SelectItem>
+                    ))}
+                    {/* Puter.js FREE image models */}
+                    {isPuterAvailable() && (
+                      <>
+                        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground border-t mt-1 pt-2">
+                          Free via Puter.js
+                        </div>
+                        {PUTER_IMAGE_MODELS.map((m) => (
+                          <SelectItem key={`puter-${m.id}`} value={`puter-${m.id}`}>
+                            {m.name} (Free)
+                          </SelectItem>
+                        ))}
+                      </>
+                    )}
                   </>
                 )}
               </SelectContent>
@@ -820,6 +941,103 @@ export default function ImageGen() {
           </div>
         </div>
       </main>
+      
+      {/* NSFW Unlock Modal */}
+      <Dialog open={showNsfwModal} onOpenChange={setShowNsfwModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ShieldAlert className="w-5 h-5 text-pink-500" />
+              Unlock NSFW Image Generation
+            </DialogTitle>
+            <DialogDescription>
+              Generate uncensored images with Venice AI models.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            {/* Age Verification Status */}
+            <div className={`p-4 rounded-lg border ${
+              nsfwStatus?.ageVerified 
+                ? "border-green-500/30 bg-green-500/10" 
+                : "border-yellow-500/30 bg-yellow-500/10"
+            }`}>
+              <div className="flex items-center gap-3">
+                {nsfwStatus?.ageVerified ? (
+                  <CheckCircle2 className="w-5 h-5 text-green-500" />
+                ) : (
+                  <AlertCircle className="w-5 h-5 text-yellow-500" />
+                )}
+                <div>
+                  <p className="font-medium">
+                    {nsfwStatus?.ageVerified ? "Age Verified (18+)" : "Age Verification Required"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {nsfwStatus?.ageVerified 
+                      ? "You've confirmed you're 18 or older" 
+                      : "Go to Settings to verify your age"}
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Subscription Status */}
+            <div className={`p-4 rounded-lg border ${
+              nsfwStatus?.hasNsfwSubscription 
+                ? "border-pink-500/30 bg-pink-500/10" 
+                : "border-muted bg-muted/50"
+            }`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <ImageIcon className={`w-5 h-5 ${
+                    nsfwStatus?.hasNsfwSubscription ? "text-pink-500" : "text-muted-foreground"
+                  }`} />
+                  <div>
+                    <p className="font-medium">
+                      {nsfwStatus?.hasNsfwSubscription ? "NSFW Add-on Active" : "NSFW Add-on"}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {nsfwStatus?.hasNsfwSubscription 
+                        ? `${nsfwStatus.nsfwImagesUsed}/${nsfwStatus.nsfwImagesLimit} images used` 
+                        : "$7.99/month • 100 images"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Features */}
+            <div className="space-y-2">
+              <p className="text-sm font-medium">What you get:</p>
+              <ul className="text-sm text-muted-foreground space-y-1">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-pink-500" />
+                  100 NSFW images per month
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-pink-500" />
+                  Lustify SDXL & v7 models
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-pink-500" />
+                  Private generation (no logging)
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setShowNsfwModal(false)} className="flex-1">
+              Cancel
+            </Button>
+            <Link href="/settings" className="flex-1">
+              <Button className="w-full bg-pink-500 hover:bg-pink-600 text-white">
+                {nsfwStatus?.ageVerified && !nsfwStatus?.hasNsfwSubscription
+                  ? "Subscribe Now"
+                  : "Go to Settings"}
+              </Button>
+            </Link>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

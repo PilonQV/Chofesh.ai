@@ -723,25 +723,25 @@ function FeatureCard({
   highlighted?: boolean;
 }) {
   return (
-    <div className={`p-4 md:p-6 rounded-xl border transition-all relative ${
+    <div className={`group p-4 md:p-6 rounded-xl border transition-all duration-300 relative cursor-pointer ${
       highlighted 
-        ? 'bg-gradient-to-br from-primary/10 to-primary/5 border-primary/40 hover:border-primary shadow-lg shadow-primary/10' 
-        : 'bg-card border-border hover:border-primary/50'
+        ? 'bg-gradient-to-br from-primary/10 to-primary/5 border-primary/40 hover:border-primary shadow-lg shadow-primary/10 hover:shadow-xl hover:shadow-primary/20 hover:-translate-y-1' 
+        : 'bg-card border-border hover:border-primary/50 hover:bg-card/80 hover:-translate-y-1 hover:shadow-lg'
     }`}>
       {badge && (
-        <span className={`absolute top-3 right-3 md:top-4 md:right-4 px-2 py-0.5 md:py-1 text-xs font-medium rounded-full ${
+        <span className={`absolute top-3 right-3 md:top-4 md:right-4 px-2 py-0.5 md:py-1 text-xs font-medium rounded-full transition-transform duration-300 group-hover:scale-110 ${
           highlighted ? 'bg-primary text-primary-foreground' : 'bg-primary/20 text-primary'
         }`}>
           {badge}
         </span>
       )}
-      <div className={`w-10 h-10 md:w-12 md:h-12 rounded-lg flex items-center justify-center mb-3 md:mb-4 ${
-        highlighted ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'
+      <div className={`w-10 h-10 md:w-12 md:h-12 rounded-lg flex items-center justify-center mb-3 md:mb-4 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 ${
+        highlighted ? 'bg-primary text-primary-foreground group-hover:shadow-lg group-hover:shadow-primary/30' : 'bg-primary/10 text-primary group-hover:bg-primary/20'
       }`}>
         {icon}
       </div>
-      <h3 className="text-base md:text-lg font-semibold mb-1.5 md:mb-2">{title}</h3>
-      <p className="text-muted-foreground text-xs md:text-sm">{description}</p>
+      <h3 className="text-base md:text-lg font-semibold mb-1.5 md:mb-2 transition-colors duration-300 group-hover:text-primary">{title}</h3>
+      <p className="text-muted-foreground text-xs md:text-sm transition-colors duration-300 group-hover:text-muted-foreground/80">{description}</p>
     </div>
   );
 }

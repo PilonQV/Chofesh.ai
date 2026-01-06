@@ -55,6 +55,11 @@ import {
   Wifi,
   WifiOff,
   RefreshCw,
+  ImageIcon,
+  Lock,
+  ShieldAlert,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -67,6 +72,287 @@ interface ApiKeyDisplay {
   isActive: boolean;
   lastUsed: Date | null;
   createdAt: Date;
+}
+
+// NSFW Subscription Section Component
+function NsfwSubscriptionSection() {
+  const { user } = useAuth();
+  const [ageVerifyOpen, setAgeVerifyOpen] = useState(false);
+  const [confirmAge, setConfirmAge] = useState(false);
+  
+  const utils = trpc.useUtils();
+  
+  const { data: nsfwStatus, isLoading: statusLoading } = trpc.nsfw.getStatus.useQuery(undefined, {
+    enabled: !!user,
+  });
+  
+  const verifyAgeMutation = trpc.nsfw.verifyAge.useMutation({
+    onSuccess: () => {
+      toast.success("Age verified successfully");
+      setAgeVerifyOpen(false);
+      setConfirmAge(false);
+      utils.nsfw.getStatus.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to verify age");
+    },
+  });
+  
+  const createCheckoutMutation = trpc.nsfw.createCheckout.useMutation({
+    onSuccess: (data) => {
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to create checkout");
+    },
+  });
+  
+  const cancelSubscriptionMutation = trpc.nsfw.cancelSubscription.useMutation({
+    onSuccess: () => {
+      toast.success("Subscription will be canceled at the end of the billing period");
+      utils.nsfw.getStatus.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to cancel subscription");
+    },
+  });
+  
+  if (statusLoading) {
+    return (
+      <Card className="mb-6 border-pink-500/20">
+        <CardContent className="py-8 flex items-center justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-pink-500" />
+        </CardContent>
+      </Card>
+    );
+  }
+  
+  return (
+    <Card className="mb-6 border-pink-500/20">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <ImageIcon className="w-5 h-5 text-pink-500" />
+          NSFW Image Generation
+          <span className="text-xs bg-pink-500/20 text-pink-500 px-2 py-0.5 rounded-full ml-2">
+            Add-on
+          </span>
+        </CardTitle>
+        <CardDescription>
+          Generate uncensored images with Venice AI. Requires age verification (18+).
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* Age Verification Status */}
+        <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+          <div className="flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+              nsfwStatus?.ageVerified 
+                ? "bg-green-500/20 text-green-500" 
+                : "bg-yellow-500/20 text-yellow-500"
+            }`}>
+              {nsfwStatus?.ageVerified ? (
+                <CheckCircle2 className="w-5 h-5" />
+              ) : (
+                <ShieldAlert className="w-5 h-5" />
+              )}
+            </div>
+            <div>
+              <p className="font-medium">
+                Age Verification: {nsfwStatus?.ageVerified ? "Verified (18+)" : "Not Verified"}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {nsfwStatus?.ageVerified 
+                  ? "You can access NSFW content" 
+                  : "Required to access adult content"}
+              </p>
+            </div>
+          </div>
+          {!nsfwStatus?.ageVerified && (
+            <Dialog open={ageVerifyOpen} onOpenChange={setAgeVerifyOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="border-yellow-500/50 text-yellow-500 hover:bg-yellow-500/10">
+                  <Lock className="w-4 h-4 mr-2" />
+                  Verify Age
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <ShieldAlert className="w-5 h-5 text-yellow-500" />
+                    Age Verification Required
+                  </DialogTitle>
+                  <DialogDescription>
+                    You must be 18 years or older to access NSFW content.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="py-4 space-y-4">
+                  <div className="p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                    <p className="text-sm text-yellow-500">
+                      By verifying your age, you confirm that:
+                    </p>
+                    <ul className="mt-2 text-sm text-muted-foreground space-y-1">
+                      <li>• You are at least 18 years old</li>
+                      <li>• You understand this content is for adults only</li>
+                      <li>• You accept responsibility for accessing adult content</li>
+                      <li>• You comply with your local laws regarding adult content</li>
+                    </ul>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="confirm-age"
+                      checked={confirmAge}
+                      onChange={(e) => setConfirmAge(e.target.checked)}
+                      className="w-4 h-4 rounded border-gray-300"
+                    />
+                    <label htmlFor="confirm-age" className="text-sm">
+                      I confirm I am 18 years or older
+                    </label>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setAgeVerifyOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() => verifyAgeMutation.mutate()}
+                    disabled={!confirmAge || verifyAgeMutation.isPending}
+                    className="bg-yellow-500 hover:bg-yellow-600 text-black"
+                  >
+                    {verifyAgeMutation.isPending ? (
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    ) : (
+                      <CheckCircle2 className="w-4 h-4 mr-2" />
+                    )}
+                    Verify I'm 18+
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
+        </div>
+        
+        {/* NSFW Subscription Status */}
+        <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+          <div className="flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+              nsfwStatus?.hasNsfwSubscription 
+                ? "bg-pink-500/20 text-pink-500" 
+                : "bg-muted text-muted-foreground"
+            }`}>
+              <ImageIcon className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="font-medium">
+                NSFW Add-on: {nsfwStatus?.hasNsfwSubscription ? "Active" : "Not Subscribed"}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {nsfwStatus?.hasNsfwSubscription 
+                  ? `${nsfwStatus.nsfwImagesUsed}/${nsfwStatus.nsfwImagesLimit} images used this month` 
+                  : "$7.99/month • 100 images/month"}
+              </p>
+            </div>
+          </div>
+          {nsfwStatus?.hasNsfwSubscription ? (
+            <Button 
+              variant="outline" 
+              className="border-red-500/50 text-red-500 hover:bg-red-500/10"
+              onClick={() => cancelSubscriptionMutation.mutate()}
+              disabled={cancelSubscriptionMutation.isPending}
+            >
+              {cancelSubscriptionMutation.isPending ? (
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              ) : (
+                <XCircle className="w-4 h-4 mr-2" />
+              )}
+              Cancel
+            </Button>
+          ) : (
+            <Button 
+              className="bg-pink-500 hover:bg-pink-600 text-white"
+              onClick={() => createCheckoutMutation.mutate()}
+              disabled={!nsfwStatus?.ageVerified || createCheckoutMutation.isPending}
+            >
+              {createCheckoutMutation.isPending ? (
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              ) : (
+                <Sparkles className="w-4 h-4 mr-2" />
+              )}
+              Subscribe $7.99/mo
+            </Button>
+          )}
+        </div>
+        
+        {/* Usage Progress */}
+        {nsfwStatus?.hasNsfwSubscription && (
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Monthly Usage</span>
+              <span className="font-medium">
+                {nsfwStatus.nsfwImagesUsed} / {nsfwStatus.nsfwImagesLimit} images
+              </span>
+            </div>
+            <div className="h-2 bg-muted rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-pink-500 transition-all duration-300"
+                style={{ 
+                  width: `${Math.min((nsfwStatus.nsfwImagesUsed / nsfwStatus.nsfwImagesLimit) * 100, 100)}%` 
+                }}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Resets at the start of each billing cycle
+            </p>
+          </div>
+        )}
+        
+        {/* Features */}
+        <div className="grid md:grid-cols-2 gap-4">
+          <div className="p-4 rounded-lg bg-pink-500/5 border border-pink-500/20">
+            <h4 className="font-semibold mb-2 flex items-center gap-2 text-pink-500">
+              <Sparkles className="w-4 h-4" />
+              What's Included
+            </h4>
+            <ul className="text-sm text-muted-foreground space-y-1">
+              <li>• 100 NSFW images per month</li>
+              <li>• Lustify SDXL & v7 models</li>
+              <li>• Multiple aspect ratios</li>
+              <li>• Private generation (no logging)</li>
+            </ul>
+          </div>
+          <div className="p-4 rounded-lg bg-muted/50">
+            <h4 className="font-semibold mb-2 flex items-center gap-2">
+              <Shield className="w-4 h-4 text-primary" />
+              Privacy & Safety
+            </h4>
+            <ul className="text-sm text-muted-foreground space-y-1">
+              <li>• Images generated via Venice AI</li>
+              <li>• No prompts stored on Venice servers</li>
+              <li>• Age verification required</li>
+              <li>• Cancel anytime</li>
+            </ul>
+          </div>
+        </div>
+        
+        {/* Warning */}
+        <div className="p-4 rounded-lg border border-pink-500/20 bg-pink-500/5">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-pink-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <h4 className="font-semibold text-pink-500 mb-1">Content Guidelines</h4>
+              <p className="text-sm text-muted-foreground">
+                NSFW content is for personal use only. You are responsible for ensuring 
+                your use complies with local laws. Generated content must not depict minors 
+                or non-consensual scenarios.
+              </p>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
 }
 
 export default function Settings() {
@@ -393,6 +679,9 @@ export default function Settings() {
               </div>
             </CardContent>
           </Card>
+
+          {/* NSFW Content Add-on Section */}
+          <NsfwSubscriptionSection />
 
           {/* Appearance Section */}
           <Card className="mb-6">

@@ -87,6 +87,7 @@ import {
   FileCode,
   Sliders,
   Copy,
+  RefreshCw,
   Share2,
   Users,
   Sun,
@@ -1561,54 +1562,102 @@ export default function Chat() {
             {currentConversation?.messages.map((message, index) => (
               <div
                 key={index}
-                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                className={`group flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
               >
-                <div
-                  className={`max-w-[85%] rounded-2xl px-4 py-3 ${
-                    message.role === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted"
-                  }`}
-                >
-                  {message.role === "assistant" ? (
-                    <div className="prose prose-sm dark:prose-invert max-w-none">
-                      {/* Render thinking blocks if present */}
-                      {message.content.includes('<think>') ? (
-                        <>
-                          {/* Extract and render thinking block */}
-                          {(() => {
-                            const thinkMatch = message.content.match(/<think>([\s\S]*?)<\/think>/);
-                            const thinkingContent = thinkMatch ? thinkMatch[1].trim() : '';
-                            const mainContent = message.content.replace(/<think>[\s\S]*?<\/think>/, '').trim();
-                            
-                            return (
-                              <>
-                                {thinkingContent && (
-                                  <Collapsible defaultOpen={false}>
-                                    <CollapsibleTrigger className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground mb-3 w-full">
-                                      <Lightbulb className="w-4 h-4 text-yellow-500" />
-                                      <span>View reasoning process</span>
-                                      <ChevronDown className="w-3 h-3 ml-auto" />
-                                    </CollapsibleTrigger>
-                                    <CollapsibleContent>
-                                      <div className="mb-4 p-3 rounded-lg bg-yellow-500/5 border border-yellow-500/20 text-sm text-muted-foreground italic">
-                                        <Streamdown>{thinkingContent}</Streamdown>
-                                      </div>
-                                    </CollapsibleContent>
-                                  </Collapsible>
-                                )}
-                                <AskDiaLinks content={mainContent} onAskFollowUp={handleAskFollowUp} />
-                              </>
-                            );
-                          })()}
-                        </>
-                      ) : (
-                        <AskDiaLinks content={message.content} onAskFollowUp={handleAskFollowUp} />
-                      )}
-                    </div>
-                  ) : (
-                    <p className="whitespace-pre-wrap">{message.content}</p>
-                  )}
+                <div className="flex flex-col gap-1 max-w-[85%]">
+                  <div
+                    className={`rounded-2xl px-4 py-3 ${
+                      message.role === "user"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted"
+                    }`}
+                  >
+                    {message.role === "assistant" ? (
+                      <div className="prose prose-sm dark:prose-invert max-w-none">
+                        {/* Render thinking blocks if present */}
+                        {message.content.includes('<think>') ? (
+                          <>
+                            {/* Extract and render thinking block */}
+                            {(() => {
+                              const thinkMatch = message.content.match(/<think>([\s\S]*?)<\/think>/);
+                              const thinkingContent = thinkMatch ? thinkMatch[1].trim() : '';
+                              const mainContent = message.content.replace(/<think>[\s\S]*?<\/think>/, '').trim();
+                              
+                              return (
+                                <>
+                                  {thinkingContent && (
+                                    <Collapsible defaultOpen={false}>
+                                      <CollapsibleTrigger className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground mb-3 w-full">
+                                        <Lightbulb className="w-4 h-4 text-yellow-500" />
+                                        <span>View reasoning process</span>
+                                        <ChevronDown className="w-3 h-3 ml-auto" />
+                                      </CollapsibleTrigger>
+                                      <CollapsibleContent>
+                                        <div className="mb-4 p-3 rounded-lg bg-yellow-500/5 border border-yellow-500/20 text-sm text-muted-foreground italic">
+                                          <Streamdown>{thinkingContent}</Streamdown>
+                                        </div>
+                                      </CollapsibleContent>
+                                    </Collapsible>
+                                  )}
+                                  <AskDiaLinks content={mainContent} onAskFollowUp={handleAskFollowUp} />
+                                </>
+                              );
+                            })()}
+                          </>
+                        ) : (
+                          <AskDiaLinks content={message.content} onAskFollowUp={handleAskFollowUp} />
+                        )}
+                      </div>
+                    ) : (
+                      <p className="whitespace-pre-wrap">{message.content}</p>
+                    )}
+                  </div>
+                  {/* Message action buttons - show on hover */}
+                  <div className={`flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${
+                    message.role === "user" ? "justify-end" : "justify-start"
+                  }`}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => {
+                            navigator.clipboard.writeText(message.content);
+                            toast.success("Copied to clipboard");
+                          }}
+                        >
+                          <Copy className="w-3.5 h-3.5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Copy message</TooltipContent>
+                    </Tooltip>
+                    {message.role === "assistant" && index === currentConversation.messages.length - 1 && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={() => {
+                              // Find the last user message and regenerate
+                              const lastUserMsgIndex = currentConversation.messages.findLastIndex(m => m.role === "user");
+                              if (lastUserMsgIndex >= 0) {
+                                const lastUserMsg = currentConversation.messages[lastUserMsgIndex].content;
+                                // Set input to last user message and trigger send
+                                setInput(lastUserMsg);
+                                toast.info("Regenerating response...");
+                              }
+                            }}
+                            disabled={isGenerating}
+                          >
+                            <RefreshCw className="w-3.5 h-3.5" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Regenerate response</TooltipContent>
+                      </Tooltip>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
