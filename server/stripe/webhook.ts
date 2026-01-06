@@ -80,16 +80,24 @@ router.post("/", raw({ type: "application/json" }), async (req, res) => {
 });
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
-  const userId = session.metadata?.user_id;
+  // Check for both user_id and userId in metadata (different casing from different sources)
+  const userId = session.metadata?.user_id || session.metadata?.userId;
   const customerId = session.customer as string;
   const subscriptionId = session.subscription as string;
+  const subscriptionType = session.metadata?.type;
 
   if (!userId) {
     console.error("[Stripe Webhook] No user_id in checkout session metadata");
     return;
   }
 
-  console.log(`[Stripe Webhook] Checkout completed for user ${userId}`);
+  console.log(`[Stripe Webhook] Checkout completed for user ${userId}, type: ${subscriptionType}`);
+
+  // Handle NSFW subscription separately
+  if (subscriptionType === "nsfw_subscription") {
+    await handleNsfwSubscriptionActivation(parseInt(userId), subscriptionId);
+    return;
+  }
 
   const db = await getDb();
   if (!db) return;
@@ -269,6 +277,25 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
     .where(eq(users.id, user.id));
 
   console.log(`[Stripe Webhook] User ${user.id} payment failed, marked as past_due`);
+}
+
+async function handleNsfwSubscriptionActivation(userId: number, subscriptionId: string) {
+  const db = await getDb();
+  if (!db) return;
+
+  // Activate NSFW subscription for user
+  await db
+    .update(users)
+    .set({
+      nsfwSubscriptionStatus: "active",
+      nsfwSubscriptionId: subscriptionId,
+      nsfwImagesUsed: 0, // Reset usage on new subscription
+      nsfwImagesResetAt: new Date(),
+      ageVerified: true, // Auto-verify age since they're paying for adult content
+    })
+    .where(eq(users.id, userId));
+
+  console.log(`[Stripe Webhook] NSFW subscription activated for user ${userId}`);
 }
 
 export default router;

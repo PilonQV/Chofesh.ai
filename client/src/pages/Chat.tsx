@@ -100,6 +100,11 @@ import {
   Workflow,
   Shield,
   Database,
+  Pin,
+  PinOff,
+  Folder,
+  FolderPlus,
+  FolderOpen,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -146,6 +151,96 @@ declare global {
     SpeechRecognition: new () => SpeechRecognition;
     webkitSpeechRecognition: new () => SpeechRecognition;
   }
+}
+
+import type { Conversation, ChatFolder } from "@/lib/encryption";
+
+// Conversation Item Component for sidebar
+function ConversationItem({
+  conv,
+  isActive,
+  sidebarCollapsed,
+  onSelect,
+  onDelete,
+  onTogglePin,
+  onMoveToFolder,
+  folders,
+}: {
+  conv: Conversation;
+  isActive: boolean;
+  sidebarCollapsed: boolean;
+  onSelect: () => void;
+  onDelete: () => void;
+  onTogglePin: () => void;
+  onMoveToFolder: (folderId: string | undefined) => void;
+  folders: ChatFolder[];
+}) {
+  return (
+    <div
+      className={`group flex items-center gap-2 p-2.5 rounded-lg cursor-pointer transition-colors ${
+        isActive ? "bg-primary/10 text-primary" : "hover:bg-muted"
+      } ${sidebarCollapsed ? 'justify-center px-2' : ''}`}
+      onClick={onSelect}
+      title={sidebarCollapsed ? (conv.title || "New conversation") : undefined}
+    >
+      {conv.pinned && !sidebarCollapsed && <Pin className="w-3 h-3 text-primary flex-shrink-0" />}
+      <MessageSquare className="w-4 h-4 flex-shrink-0" />
+      {!sidebarCollapsed && (
+        <>
+          <span className="flex-1 truncate text-sm">
+            {conv.title || "New conversation"}
+          </span>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 opacity-0 group-hover:opacity-100"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <MoreVertical className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onTogglePin(); }}>
+                {conv.pinned ? <PinOff className="w-4 h-4 mr-2" /> : <Pin className="w-4 h-4 mr-2" />}
+                {conv.pinned ? "Unpin" : "Pin"}
+              </DropdownMenuItem>
+              {folders.length > 0 && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel className="text-xs">Move to folder</DropdownMenuLabel>
+                  {folders.map((folder) => (
+                    <DropdownMenuItem
+                      key={folder.id}
+                      onClick={(e) => { e.stopPropagation(); onMoveToFolder(folder.id); }}
+                    >
+                      <Folder className="w-4 h-4 mr-2" style={{ color: folder.color }} />
+                      {folder.name}
+                    </DropdownMenuItem>
+                  ))}
+                  {conv.folderId && (
+                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onMoveToFolder(undefined); }}>
+                      <FolderOpen className="w-4 h-4 mr-2" />
+                      Remove from folder
+                    </DropdownMenuItem>
+                  )}
+                </>
+              )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="text-destructive"
+                onClick={(e) => { e.stopPropagation(); onDelete(); }}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </>
+      )}
+    </div>
+  );
 }
 
 export default function Chat() {
@@ -235,12 +330,19 @@ export default function Chat() {
   const {
     conversations,
     currentConversation,
+    folders,
     isLoading: conversationsLoading,
     createConversation,
     addMessage,
     deleteConversation,
     selectConversation,
     updateConversationModel,
+    createFolder,
+    deleteFolder,
+    renameFolder,
+    moveToFolder,
+    togglePin,
+    sortedConversations,
   } = useConversations();
 
   const { data: models } = trpc.models.listText.useQuery();
@@ -966,63 +1068,131 @@ export default function Chat() {
                 </Button>
               </div>
             </div>
-            <Button className={`w-full gap-2 ${sidebarCollapsed ? 'px-2' : ''}`} onClick={handleNewChat}>
-              <Plus className="w-4 h-4" />
-              {!sidebarCollapsed && "New Chat"}
-            </Button>
+            <div className="flex gap-2">
+              <Button className={`flex-1 gap-2 ${sidebarCollapsed ? 'px-2' : ''}`} onClick={handleNewChat}>
+                <Plus className="w-4 h-4" />
+                {!sidebarCollapsed && "New Chat"}
+              </Button>
+              {!sidebarCollapsed && (
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="icon" title="New Folder">
+                      <FolderPlus className="w-4 h-4" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Create New Folder</DialogTitle>
+                      <DialogDescription>
+                        Organize your chats into folders for easier access.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={(e) => {
+                      e.preventDefault();
+                      const formData = new FormData(e.currentTarget);
+                      const name = formData.get('folderName') as string;
+                      if (name.trim()) {
+                        createFolder(name.trim());
+                        toast.success(`Folder "${name}" created`);
+                        (e.target as HTMLFormElement).reset();
+                      }
+                    }} className="space-y-4">
+                      <Input name="folderName" placeholder="Folder name" required />
+                      <Button type="submit" className="w-full">Create Folder</Button>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              )}
+            </div>
           </div>
 
-          {/* Conversations List */}
+          {/* Conversations List with Folders and Pinning */}
           <ScrollArea className="flex-1 p-2">
             <div className="space-y-1">
-              {conversations.map((conv) => (
-                <div
-                  key={conv.id}
-                  className={`group flex items-center gap-2 p-3 rounded-lg cursor-pointer transition-colors ${
-                    currentConversation?.id === conv.id
-                      ? "bg-primary/10 text-primary"
-                      : "hover:bg-muted"
-                  } ${sidebarCollapsed ? 'justify-center px-2' : ''}`}
-                  onClick={() => {
-                    selectConversation(conv.id);
-                    setSidebarOpen(false);
-                  }}
-                  title={sidebarCollapsed ? (conv.title || "New conversation") : undefined}
-                >
-                  <MessageSquare className="w-4 h-4 flex-shrink-0" />
-                  {!sidebarCollapsed && (
-                    <>
-                      <span className="flex-1 truncate text-sm">
-                        {conv.title || "New conversation"}
-                      </span>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 opacity-0 group-hover:opacity-100"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <MoreVertical className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            className="text-destructive"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteConversation(conv.id);
-                            }}
-                          >
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </>
-                  )}
+              {/* Pinned Conversations */}
+              {sortedConversations().filter(c => c.pinned).length > 0 && !sidebarCollapsed && (
+                <div className="mb-2">
+                  <div className="flex items-center gap-1 px-2 py-1 text-xs text-muted-foreground">
+                    <Pin className="w-3 h-3" />
+                    <span>Pinned</span>
+                  </div>
+                  {sortedConversations().filter(c => c.pinned).map((conv) => (
+                    <ConversationItem
+                      key={conv.id}
+                      conv={conv}
+                      isActive={currentConversation?.id === conv.id}
+                      sidebarCollapsed={sidebarCollapsed}
+                      onSelect={() => { selectConversation(conv.id); setSidebarOpen(false); }}
+                      onDelete={() => handleDeleteConversation(conv.id)}
+                      onTogglePin={() => togglePin(conv.id)}
+                      onMoveToFolder={(folderId) => moveToFolder(conv.id, folderId)}
+                      folders={folders}
+                    />
+                  ))}
                 </div>
-              ))}
+              )}
+
+              {/* Folders */}
+              {folders.map((folder) => {
+                const folderConvs = sortedConversations().filter(c => c.folderId === folder.id && !c.pinned);
+                if (folderConvs.length === 0 && sidebarCollapsed) return null;
+                return (
+                  <Collapsible key={folder.id} defaultOpen className="mb-2">
+                    <CollapsibleTrigger asChild>
+                      <button className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted/50 text-sm ${sidebarCollapsed ? 'justify-center' : ''}`}>
+                        <FolderOpen className="w-4 h-4" style={{ color: folder.color }} />
+                        {!sidebarCollapsed && (
+                          <>
+                            <span className="flex-1 text-left truncate">{folder.name}</span>
+                            <span className="text-xs text-muted-foreground">{folderConvs.length}</span>
+                          </>
+                        )}
+                      </button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="pl-2">
+                      {folderConvs.map((conv) => (
+                        <ConversationItem
+                          key={conv.id}
+                          conv={conv}
+                          isActive={currentConversation?.id === conv.id}
+                          sidebarCollapsed={sidebarCollapsed}
+                          onSelect={() => { selectConversation(conv.id); setSidebarOpen(false); }}
+                          onDelete={() => handleDeleteConversation(conv.id)}
+                          onTogglePin={() => togglePin(conv.id)}
+                          onMoveToFolder={(folderId) => moveToFolder(conv.id, folderId)}
+                          folders={folders}
+                        />
+                      ))}
+                    </CollapsibleContent>
+                  </Collapsible>
+                );
+              })}
+
+              {/* Unfiled Conversations */}
+              {sortedConversations().filter(c => !c.folderId && !c.pinned).length > 0 && (
+                <div>
+                  {!sidebarCollapsed && folders.length > 0 && (
+                    <div className="flex items-center gap-1 px-2 py-1 text-xs text-muted-foreground">
+                      <MessageSquare className="w-3 h-3" />
+                      <span>Chats</span>
+                    </div>
+                  )}
+                  {sortedConversations().filter(c => !c.folderId && !c.pinned).map((conv) => (
+                    <ConversationItem
+                      key={conv.id}
+                      conv={conv}
+                      isActive={currentConversation?.id === conv.id}
+                      sidebarCollapsed={sidebarCollapsed}
+                      onSelect={() => { selectConversation(conv.id); setSidebarOpen(false); }}
+                      onDelete={() => handleDeleteConversation(conv.id)}
+                      onTogglePin={() => togglePin(conv.id)}
+                      onMoveToFolder={(folderId) => moveToFolder(conv.id, folderId)}
+                      folders={folders}
+                    />
+                  ))}
+                </div>
+              )}
+
               {conversations.length === 0 && (
                 <div className="text-center text-muted-foreground py-8 text-sm">
                   No conversations yet

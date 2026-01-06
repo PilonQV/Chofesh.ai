@@ -1754,3 +1754,44 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Give more room for chat history when nav is collapsed
 - [x] Persist nav menu state to localStorage
 
+
+## Phase 50: Chat Organization & NSFW Billing
+
+### Stripe NSFW Billing
+- [x] Fix subscription page error (TypeError: Failed to fetch dynamically imported module) - was stale cache issue
+- [x] Create NSFW add-on product in Stripe ($7.99/month) - using price_data inline
+- [x] Wire up "Subscribe Now" button to Stripe checkout - already implemented
+- [x] Handle webhook for NSFW subscription activation - added handleNsfwSubscriptionActivation
+
+### Unified Age Verification
+- [x] One age verification unlocks both NSFW chat AND images (already implemented - uses ageVerified from DB)
+- [x] Store verification status in user account (not just localStorage) - stored in users.ageVerified
+- [ ] Check verification status before allowing uncensored mode in chat or images
+
+### Chat Folders
+- [ ] Add folders table to database schema
+- [ ] Create folder CRUD operations
+- [ ] Add folder selector in sidebar
+- [ ] Allow moving chats between folders
+- [ ] Default folders: All Chats, Uncategorized
+
+### Chat Pinning
+- [ ] Add isPinned field to conversations
+- [ ] Add pin/unpin button to chat items
+- [ ] Show pinned chats at top of list
+- [ ] Visual indicator for pinned chats
+
+
+### Chat Folders (Completed)
+- [x] Add folderId field to Conversation interface
+- [x] Create ChatFolder interface in encryption.ts
+- [x] Add folder CRUD functions to useConversations hook (createFolder, deleteFolder, renameFolder)
+- [x] Add "New Folder" button in sidebar with dialog
+- [x] Allow moving chats to folders via dropdown menu
+
+### Chat Pinning (Completed)
+- [x] Add pinned field to Conversation interface
+- [x] Add togglePin function to useConversations hook
+- [x] Show pinned chats at top of sidebar with "Pinned" section header
+- [x] Add pin/unpin option in chat dropdown menu
+- [x] Visual indicator (Pin icon) for pinned chats

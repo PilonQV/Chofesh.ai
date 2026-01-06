@@ -3689,8 +3689,8 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
             price_data: {
               currency: "usd",
               product_data: {
-                name: "NSFW Image Generation Add-on",
-                description: "Generate uncensored images with Venice AI. 100 images per month.",
+                name: "Uncensored Content Add-on",
+                description: "Access uncensored AI chat and image generation. 100 premium images per month.",
               },
               unit_amount: 799, // $7.99
               recurring: {
