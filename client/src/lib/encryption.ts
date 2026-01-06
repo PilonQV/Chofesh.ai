@@ -101,6 +101,36 @@ export interface Conversation {
   model: string;
   createdAt: number;
   updatedAt: number;
+  // Chat organization
+  folderId?: string;
+  pinned?: boolean;
+}
+
+// Folder interface for organizing chats
+export interface ChatFolder {
+  id: string;
+  name: string;
+  color?: string;
+  createdAt: number;
+}
+
+const FOLDERS_KEY = "chofesh-ai-folders";
+
+export async function saveFolders(folders: ChatFolder[]): Promise<void> {
+  const encrypted = await encrypt(JSON.stringify(folders));
+  localStorage.setItem(FOLDERS_KEY, encrypted);
+}
+
+export async function loadFolders(): Promise<ChatFolder[]> {
+  const encrypted = localStorage.getItem(FOLDERS_KEY);
+  if (!encrypted) return [];
+  
+  try {
+    const decrypted = await decrypt(encrypted);
+    return JSON.parse(decrypted);
+  } catch {
+    return [];
+  }
 }
 
 const CONVERSATIONS_KEY = "chofesh-ai-conversations";
