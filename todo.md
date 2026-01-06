@@ -1460,3 +1460,18 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Add Grok-specific refusal patterns to detection
 - [x] Test with "adhere to guidelines that prioritize" pattern
 - [x] Ensure auto-retry triggers for all model refusals
+
+
+---
+
+## Phase 49: Critical Bug Fixes
+
+### Venice Uncensored Button Flow
+- [x] Show 18+ button first, after age verification show Uncensored button
+- [x] When Uncensored is ON, directly use venice-uncensored model
+- [x] Backend already handles venice-uncensored model correctly
+
+### Sidebar Width Fix
+- [x] Reduced sidebar width from w-72 to w-64
+- [x] Collapse toggle already working
+- [x] Conversation titles more visible now

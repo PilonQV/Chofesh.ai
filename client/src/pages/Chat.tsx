@@ -865,7 +865,7 @@ export default function Chat() {
       <aside
         className={`fixed lg:static inset-y-0 left-0 z-50 bg-card border-r border-border transform transition-all duration-300 lg:transform-none ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-        } ${sidebarCollapsed ? "lg:w-16" : "w-72"}`}
+        } ${sidebarCollapsed ? "lg:w-16" : "w-64"}`}
       >
         <div className="flex flex-col h-full">
           {/* Sidebar Header */}
@@ -1646,23 +1646,51 @@ export default function Chat() {
                 </TooltipContent>
               </Tooltip>
               
-              {/* Uncensored Mode Toggle */}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant={isUncensoredMode ? "default" : "outline"}
-                    size="sm"
-                    onClick={handleUncensoredClick}
-                    className={`h-8 text-xs ${isUncensoredMode ? "bg-rose-600 hover:bg-rose-700" : "border-rose-500/50 text-rose-500 hover:bg-rose-500/10"}`}
-                  >
-                    <Shield className="w-3 h-3 mr-1" />
-                    {isUncensoredMode ? "Uncensored" : "18+"}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {isUncensoredMode ? "Uncensored mode active - no content restrictions" : "Enable uncensored mode (18+ verification required)"}
-                </TooltipContent>
-              </Tooltip>
+              {/* Uncensored Mode Toggle - Shows 18+ gate if not verified, Uncensored button if verified */}
+              {!ageVerified ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowAgeVerification(true)}
+                      className="h-8 text-xs border-rose-500/50 text-rose-500 hover:bg-rose-500/10"
+                    >
+                      <Shield className="w-3 h-3 mr-1" />
+                      18+
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    Verify age to unlock uncensored mode
+                  </TooltipContent>
+                </Tooltip>
+              ) : (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant={isUncensoredMode ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => {
+                        setIsUncensoredMode(!isUncensoredMode);
+                        if (!isUncensoredMode) {
+                          setSelectedModel("venice-uncensored");
+                          toast.success("Uncensored mode enabled");
+                        } else {
+                          setSelectedModel("auto");
+                          toast.info("Uncensored mode disabled");
+                        }
+                      }}
+                      className={`h-8 text-xs ${isUncensoredMode ? "bg-rose-600 hover:bg-rose-700" : "border-rose-500/50 text-rose-500 hover:bg-rose-500/10"}`}
+                    >
+                      <Shield className="w-3 h-3 mr-1" />
+                      {isUncensoredMode ? "Uncensored ON" : "Uncensored"}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {isUncensoredMode ? "Click to disable uncensored mode" : "Click to enable uncensored mode (no content restrictions)"}
+                  </TooltipContent>
+                </Tooltip>
+              )}
             </div>
             
             <div className="flex gap-2">
