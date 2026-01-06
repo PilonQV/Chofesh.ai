@@ -116,7 +116,24 @@ export default function Terms() {
               </p>
             </TermsSection>
 
-            <TermsSection title="6. BYOK (Bring Your Own Key)">
+            <TermsSection title="6. Third-Party AI Services">
+              <p>
+                Chofesh utilizes various third-party AI service providers to deliver its features. By using the Service:
+              </p>
+              <ul>
+                <li>You acknowledge that your prompts and requests may be processed by third-party AI providers</li>
+                <li>These providers operate under their own terms of service and privacy policies</li>
+                <li>We select providers based on quality, privacy practices, and reliability</li>
+                <li>We do not guarantee the availability of any specific AI model or provider</li>
+                <li>Third-party providers may change, be updated, or be replaced without notice</li>
+              </ul>
+              <p>
+                We take reasonable measures to protect your privacy when interfacing with third-party services, 
+                but we cannot guarantee how third parties handle data once transmitted to them.
+              </p>
+            </TermsSection>
+
+            <TermsSection title="7. BYOK (Bring Your Own Key)">
               <p>
                 If you choose to use your own API keys:
               </p>
@@ -128,7 +145,7 @@ export default function Terms() {
               </ul>
             </TermsSection>
 
-            <TermsSection title="7. Privacy and Data">
+            <TermsSection title="8. Privacy and Data">
               <p>
                 Your use of the Service is also governed by our Privacy Policy. Key points:
               </p>
@@ -139,7 +156,7 @@ export default function Terms() {
               </ul>
             </TermsSection>
 
-            <TermsSection title="8. Disclaimers">
+            <TermsSection title="9. Disclaimers">
               <p>
                 THE SERVICE IS PROVIDED "AS IS" WITHOUT WARRANTIES OF ANY KIND. We do not guarantee:
               </p>
@@ -153,14 +170,14 @@ export default function Terms() {
               </p>
             </TermsSection>
 
-            <TermsSection title="9. Limitation of Liability">
+            <TermsSection title="10. Limitation of Liability">
               <p>
                 To the maximum extent permitted by law, we shall not be liable for any indirect, incidental, 
                 special, consequential, or punitive damages arising from your use of the Service.
               </p>
             </TermsSection>
 
-            <TermsSection title="10. Termination">
+            <TermsSection title="11. Termination">
               <p>
                 We may terminate or suspend your access to the Service immediately, without prior notice, for:
               </p>
@@ -174,21 +191,21 @@ export default function Terms() {
               </p>
             </TermsSection>
 
-            <TermsSection title="11. Changes to Terms">
+            <TermsSection title="12. Changes to Terms">
               <p>
                 We reserve the right to modify these terms at any time. We will notify users of significant 
                 changes via email or prominent notice on the Service.
               </p>
             </TermsSection>
 
-            <TermsSection title="12. Governing Law">
+            <TermsSection title="13. Governing Law">
               <p>
                 These Terms shall be governed by and construed in accordance with applicable laws, 
                 without regard to conflict of law principles.
               </p>
             </TermsSection>
 
-            <TermsSection title="13. Contact">
+            <TermsSection title="14. Contact">
               <p>
                 For questions about these Terms, contact us at:
               </p>

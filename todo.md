@@ -1742,3 +1742,15 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Remove Venice from error messages, toasts, and Settings.tsx
 - [x] Backend still uses Venice API but frontend shows generic Chofesh branding
 
+
+## Phase 49: ToS Update & Collapsible Sidebar Navigation
+
+### Terms of Service
+- [x] Add third-party AI providers clause (without naming Venice)
+
+### Sidebar Navigation
+- [x] Make navigation menu (AI Characters, Generate Images, etc.) collapsible
+- [x] Add expand/collapse toggle for navigation section ("Tools & Features" header)
+- [x] Give more room for chat history when nav is collapsed
+- [x] Persist nav menu state to localStorage
+
