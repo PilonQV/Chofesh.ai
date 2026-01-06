@@ -71,6 +71,8 @@ import {
   Gauge,
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
+  ChevronRight,
   Bot,
   Crown,
   Rocket,
@@ -190,6 +192,14 @@ export default function Chat() {
   const [isUncensoredMode, setIsUncensoredMode] = useState(false);
   const [showAgeVerification, setShowAgeVerification] = useState(false);
   const [ageVerified, setAgeVerified] = useState<boolean | null>(null);
+  
+  // Sidebar collapse state
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('chofesh_sidebar_collapsed') === 'true';
+    }
+    return false;
+  });
   
   const [lastResponse, setLastResponse] = useState<{
     model: string;
@@ -716,6 +726,12 @@ export default function Chat() {
     setShowAgeVerification(false);
   };
 
+  const toggleSidebarCollapse = () => {
+    const newState = !sidebarCollapsed;
+    setSidebarCollapsed(newState);
+    localStorage.setItem('chofesh_sidebar_collapsed', String(newState));
+  };
+
   const handleCopyConversation = () => {
     if (!currentConversation?.messages.length) return;
     
@@ -847,30 +863,41 @@ export default function Chat() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-50 w-72 bg-card border-r border-border transform transition-transform lg:transform-none ${
+        className={`fixed lg:static inset-y-0 left-0 z-50 bg-card border-r border-border transform transition-all duration-300 lg:transform-none ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-        }`}
+        } ${sidebarCollapsed ? "lg:w-16" : "w-72"}`}
       >
         <div className="flex flex-col h-full">
           {/* Sidebar Header */}
-          <div className="p-4 border-b border-border">
+          <div className={`p-4 border-b border-border ${sidebarCollapsed ? 'px-2' : ''}`}>
             <div className="flex items-center justify-between mb-4">
               <Link href="/" className="flex items-center gap-2">
                 <img src="/chofesh-logo-48.webp" alt="Chofesh" className="w-8 h-8 object-contain" />
-                <span className="text-lg font-bold gradient-text">Chofesh</span>
+                {!sidebarCollapsed && <span className="text-lg font-bold gradient-text">Chofesh</span>}
               </Link>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="lg:hidden"
-                onClick={() => setSidebarOpen(false)}
-              >
-                <X className="w-5 h-5" />
-              </Button>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="hidden lg:flex"
+                  onClick={toggleSidebarCollapse}
+                  title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                >
+                  {sidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="lg:hidden"
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
             </div>
-            <Button className="w-full gap-2" onClick={handleNewChat}>
+            <Button className={`w-full gap-2 ${sidebarCollapsed ? 'px-2' : ''}`} onClick={handleNewChat}>
               <Plus className="w-4 h-4" />
-              New Chat
+              {!sidebarCollapsed && "New Chat"}
             </Button>
           </div>
 
@@ -884,40 +911,45 @@ export default function Chat() {
                     currentConversation?.id === conv.id
                       ? "bg-primary/10 text-primary"
                       : "hover:bg-muted"
-                  }`}
+                  } ${sidebarCollapsed ? 'justify-center px-2' : ''}`}
                   onClick={() => {
                     selectConversation(conv.id);
                     setSidebarOpen(false);
                   }}
+                  title={sidebarCollapsed ? (conv.title || "New conversation") : undefined}
                 >
                   <MessageSquare className="w-4 h-4 flex-shrink-0" />
-                  <span className="flex-1 truncate text-sm">
-                    {conv.title || "New conversation"}
-                  </span>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 opacity-0 group-hover:opacity-100"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <MoreVertical className="w-4 h-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        className="text-destructive"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteConversation(conv.id);
-                        }}
-                      >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  {!sidebarCollapsed && (
+                    <>
+                      <span className="flex-1 truncate text-sm">
+                        {conv.title || "New conversation"}
+                      </span>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 opacity-0 group-hover:opacity-100"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <MoreVertical className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            className="text-destructive"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteConversation(conv.id);
+                            }}
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </>
+                  )}
                 </div>
               ))}
               {conversations.length === 0 && (
@@ -929,65 +961,65 @@ export default function Chat() {
           </ScrollArea>
 
           {/* Sidebar Footer */}
-          <div className="p-4 border-t border-border space-y-2">
+          <div className={`p-4 border-t border-border space-y-2 ${sidebarCollapsed ? 'px-2' : ''}`}>
             <Link href="/characters">
-              <Button variant="ghost" className="w-full justify-start gap-2">
+              <Button variant="ghost" className={`w-full gap-2 ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`} title="AI Characters">
                 <Users className="w-4 h-4" />
-                AI Characters
+                {!sidebarCollapsed && "AI Characters"}
               </Button>
             </Link>
             <Link href="/image">
-              <Button variant="ghost" className="w-full justify-start gap-2">
+              <Button variant="ghost" className={`w-full gap-2 ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`} title="Generate Images">
                 <Image className="w-4 h-4" />
-                Generate Images
+                {!sidebarCollapsed && "Generate Images"}
               </Button>
             </Link>
             <Link href="/documents">
-              <Button variant="ghost" className="w-full justify-start gap-2">
+              <Button variant="ghost" className={`w-full gap-2 ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`} title="Document Chat">
                 <MessageSquare className="w-4 h-4" />
-                Document Chat
+                {!sidebarCollapsed && "Document Chat"}
               </Button>
             </Link>
             <Link href="/artifacts">
-              <Button variant="ghost" className="w-full justify-start gap-2">
+              <Button variant="ghost" className={`w-full gap-2 ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`} title="Artifacts">
                 <FileCode className="w-4 h-4" />
-                Artifacts
+                {!sidebarCollapsed && "Artifacts"}
               </Button>
             </Link>
             <Link href="/code">
-              <Button variant="ghost" className="w-full justify-start gap-2">
+              <Button variant="ghost" className={`w-full gap-2 ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`} title="Code Workspace">
                 <Code2 className="w-4 h-4" />
-                Code Workspace
+                {!sidebarCollapsed && "Code Workspace"}
               </Button>
             </Link>
             <Link href="/workflows">
-              <Button variant="ghost" className="w-full justify-start gap-2">
+              <Button variant="ghost" className={`w-full gap-2 ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`} title="Workflows">
                 <Workflow className="w-4 h-4" />
-                Workflows
+                {!sidebarCollapsed && "Workflows"}
               </Button>
             </Link>
             <Link href="/code-review">
-              <Button variant="ghost" className="w-full justify-start gap-2">
+              <Button variant="ghost" className={`w-full gap-2 ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`} title="Code Review">
                 <Shield className="w-4 h-4" />
-                Code Review
+                {!sidebarCollapsed && "Code Review"}
               </Button>
             </Link>
             <Link href="/knowledge">
-              <Button variant="ghost" className="w-full justify-start gap-2">
+              <Button variant="ghost" className={`w-full gap-2 ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`} title="Knowledge Base">
                 <Database className="w-4 h-4" />
-                Knowledge Base
+                {!sidebarCollapsed && "Knowledge Base"}
               </Button>
             </Link>
             <Link href="/settings#ollama">
-              <Button variant="ghost" className="w-full justify-start gap-2">
+              <Button variant="ghost" className={`w-full gap-2 ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`} title="Local Models">
                 <Server className="w-4 h-4" />
-                Local Models
+                {!sidebarCollapsed && "Local Models"}
               </Button>
             </Link>
             <Link href="/settings">
-              <Button variant="ghost" className="w-full justify-start gap-2">
+              <Button variant="ghost" className={`w-full gap-2 ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`} title="Settings">
                 <Settings className="w-4 h-4" />
-                Settings
+                {!sidebarCollapsed && "Settings"}
               </Button>
             </Link>
           </div>
@@ -1611,6 +1643,24 @@ export default function Chat() {
                 </TooltipTrigger>
                 <TooltipContent>
                   Multi-step research with citations from multiple sources
+                </TooltipContent>
+              </Tooltip>
+              
+              {/* Uncensored Mode Toggle */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={isUncensoredMode ? "default" : "outline"}
+                    size="sm"
+                    onClick={handleUncensoredClick}
+                    className={`h-8 text-xs ${isUncensoredMode ? "bg-rose-600 hover:bg-rose-700" : "border-rose-500/50 text-rose-500 hover:bg-rose-500/10"}`}
+                  >
+                    <Shield className="w-3 h-3 mr-1" />
+                    {isUncensoredMode ? "Uncensored" : "18+"}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {isUncensoredMode ? "Uncensored mode active - no content restrictions" : "Enable uncensored mode (18+ verification required)"}
                 </TooltipContent>
               </Tooltip>
             </div>
