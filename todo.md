@@ -1696,3 +1696,9 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Remove useKeyboardShortcuts hook from App.tsx
 - [x] Delete useKeyboardShortcuts.ts file
 
+
+## Phase 45: Remove Shortcut Hints from Chat
+
+- [x] Remove "(Shift+Enter for new line)" from placeholder
+- [x] Remove shortcut hint from footer text
+

@@ -1884,7 +1884,7 @@ export default function Chat() {
                       handleSend();
                     }
                   }}
-                  placeholder={uploadedImages.length > 0 ? "Ask about the image..." : (isListening ? "Listening... speak now" : "Type your message... (Shift+Enter for new line)")}
+                  placeholder={uploadedImages.length > 0 ? "Ask about the image..." : (isListening ? "Listening... speak now" : "Type your message...")}
                   disabled={isGenerating || isListening}
                   className={`min-h-[44px] max-h-[200px] resize-none pr-12 transition-all duration-200 focus:min-h-[80px] ${isListening ? "bg-red-500/10 border-red-500/50" : ""}`}
                   rows={1}
@@ -1907,7 +1907,7 @@ export default function Chat() {
               </Button>
             </div>
             <p className="text-xs text-muted-foreground text-center mt-2">
-              Your conversations are encrypted locally. Press Enter to send, Shift+Enter for new line.
+              Your conversations are encrypted and stored locally on your device.
             </p>
           </div>
         </div>
