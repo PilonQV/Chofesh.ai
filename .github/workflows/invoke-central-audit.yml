@@ -1,0 +1,14 @@
+name: Run central repo audit
+
+on:
+  workflow_dispatch:
+    inputs:
+      codeql-languages:
+        description: 'Optional CodeQL languages (comma-separated).'
+        required: false
+
+jobs:
+  call-central:
+    uses: serever-coder357/my-agent-audit-inspector/.github/workflows/repo-audit-reusable.yml@main
+    with:
+      codeql-languages: ${{ github.event.inputs.codeql-languages || 'typescript' }}
