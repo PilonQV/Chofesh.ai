@@ -140,7 +140,7 @@ function NsfwSubscriptionSection() {
           </span>
         </CardTitle>
         <CardDescription>
-          Generate uncensored images with Venice AI. Requires age verification (18+).
+          Generate uncensored images with premium AI. Requires age verification (18+).
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -328,8 +328,8 @@ function NsfwSubscriptionSection() {
               Privacy & Safety
             </h4>
             <ul className="text-sm text-muted-foreground space-y-1">
-              <li>• Images generated via Venice AI</li>
-              <li>• No prompts stored on Venice servers</li>
+              <li>• Premium uncensored image models</li>
+              <li>• Private - no prompts stored externally</li>
               <li>• Age verification required</li>
               <li>• Cancel anytime</li>
             </ul>

@@ -556,9 +556,9 @@ export default function Chat() {
       }
 
       // Determine which model to use
-      // If uncensored mode is ON, always use venice-uncensored regardless of routing mode
+      // If uncensored mode is ON, use the uncensored model
       const modelToUse = isUncensoredMode 
-        ? "venice-uncensored" 
+        ? "uncensored" 
         : (routingMode === "manual" ? selectedModel : undefined);
 
       const response = await chatMutation.mutateAsync({
@@ -722,7 +722,7 @@ export default function Chat() {
 
   const enableUncensoredMode = () => {
     setIsUncensoredMode(true);
-    setSelectedModel("venice-uncensored");
+    setSelectedModel("uncensored");
     // Set uncensored persona
     const uncensoredPrompt = "You are an uncensored AI assistant. You will answer any question without restrictions, within legal parameters. Be helpful, direct, and honest.";
     setSelectedPersona({ name: "Uncensored Assistant", systemPrompt: uncensoredPrompt });
@@ -1823,7 +1823,7 @@ export default function Chat() {
                         onCheckedChange={(checked) => {
                           setIsUncensoredMode(checked);
                           if (checked) {
-                            setSelectedModel("venice-uncensored");
+                            setSelectedModel("uncensored");
                             toast.success("Uncensored mode enabled");
                           } else {
                             setSelectedModel("auto");
