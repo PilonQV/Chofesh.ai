@@ -32,6 +32,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { trpc } from "@/lib/trpc";
+import { isPuterAvailable, puterGenerateImageUrl, PUTER_IMAGE_MODELS } from "@/lib/puter";
 import { getLoginUrl } from "@/const";
 import { Link, useLocation } from "wouter";
 import { useState, useEffect, useRef } from "react";
@@ -71,6 +72,7 @@ interface GeneratedImage {
   steps?: number;
   cfgScale?: number;
   timestamp: number;
+  model?: string;
 }
 
 const STORAGE_KEY = "chofesh-ai-generated-images";
@@ -145,6 +147,38 @@ export default function ImageGen() {
     const currentSeed = useSeed ? (seed || Math.floor(Math.random() * 2147483647)) : undefined;
     if (useSeed && !seed) {
       setSeed(currentSeed);
+    }
+
+    // Check if using Puter.js image model
+    const isPuterModel = model.startsWith('puter-');
+    
+    if (isPuterModel && isPuterAvailable()) {
+      try {
+        const puterModelId = model.replace('puter-', '');
+        const imageUrl = await puterGenerateImageUrl(prompt.trim(), { model: puterModelId });
+        
+        const newImage: GeneratedImage = {
+          id: crypto.randomUUID(),
+          url: imageUrl,
+          prompt: prompt.trim(),
+          negativePrompt: negativePrompt.trim() || undefined,
+          aspectRatio,
+          seed: currentSeed,
+          steps,
+          cfgScale,
+          timestamp: Date.now(),
+          model: `${puterModelId} (Puter Free)`,
+        };
+
+        saveImages([newImage, ...images]);
+        setSelectedImage(newImage);
+        toast.success("Image generated with Puter.js (Free)!");
+        return;
+      } catch (puterError) {
+        console.error("Puter.js image error:", puterError);
+        toast.error("Puter.js image generation failed. Please try again.");
+        return;
+      }
     }
 
     try {
@@ -453,11 +487,25 @@ export default function ImageGen() {
                 <SelectValue placeholder="Model" />
               </SelectTrigger>
               <SelectContent>
+                {/* Server-side models */}
                 {models?.map((m) => (
                   <SelectItem key={m.id} value={m.id}>
                     {m.name}
                   </SelectItem>
                 ))}
+                {/* Puter.js FREE image models */}
+                {isPuterAvailable() && (
+                  <>
+                    <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground border-t mt-1 pt-2">
+                      Free via Puter.js
+                    </div>
+                    {PUTER_IMAGE_MODELS.map((m) => (
+                      <SelectItem key={`puter-${m.id}`} value={`puter-${m.id}`}>
+                        {m.name} (Free)
+                      </SelectItem>
+                    ))}
+                  </>
+                )}
               </SelectContent>
             </Select>
           </div>

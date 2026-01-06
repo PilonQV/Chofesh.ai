@@ -16,7 +16,7 @@ export interface ModelDefinition {
   id: string;
   name: string;
   description: string;
-  provider: "platform" | "groq" | "openai" | "anthropic" | "grok" | "openrouter";
+  provider: "platform" | "groq" | "openai" | "anthropic" | "grok" | "openrouter" | "puter";
   tier: "free" | "standard" | "premium";
   costPer1kInput: number;
   costPer1kOutput: number;
@@ -28,6 +28,69 @@ export interface ModelDefinition {
 }
 
 export const AVAILABLE_MODELS: ModelDefinition[] = [
+  // Puter.js FREE models - No API key needed, runs in browser
+  {
+    id: "puter-gpt-5-nano",
+    name: "GPT-5 Nano (Free)",
+    description: "Fast, efficient - FREE via Puter.js",
+    provider: "puter",
+    tier: "free",
+    costPer1kInput: 0,
+    costPer1kOutput: 0,
+    maxTokens: 8192,
+    supportsVision: false,
+    speed: "fast",
+  },
+  {
+    id: "puter-gpt-5",
+    name: "GPT-5 (Free)",
+    description: "Full GPT-5 capabilities - FREE via Puter.js",
+    provider: "puter",
+    tier: "free",
+    costPer1kInput: 0,
+    costPer1kOutput: 0,
+    maxTokens: 16384,
+    supportsVision: false,
+    speed: "medium",
+  },
+  {
+    id: "puter-gpt-4o",
+    name: "GPT-4o (Free)",
+    description: "Multimodal GPT-4 - FREE via Puter.js",
+    provider: "puter",
+    tier: "free",
+    costPer1kInput: 0,
+    costPer1kOutput: 0,
+    maxTokens: 128000,
+    supportsVision: true,
+    speed: "medium",
+  },
+  {
+    id: "puter-o1",
+    name: "o1 (Free)",
+    description: "Advanced reasoning - FREE via Puter.js",
+    provider: "puter",
+    tier: "free",
+    costPer1kInput: 0,
+    costPer1kOutput: 0,
+    maxTokens: 32768,
+    supportsVision: false,
+    speed: "slow",
+    isReasoningModel: true,
+  },
+  {
+    id: "puter-o3",
+    name: "o3 (Free)",
+    description: "Latest reasoning model - FREE via Puter.js",
+    provider: "puter",
+    tier: "free",
+    costPer1kInput: 0,
+    costPer1kOutput: 0,
+    maxTokens: 32768,
+    supportsVision: false,
+    speed: "slow",
+    isReasoningModel: true,
+  },
   // Venice Uncensored - FREE unrestricted model via OpenRouter
   {
     id: "venice-uncensored",
