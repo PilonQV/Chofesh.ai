@@ -6,7 +6,7 @@
     
     <!-- Security Headers -->
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.umami.is; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https:; connect-src 'self' https://api.stripe.com https://accounts.google.com https://*.umami.is wss:; frame-src https://js.stripe.com https://accounts.google.com; object-src 'none'; base-uri 'self'; upgrade-insecure-requests;" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.umami.is https://js.puter.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https:; connect-src 'self' https://api.stripe.com https://accounts.google.com https://*.umami.is https://*.puter.com wss:; frame-src https://js.stripe.com https://accounts.google.com https://*.puter.com; object-src 'none'; base-uri 'self'; upgrade-insecure-requests;" />
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
     <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
     
@@ -95,6 +95,9 @@
   <body>
     <main id="root"></main>
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Puter.js - Free AI API -->
+    <script src="https://js.puter.com/v2/"></script>
     
     <!-- Register Service Worker for PWA -->
     <script>

@@ -47,6 +47,7 @@ import {
 } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
+import { isPuterAvailable, puterChatWithHistory } from "@/lib/puter";
 import { useConversations } from "@/hooks/useConversations";
 import { getLoginUrl } from "@/const";
 import { Link, useLocation } from "wouter";
@@ -453,6 +454,47 @@ export default function Chat() {
         ...conv.messages.map((m) => ({ role: m.role as "system" | "user" | "assistant", content: m.content })),
         { role: "user" as const, content: userMessage }
       );
+
+      // Check if using Puter.js model (runs in browser, no API key needed)
+      const isPuterModel = selectedModel.startsWith('puter-');
+      
+      if (isPuterModel && isPuterAvailable()) {
+        // Route to Puter.js (client-side)
+        const puterModelId = selectedModel.replace('puter-', '');
+        try {
+          const puterResponse = await puterChatWithHistory(
+            messages.map(m => ({ role: m.role, content: m.content })),
+            { model: puterModelId, temperature }
+          );
+          
+          const content = typeof puterResponse === 'string' ? puterResponse : String(puterResponse);
+          addMessage(conv.id, "assistant", content);
+          
+          if (voiceOutputEnabled) {
+            speakText(content);
+          }
+          
+          setLastResponse({
+            model: selectedModel,
+            modelName: `${puterModelId.toUpperCase()} (Puter Free)`,
+            tier: "free",
+            cost: 0,
+            cached: false,
+            tokens: {
+              input: 0,
+              output: 0,
+              total: 0,
+            },
+          });
+          
+          setIsGenerating(false);
+          return;
+        } catch (puterError) {
+          console.error("Puter.js error:", puterError);
+          toast.error("Puter.js request failed. Trying server-side model...");
+          // Fall through to server-side handling
+        }
+      }
 
       // Check if using local Ollama model
       const isOllamaModel = selectedModel.startsWith('ollama:');

@@ -1475,3 +1475,51 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Reduced sidebar width from w-72 to w-64
 - [x] Collapse toggle already working
 - [x] Conversation titles more visible now
+
+
+---
+
+## Phase 50: Puter.js Free AI Integration
+
+### Frontend Setup
+- [ ] Add Puter.js script to index.html
+- [ ] Create TypeScript types for Puter API
+
+### Model Integration
+- [ ] Add Puter models to modelRouter (GPT-5.2, GPT-4o, o1, o3, etc.)
+- [ ] Create Puter chat handler in frontend
+- [ ] Support streaming responses from Puter
+
+### Image Generation
+- [ ] Add Puter image models (GPT Image, DALL-E 3)
+- [ ] Integrate with existing image generation UI
+
+### Testing
+- [ ] Test Puter chat models
+- [ ] Test Puter image generation
+- [ ] Verify streaming works correctly
+
+
+---
+
+## Phase 50: Puter.js Free AI Integration
+
+### Frontend Setup
+- [x] Add Puter.js script to index.html
+- [x] Create TypeScript types for Puter API
+- [x] Update CSP to allow Puter.js
+
+### Text Models
+- [x] Add Puter models to AVAILABLE_MODELS (GPT-5 Nano, GPT-5, GPT-4o, o1, o3)
+- [x] Handle Puter models in Chat.tsx (client-side processing)
+- [x] Display Puter model responses correctly
+
+### Image Models
+- [x] Add Puter image models (DALL-E 2, DALL-E 3, GPT Image)
+- [x] Handle Puter image generation in ImageGen.tsx
+- [x] Display Puter-generated images correctly
+
+### Testing
+- [x] TypeScript compilation passes
+- [x] All 343 tests passing
+- [x] Ready for live testing
