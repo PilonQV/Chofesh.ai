@@ -1795,3 +1795,12 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Show pinned chats at top of sidebar with "Pinned" section header
 - [x] Add pin/unpin option in chat dropdown menu
 - [x] Visual indicator (Pin icon) for pinned chats
+
+
+## Phase 51: Create NSFW Add-on Product in Stripe
+
+- [x] Create "NSFW Add-on" product in Stripe ($7.99/month)
+- [x] Get the price ID from Stripe (price_1SmdXZGcthikBvdKJOEh6ymu)
+- [x] Update routers.ts to use the actual price ID instead of price_data
+- [ ] Test NSFW subscription checkout flow
+

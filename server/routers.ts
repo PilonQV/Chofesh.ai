@@ -3680,23 +3680,15 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
       }
       
       // Create checkout session for NSFW add-on
-      // Price: $7.99/month
+      // Price: $7.99/month - Product ID: prod_Tk7nyPzmVCnsTt
+      const NSFW_ADDON_PRICE_ID = "price_1SmdXZGcthikBvdKJOEh6ymu";
+      
       const session = await stripe.checkout.sessions.create({
         customer: customerId,
         payment_method_types: ["card"],
         line_items: [
           {
-            price_data: {
-              currency: "usd",
-              product_data: {
-                name: "Uncensored Content Add-on",
-                description: "Access uncensored AI chat and image generation. 100 premium images per month.",
-              },
-              unit_amount: 799, // $7.99
-              recurring: {
-                interval: "month",
-              },
-            },
+            price: NSFW_ADDON_PRICE_ID,
             quantity: 1,
           },
         ],
