@@ -106,6 +106,12 @@ import {
   deleteOldApiCallLogs,
   deleteOldImageAccessLogs,
   deleteUserAuditLogs,
+  // NSFW subscription functions
+  updateNsfwSubscription,
+  getNsfwSubscriptionStatus,
+  incrementNsfwImageUsage,
+  verifyUserAge,
+  isUserAgeVerified,
 } from "./db";
 import { getDb } from "./db";
 import { users } from "../drizzle/schema";
@@ -114,6 +120,7 @@ import { invokeLLM } from "./_core/llm";
 import { invokeGrok, isGrokAvailable } from "./_core/grok";
 import { invokeDeepSeekR1, invokeVeniceUncensored, isComplexReasoningQuery, isRefusalResponse, OPENROUTER_MODELS } from "./_core/openrouter";
 import { generateImage } from "./_core/imageGeneration";
+import { generateVeniceImage, isNsfwModel, VENICE_IMAGE_MODELS, VENICE_IMAGE_SIZES } from "./_core/veniceImage";
 import { transcribeAudio } from "./_core/voiceTranscription";
 import { callDataApi } from "./_core/dataApi";
 import { searchDuckDuckGo } from "./_core/duckduckgo";
@@ -3442,6 +3449,303 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
         }
         return await deleteUserAuditLogs(input.userId);
       }),
+  }),
+
+  // NSFW Subscription and Image Generation
+  nsfw: router({
+    // Get NSFW subscription status
+    getStatus: protectedProcedure.query(async ({ ctx }) => {
+      const status = await getNsfwSubscriptionStatus(ctx.user.id);
+      return status || {
+        hasNsfwSubscription: false,
+        nsfwSubscriptionStatus: "none",
+        nsfwImagesUsed: 0,
+        nsfwImagesLimit: 100,
+        ageVerified: false,
+      };
+    }),
+
+    // Verify age (18+)
+    verifyAge: protectedProcedure.mutation(async ({ ctx }) => {
+      await verifyUserAge(ctx.user.id);
+      return { success: true, ageVerified: true };
+    }),
+
+    // Check if user can generate NSFW images
+    canGenerate: protectedProcedure.query(async ({ ctx }) => {
+      const status = await getNsfwSubscriptionStatus(ctx.user.id);
+      if (!status) {
+        return { canGenerate: false, reason: "User not found" };
+      }
+      if (!status.ageVerified) {
+        return { canGenerate: false, reason: "Age verification required" };
+      }
+      if (!status.hasNsfwSubscription) {
+        return { canGenerate: false, reason: "NSFW subscription required" };
+      }
+      if (status.nsfwImagesUsed >= status.nsfwImagesLimit) {
+        return { canGenerate: false, reason: "Monthly limit reached" };
+      }
+      return { 
+        canGenerate: true, 
+        imagesRemaining: status.nsfwImagesLimit - status.nsfwImagesUsed 
+      };
+    }),
+
+    // Get available Venice image models
+    getModels: publicProcedure.query(() => {
+      return {
+        nsfwModels: [
+          { id: VENICE_IMAGE_MODELS.LUSTIFY_SDXL, name: "Lustify SDXL", price: 0.01 },
+          { id: VENICE_IMAGE_MODELS.LUSTIFY_V7, name: "Lustify v7", price: 0.01 },
+        ],
+        sfwModels: [
+          { id: VENICE_IMAGE_MODELS.VENICE_SD35, name: "Venice SD35", price: 0.01 },
+          { id: VENICE_IMAGE_MODELS.HIDREAM, name: "HiDream", price: 0.01 },
+          { id: VENICE_IMAGE_MODELS.FLUX_2_PRO, name: "Flux 2 Pro", price: 0.04 },
+          { id: VENICE_IMAGE_MODELS.ANIME_WAI, name: "Anime (WAI)", price: 0.01 },
+          { id: VENICE_IMAGE_MODELS.Z_IMAGE_TURBO, name: "Z-Image Turbo", price: 0.01 },
+        ],
+        sizes: VENICE_IMAGE_SIZES,
+      };
+    }),
+
+    // Generate NSFW image via Venice API
+    generate: protectedProcedure
+      .input(z.object({
+        prompt: z.string().min(1).max(1500),
+        model: z.string().default("lustify-sdxl"),
+        size: z.string().default("1024x1024"),
+        negativePrompt: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const startTime = Date.now();
+        
+        // Check if model is NSFW
+        const isNsfw = isNsfwModel(input.model);
+        
+        if (isNsfw) {
+          // Verify age
+          const ageVerified = await isUserAgeVerified(ctx.user.id);
+          if (!ageVerified) {
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: "Age verification required for NSFW content. Please verify you are 18+ in Settings.",
+            });
+          }
+          
+          // Check subscription
+          const status = await getNsfwSubscriptionStatus(ctx.user.id);
+          if (!status?.hasNsfwSubscription) {
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: "NSFW subscription required. Subscribe to the NSFW add-on ($7.99/month) in Settings.",
+            });
+          }
+          
+          // Check usage limit
+          const usageResult = await incrementNsfwImageUsage(ctx.user.id);
+          if (!usageResult.success) {
+            throw new TRPCError({
+              code: "TOO_MANY_REQUESTS",
+              message: `Monthly NSFW image limit reached (${usageResult.imagesUsed}/${usageResult.imagesLimit}). Limit resets next month.`,
+            });
+          }
+        }
+        
+        try {
+          const result = await generateVeniceImage({
+            prompt: input.prompt,
+            model: input.model as any,
+            size: input.size as any,
+            nsfw: isNsfw,
+            negativePrompt: input.negativePrompt,
+          });
+          
+          // Save to database
+          await createGeneratedImage({
+            userId: ctx.user.id,
+            imageUrl: result.url,
+            prompt: input.prompt,
+            negativePrompt: input.negativePrompt,
+            model: input.model,
+            aspectRatio: input.size,
+            status: "completed",
+            metadata: JSON.stringify({
+              type: isNsfw ? "nsfw_image" : "venice_image",
+              duration: Date.now() - startTime,
+              isNsfw,
+            }),
+          });
+          
+          // Create audit log
+          await createAuditLog({
+            userId: ctx.user.id,
+            userOpenId: ctx.user.openId,
+            actionType: "image_generation",
+            ipAddress: getClientIp(ctx.req),
+            userAgent: ctx.req.headers["user-agent"] || null,
+            contentHash: hashContent(input.prompt),
+            modelUsed: input.model,
+            promptLength: input.prompt.length,
+            metadata: JSON.stringify({
+              type: isNsfw ? "nsfw_image" : "venice_image",
+              size: input.size,
+              isNsfw,
+            }),
+            timestamp: new Date(),
+          });
+          
+          // Log for admin review
+          auditLogImageAccess({
+            userId: ctx.user.id,
+            userEmail: ctx.user.email || undefined,
+            imageUrl: result.url,
+            prompt: input.prompt,
+            actionType: "generate",
+            ipAddress: getClientIp(ctx.req),
+          });
+          
+          return {
+            url: result.url,
+            model: result.model,
+            size: result.size,
+            isNsfw: result.isNsfw,
+          };
+        } catch (error: any) {
+          // Log failed attempt
+          await createGeneratedImage({
+            userId: ctx.user.id,
+            imageUrl: "",
+            prompt: input.prompt,
+            model: input.model,
+            status: "failed",
+            metadata: JSON.stringify({
+              type: isNsfw ? "nsfw_image" : "venice_image",
+              error: error.message,
+              duration: Date.now() - startTime,
+            }),
+          });
+          
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: error.message || "Failed to generate image",
+          });
+        }
+      }),
+
+    // Create Stripe checkout for NSFW subscription
+    createCheckout: protectedProcedure.mutation(async ({ ctx }) => {
+      // Check if already subscribed
+      const status = await getNsfwSubscriptionStatus(ctx.user.id);
+      if (status?.hasNsfwSubscription) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You already have an active NSFW subscription",
+        });
+      }
+      
+      // Check age verification
+      if (!status?.ageVerified) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Please verify your age (18+) before subscribing to NSFW content",
+        });
+      }
+      
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+        apiVersion: "2025-12-15.clover",
+      });
+      
+      // Get or create Stripe customer
+      let customerId = ctx.user.stripeCustomerId;
+      if (!customerId) {
+        const customer = await stripe.customers.create({
+          email: ctx.user.email || undefined,
+          name: ctx.user.name || undefined,
+          metadata: {
+            userId: ctx.user.id.toString(),
+            openId: ctx.user.openId,
+          },
+        });
+        customerId = customer.id;
+        
+        // Update user with Stripe customer ID
+        const db = await getDb();
+        if (db) {
+          await db.update(users)
+            .set({ stripeCustomerId: customerId })
+            .where(eq(users.id, ctx.user.id));
+        }
+      }
+      
+      // Create checkout session for NSFW add-on
+      // Price: $7.99/month
+      const session = await stripe.checkout.sessions.create({
+        customer: customerId,
+        payment_method_types: ["card"],
+        line_items: [
+          {
+            price_data: {
+              currency: "usd",
+              product_data: {
+                name: "NSFW Image Generation Add-on",
+                description: "Generate uncensored images with Venice AI. 100 images per month.",
+              },
+              unit_amount: 799, // $7.99
+              recurring: {
+                interval: "month",
+              },
+            },
+            quantity: 1,
+          },
+        ],
+        mode: "subscription",
+        success_url: `${process.env.VITE_OAUTH_PORTAL_URL?.replace('/login', '')}/settings?nsfw_success=true`,
+        cancel_url: `${process.env.VITE_OAUTH_PORTAL_URL?.replace('/login', '')}/settings?nsfw_canceled=true`,
+        metadata: {
+          userId: ctx.user.id.toString(),
+          type: "nsfw_subscription",
+        },
+      });
+      
+      return { checkoutUrl: session.url };
+    }),
+
+    // Cancel NSFW subscription
+    cancelSubscription: protectedProcedure.mutation(async ({ ctx }) => {
+      const db = await getDb();
+      if (!db) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+      }
+      
+      const userResult = await db.select()
+        .from(users)
+        .where(eq(users.id, ctx.user.id))
+        .limit(1);
+      
+      if (userResult.length === 0 || !userResult[0].nsfwSubscriptionId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No active NSFW subscription found",
+        });
+      }
+      
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+        apiVersion: "2025-12-15.clover",
+      });
+      
+      // Cancel at period end
+      await stripe.subscriptions.update(userResult[0].nsfwSubscriptionId, {
+        cancel_at_period_end: true,
+      });
+      
+      await updateNsfwSubscription(ctx.user.id, {
+        nsfwSubscriptionStatus: "canceled",
+      });
+      
+      return { success: true, message: "Subscription will be canceled at the end of the billing period" };
+    }),
   }),
 });
 export type AppRouter = typeof appRouter;

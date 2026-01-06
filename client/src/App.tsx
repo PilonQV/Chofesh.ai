@@ -55,6 +55,7 @@ function Router() {
         <Route path="/" component={Home} />
         <Route path="/chat" component={Chat} />
         <Route path="/image" component={ImageGen} />
+        <Route path="/images" component={ImageGen} />
         <Route path="/admin" component={AdminDashboard} />
         <Route path="/admin/audit-logs" component={AdminAuditLogs} />
         <Route path="/privacy" component={Privacy} />

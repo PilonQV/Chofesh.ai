@@ -127,6 +127,13 @@
       "when": 1767655371440,
       "tag": "0017_hard_riptide",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "5",
+      "when": 1767671747353,
+      "tag": "0018_right_guardsmen",
+      "breakpoints": true
     }
   ]
 }

@@ -149,7 +149,7 @@ describe("Web Search API", () => {
     expect(result.query).toBe("test query");
     // DuckDuckGo may return 0 or more results depending on query
     expect(Array.isArray(result.results)).toBe(true);
-  });
+  }, 15000); // Increase timeout for external API call
 });
 
 describe("Voice Transcription API", () => {

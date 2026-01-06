@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { X, Cookie, Settings, Check } from "lucide-react";
+import { X, Cookie, Settings, Check, ChevronUp, ChevronDown } from "lucide-react";
 import { Link } from "wouter";
 
 const COOKIE_CONSENT_KEY = "chofesh_cookie_consent";
@@ -20,6 +20,7 @@ const DEFAULT_PREFERENCES: CookiePreferences = {
 
 export function CookieConsent() {
   const [isVisible, setIsVisible] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [preferences, setPreferences] = useState<CookiePreferences>(DEFAULT_PREFERENCES);
 
@@ -27,8 +28,8 @@ export function CookieConsent() {
     // Check if user has already consented
     const consent = localStorage.getItem(COOKIE_CONSENT_KEY);
     if (!consent) {
-      // Small delay to avoid flash on page load
-      const timer = setTimeout(() => setIsVisible(true), 1000);
+      // Longer delay to not interrupt initial page experience
+      const timer = setTimeout(() => setIsVisible(true), 2500);
       return () => clearTimeout(timer);
     } else {
       // Load saved preferences
@@ -66,119 +67,157 @@ export function CookieConsent() {
     setPreferences(prefs);
     setIsVisible(false);
     setShowSettings(false);
+    setIsExpanded(false);
   };
 
   if (!isVisible) return null;
 
-  return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6">
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
-          {!showSettings ? (
-            // Main consent banner
-            <div className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <Cookie className="w-5 h-5 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-lg mb-2">We value your privacy</h3>
-                  <p className="text-muted-foreground text-sm mb-4">
-                    We use cookies to enhance your browsing experience and analyze our traffic. 
-                    Your conversations are always encrypted locally and never stored on our servers.
-                    By clicking "Accept All", you consent to our use of cookies.{" "}
-                    <Link href="/privacy" className="text-primary hover:underline">
-                      Learn more
-                    </Link>
-                  </p>
-                  <div className="flex flex-wrap gap-3">
-                    <Button onClick={handleAcceptAll}>
-                      <Check className="w-4 h-4 mr-2" />
-                      Accept All
-                    </Button>
-                    <Button variant="outline" onClick={handleAcceptNecessary}>
-                      Necessary Only
-                    </Button>
-                    <Button variant="ghost" onClick={() => setShowSettings(true)}>
-                      <Settings className="w-4 h-4 mr-2" />
-                      Customize
-                    </Button>
-                  </div>
-                </div>
-              </div>
+  // Compact banner (default state)
+  if (!isExpanded && !showSettings) {
+    return (
+      <div className="fixed bottom-4 left-4 z-50 animate-in slide-in-from-left-4 fade-in duration-300">
+        <div className="bg-card/95 backdrop-blur-sm border border-border rounded-xl shadow-lg p-3 max-w-xs">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <Cookie className="w-4 h-4 text-primary" />
             </div>
-          ) : (
-            // Settings panel
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-lg">Cookie Preferences</h3>
-                <Button variant="ghost" size="icon" onClick={() => setShowSettings(false)}>
-                  <X className="w-5 h-5" />
-                </Button>
-              </div>
-              
-              <div className="space-y-4 mb-6">
-                {/* Necessary Cookies */}
-                <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                  <div>
-                    <div className="font-medium">Necessary Cookies</div>
-                    <p className="text-sm text-muted-foreground">
-                      Required for the website to function. Cannot be disabled.
-                    </p>
-                  </div>
-                  <div className="w-12 h-6 bg-primary rounded-full flex items-center justify-end px-1">
-                    <div className="w-4 h-4 bg-white rounded-full" />
-                  </div>
-                </div>
-
-                {/* Analytics Cookies */}
-                <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                  <div>
-                    <div className="font-medium">Analytics Cookies</div>
-                    <p className="text-sm text-muted-foreground">
-                      Help us understand how visitors interact with our website.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setPreferences(p => ({ ...p, analytics: !p.analytics }))}
-                    className={`w-12 h-6 rounded-full flex items-center px-1 transition-colors ${
-                      preferences.analytics ? "bg-primary justify-end" : "bg-muted-foreground/30 justify-start"
-                    }`}
-                  >
-                    <div className="w-4 h-4 bg-white rounded-full" />
-                  </button>
-                </div>
-
-                {/* Marketing Cookies */}
-                <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                  <div>
-                    <div className="font-medium">Marketing Cookies</div>
-                    <p className="text-sm text-muted-foreground">
-                      Used to deliver personalized advertisements.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setPreferences(p => ({ ...p, marketing: !p.marketing }))}
-                    className={`w-12 h-6 rounded-full flex items-center px-1 transition-colors ${
-                      preferences.marketing ? "bg-primary justify-end" : "bg-muted-foreground/30 justify-start"
-                    }`}
-                  >
-                    <div className="w-4 h-4 bg-white rounded-full" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex gap-3">
-                <Button onClick={handleSavePreferences} className="flex-1">
-                  Save Preferences
-                </Button>
-                <Button variant="outline" onClick={handleAcceptAll}>
-                  Accept All
-                </Button>
-              </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-muted-foreground">
+                We use cookies for analytics.
+              </p>
             </div>
-          )}
+          </div>
+          <div className="flex items-center gap-2 mt-3">
+            <Button size="sm" onClick={handleAcceptAll} className="flex-1 h-8 text-xs">
+              <Check className="w-3 h-3 mr-1" />
+              Accept All
+            </Button>
+            <Button size="sm" variant="outline" onClick={handleAcceptNecessary} className="h-8 text-xs">
+              Necessary Only
+            </Button>
+            <Button 
+              size="sm" 
+              variant="ghost" 
+              onClick={() => setIsExpanded(true)}
+              className="h-8 w-8 p-0"
+            >
+              <ChevronUp className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
+      </div>
+    );
+  }
+
+  // Expanded banner
+  return (
+    <div className="fixed bottom-4 left-4 z-50 animate-in slide-in-from-bottom-4 fade-in duration-300">
+      <div className="bg-card/95 backdrop-blur-sm border border-border rounded-xl shadow-xl overflow-hidden max-w-sm">
+        {!showSettings ? (
+          // Main consent banner (expanded)
+          <div className="p-4">
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Cookie className="w-4 h-4 text-primary" />
+                </div>
+                <h3 className="font-semibold text-sm">We value your privacy</h3>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-6 w-6"
+                onClick={() => setIsExpanded(false)}
+              >
+                <ChevronDown className="w-4 h-4" />
+              </Button>
+            </div>
+            <p className="text-muted-foreground text-xs mb-3 leading-relaxed">
+              We use cookies to enhance your browsing experience and analyze our traffic. 
+              Your conversations are always encrypted locally.{" "}
+              <Link href="/privacy" className="text-primary hover:underline">
+                Learn more
+              </Link>
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" onClick={handleAcceptAll} className="h-8 text-xs">
+                <Check className="w-3 h-3 mr-1" />
+                Accept All
+              </Button>
+              <Button size="sm" variant="outline" onClick={handleAcceptNecessary} className="h-8 text-xs">
+                Necessary Only
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setShowSettings(true)} className="h-8 text-xs">
+                <Settings className="w-3 h-3 mr-1" />
+                Customize
+              </Button>
+            </div>
+          </div>
+        ) : (
+          // Settings panel
+          <div className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-sm">Cookie Preferences</h3>
+              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setShowSettings(false)}>
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+            
+            <div className="space-y-2 mb-4">
+              {/* Necessary Cookies */}
+              <div className="flex items-center justify-between p-2 bg-muted/50 rounded-lg">
+                <div>
+                  <div className="font-medium text-xs">Necessary</div>
+                  <p className="text-xs text-muted-foreground">Required</p>
+                </div>
+                <div className="w-10 h-5 bg-primary rounded-full flex items-center justify-end px-0.5">
+                  <div className="w-4 h-4 bg-white rounded-full" />
+                </div>
+              </div>
+
+              {/* Analytics Cookies */}
+              <div className="flex items-center justify-between p-2 bg-muted/50 rounded-lg">
+                <div>
+                  <div className="font-medium text-xs">Analytics</div>
+                  <p className="text-xs text-muted-foreground">Usage data</p>
+                </div>
+                <button
+                  onClick={() => setPreferences(p => ({ ...p, analytics: !p.analytics }))}
+                  className={`w-10 h-5 rounded-full flex items-center px-0.5 transition-colors ${
+                    preferences.analytics ? "bg-primary justify-end" : "bg-muted-foreground/30 justify-start"
+                  }`}
+                >
+                  <div className="w-4 h-4 bg-white rounded-full" />
+                </button>
+              </div>
+
+              {/* Marketing Cookies */}
+              <div className="flex items-center justify-between p-2 bg-muted/50 rounded-lg">
+                <div>
+                  <div className="font-medium text-xs">Marketing</div>
+                  <p className="text-xs text-muted-foreground">Personalized ads</p>
+                </div>
+                <button
+                  onClick={() => setPreferences(p => ({ ...p, marketing: !p.marketing }))}
+                  className={`w-10 h-5 rounded-full flex items-center px-0.5 transition-colors ${
+                    preferences.marketing ? "bg-primary justify-end" : "bg-muted-foreground/30 justify-start"
+                  }`}
+                >
+                  <div className="w-4 h-4 bg-white rounded-full" />
+                </button>
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <Button size="sm" onClick={handleSavePreferences} className="flex-1 h-8 text-xs">
+                Save
+              </Button>
+              <Button size="sm" variant="outline" onClick={handleAcceptAll} className="h-8 text-xs">
+                Accept All
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
