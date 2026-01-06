@@ -1523,3 +1523,12 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] TypeScript compilation passes
 - [x] All 343 tests passing
 - [x] Ready for live testing
+
+
+---
+
+## Phase 51: Fix Uncensored Mode Routing
+
+- [x] Fix model selection to always use venice-uncensored when isUncensoredMode is ON
+- [x] Ensure Venice Uncensored is used regardless of routingMode setting
+- [x] Test NSFW prompts work correctly with Uncensored mode enabled (343 tests passing)

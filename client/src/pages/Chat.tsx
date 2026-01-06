@@ -546,9 +546,15 @@ export default function Chat() {
         return;
       }
 
+      // Determine which model to use
+      // If uncensored mode is ON, always use venice-uncensored regardless of routing mode
+      const modelToUse = isUncensoredMode 
+        ? "venice-uncensored" 
+        : (routingMode === "manual" ? selectedModel : undefined);
+
       const response = await chatMutation.mutateAsync({
         messages,
-        model: routingMode === "manual" ? selectedModel : undefined,
+        model: modelToUse,
         routingMode,
         useCache: true,
         temperature,
