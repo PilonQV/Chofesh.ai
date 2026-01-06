@@ -211,6 +211,14 @@ export default function Chat() {
     return false;
   });
   
+  // Navigation menu collapse state (for expandable nav section)
+  const [navMenuExpanded, setNavMenuExpanded] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('chofesh_nav_expanded') !== 'false'; // Default to expanded
+    }
+    return true;
+  });
+  
   const [lastResponse, setLastResponse] = useState<{
     model: string;
     modelName: string;
@@ -789,6 +797,12 @@ export default function Chat() {
     localStorage.setItem('chofesh_sidebar_collapsed', String(newState));
   };
 
+  const toggleNavMenu = () => {
+    const newState = !navMenuExpanded;
+    setNavMenuExpanded(newState);
+    localStorage.setItem('chofesh_nav_expanded', String(newState));
+  };
+
   const handleCopyConversation = () => {
     if (!currentConversation?.messages.length) return;
     
@@ -1017,68 +1031,90 @@ export default function Chat() {
             </div>
           </ScrollArea>
 
-          {/* Sidebar Footer */}
-          <div className={`p-4 border-t border-border space-y-2 ${sidebarCollapsed ? 'px-2' : ''}`}>
-            <Link href="/characters">
-              <Button variant="ghost" className={`w-full gap-2 ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`} title="AI Characters">
-                <Users className="w-4 h-4" />
-                {!sidebarCollapsed && "AI Characters"}
-              </Button>
-            </Link>
-            <Link href="/image">
-              <Button variant="ghost" className={`w-full gap-2 ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`} title="Generate Images">
-                <Image className="w-4 h-4" />
-                {!sidebarCollapsed && "Generate Images"}
-              </Button>
-            </Link>
-            <Link href="/documents">
-              <Button variant="ghost" className={`w-full gap-2 ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`} title="Document Chat">
-                <MessageSquare className="w-4 h-4" />
-                {!sidebarCollapsed && "Document Chat"}
-              </Button>
-            </Link>
-            <Link href="/artifacts">
-              <Button variant="ghost" className={`w-full gap-2 ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`} title="Artifacts">
-                <FileCode className="w-4 h-4" />
-                {!sidebarCollapsed && "Artifacts"}
-              </Button>
-            </Link>
-            <Link href="/code">
-              <Button variant="ghost" className={`w-full gap-2 ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`} title="Code Workspace">
-                <Code2 className="w-4 h-4" />
-                {!sidebarCollapsed && "Code Workspace"}
-              </Button>
-            </Link>
-            <Link href="/workflows">
-              <Button variant="ghost" className={`w-full gap-2 ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`} title="Workflows">
-                <Workflow className="w-4 h-4" />
-                {!sidebarCollapsed && "Workflows"}
-              </Button>
-            </Link>
-            <Link href="/code-review">
-              <Button variant="ghost" className={`w-full gap-2 ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`} title="Code Review">
-                <Shield className="w-4 h-4" />
-                {!sidebarCollapsed && "Code Review"}
-              </Button>
-            </Link>
-            <Link href="/knowledge">
-              <Button variant="ghost" className={`w-full gap-2 ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`} title="Knowledge Base">
-                <Database className="w-4 h-4" />
-                {!sidebarCollapsed && "Knowledge Base"}
-              </Button>
-            </Link>
-            <Link href="/settings#ollama">
-              <Button variant="ghost" className={`w-full gap-2 ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`} title="Local Models">
-                <Server className="w-4 h-4" />
-                {!sidebarCollapsed && "Local Models"}
-              </Button>
-            </Link>
-            <Link href="/settings">
-              <Button variant="ghost" className={`w-full gap-2 ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`} title="Settings">
-                <Settings className="w-4 h-4" />
-                {!sidebarCollapsed && "Settings"}
-              </Button>
-            </Link>
+          {/* Collapsible Navigation Menu */}
+          <div className={`border-t border-border ${sidebarCollapsed ? 'px-2 py-2' : 'p-2'}`}>
+            {/* Navigation Toggle Header */}
+            <button
+              onClick={toggleNavMenu}
+              className={`w-full flex items-center gap-2 px-2 py-2 rounded-md hover:bg-muted/50 transition-colors text-sm text-muted-foreground ${sidebarCollapsed ? 'justify-center' : 'justify-between'}`}
+            >
+              {!sidebarCollapsed && (
+                <span className="font-medium">Tools & Features</span>
+              )}
+              {sidebarCollapsed ? (
+                <Menu className="w-4 h-4" />
+              ) : navMenuExpanded ? (
+                <ChevronUp className="w-4 h-4" />
+              ) : (
+                <ChevronDown className="w-4 h-4" />
+              )}
+            </button>
+            
+            {/* Collapsible Navigation Items */}
+            {(navMenuExpanded || sidebarCollapsed) && (
+              <div className={`space-y-1 ${!sidebarCollapsed ? 'mt-1' : ''}`}>
+                <Link href="/characters">
+                  <Button variant="ghost" size="sm" className={`w-full gap-2 ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`} title="AI Characters">
+                    <Users className="w-4 h-4" />
+                    {!sidebarCollapsed && "AI Characters"}
+                  </Button>
+                </Link>
+                <Link href="/image">
+                  <Button variant="ghost" size="sm" className={`w-full gap-2 ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`} title="Generate Images">
+                    <Image className="w-4 h-4" />
+                    {!sidebarCollapsed && "Generate Images"}
+                  </Button>
+                </Link>
+                <Link href="/documents">
+                  <Button variant="ghost" size="sm" className={`w-full gap-2 ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`} title="Document Chat">
+                    <MessageSquare className="w-4 h-4" />
+                    {!sidebarCollapsed && "Document Chat"}
+                  </Button>
+                </Link>
+                <Link href="/artifacts">
+                  <Button variant="ghost" size="sm" className={`w-full gap-2 ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`} title="Artifacts">
+                    <FileCode className="w-4 h-4" />
+                    {!sidebarCollapsed && "Artifacts"}
+                  </Button>
+                </Link>
+                <Link href="/code">
+                  <Button variant="ghost" size="sm" className={`w-full gap-2 ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`} title="Code Workspace">
+                    <Code2 className="w-4 h-4" />
+                    {!sidebarCollapsed && "Code Workspace"}
+                  </Button>
+                </Link>
+                <Link href="/workflows">
+                  <Button variant="ghost" size="sm" className={`w-full gap-2 ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`} title="Workflows">
+                    <Workflow className="w-4 h-4" />
+                    {!sidebarCollapsed && "Workflows"}
+                  </Button>
+                </Link>
+                <Link href="/code-review">
+                  <Button variant="ghost" size="sm" className={`w-full gap-2 ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`} title="Code Review">
+                    <Shield className="w-4 h-4" />
+                    {!sidebarCollapsed && "Code Review"}
+                  </Button>
+                </Link>
+                <Link href="/knowledge">
+                  <Button variant="ghost" size="sm" className={`w-full gap-2 ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`} title="Knowledge Base">
+                    <Database className="w-4 h-4" />
+                    {!sidebarCollapsed && "Knowledge Base"}
+                  </Button>
+                </Link>
+                <Link href="/settings#ollama">
+                  <Button variant="ghost" size="sm" className={`w-full gap-2 ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`} title="Local Models">
+                    <Server className="w-4 h-4" />
+                    {!sidebarCollapsed && "Local Models"}
+                  </Button>
+                </Link>
+                <Link href="/settings">
+                  <Button variant="ghost" size="sm" className={`w-full gap-2 ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`} title="Settings">
+                    <Settings className="w-4 h-4" />
+                    {!sidebarCollapsed && "Settings"}
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </aside>
