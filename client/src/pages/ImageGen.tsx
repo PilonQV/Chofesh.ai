@@ -115,7 +115,7 @@ export default function ImageGen() {
   const { data: nsfwStatus } = trpc.nsfw.getStatus.useQuery(undefined, {
     enabled: isAuthenticated,
   });
-  const { data: veniceModels } = trpc.nsfw.getModels.useQuery();
+  const { data: nsfwModels } = trpc.nsfw.getModels.useQuery();
   const nsfwGenerateMutation = trpc.nsfw.generate.useMutation();
   
   // Image editing state
@@ -162,13 +162,13 @@ export default function ImageGen() {
       setSeed(currentSeed);
     }
 
-    // Check if using Venice/NSFW model
-    const isVeniceModel = nsfwMode || model.includes('lustify') || model.includes('venice') || 
+    // Check if using NSFW/uncensored model
+    const isNsfwModel = nsfwMode || model.includes('lustify') || 
       model === 'hidream' || model === 'flux-2-pro' || model === 'wai-Illustrious' || model === 'z-image-turbo';
     
-    if (isVeniceModel) {
+    if (isNsfwModel) {
       try {
-        // Map aspect ratio to Venice size format
+        // Map aspect ratio to size format
         const sizeMap: Record<string, string> = {
           '1:1': '1024x1024',
           '16:9': '1536x1024',
@@ -177,12 +177,12 @@ export default function ImageGen() {
           '3:4': '1024x1024',
           '21:9': '1792x1024',
         };
-        const veniceSize = sizeMap[aspectRatio] || '1024x1024';
+        const imageSize = sizeMap[aspectRatio] || '1024x1024';
         
         const result = await nsfwGenerateMutation.mutateAsync({
           prompt: prompt.trim(),
           model,
-          size: veniceSize,
+          size: imageSize,
           negativePrompt: negativePrompt.trim() || undefined,
         });
 
@@ -201,10 +201,10 @@ export default function ImageGen() {
 
         saveImages([newImage, ...images]);
         setSelectedImage(newImage);
-        toast.success(result.isNsfw ? "NSFW image generated!" : "Venice image generated!");
+        toast.success("Image generated successfully!");
         return;
       } catch (error: any) {
-        console.error("Venice image error:", error);
+        console.error("Image generation error:", error);
         toast.error(error.message || "Failed to generate image. Please try again.");
         return;
       }
@@ -583,21 +583,21 @@ export default function ImageGen() {
                 <SelectValue placeholder="Model" />
               </SelectTrigger>
               <SelectContent>
-                {/* NSFW Models (Venice) */}
-                {nsfwMode && veniceModels && (
+                {/* NSFW Models */}
+                {nsfwMode && nsfwModels && (
                   <>
                     <div className="px-2 py-1.5 text-xs font-semibold text-pink-500 border-b mb-1 pb-2">
-                      🔞 NSFW Models
+                      🔞 Uncensored Models
                     </div>
-                    {veniceModels.nsfwModels.map((m) => (
+                    {nsfwModels.nsfwModels.map((m: { id: string; name: string }) => (
                       <SelectItem key={m.id} value={m.id}>
                         {m.name}
                       </SelectItem>
                     ))}
                     <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground border-t mt-1 pt-2">
-                      Venice SFW
+                      Premium Models
                     </div>
-                    {veniceModels.sfwModels.map((m) => (
+                    {nsfwModels.sfwModels.map((m: { id: string; name: string }) => (
                       <SelectItem key={m.id} value={m.id}>
                         {m.name}
                       </SelectItem>
@@ -951,7 +951,7 @@ export default function ImageGen() {
               Unlock NSFW Image Generation
             </DialogTitle>
             <DialogDescription>
-              Generate uncensored images with Venice AI models.
+              Generate uncensored images with premium AI models.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">

@@ -1733,3 +1733,12 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Deep Research toggle now in chat settings popover
 - [x] Age verification integrated into chat settings popover
 
+
+## Phase 48: Remove Venice Branding (Business Protection)
+
+- [x] Remove Venice references from ImageGen.tsx
+- [x] Remove Venice model names from UI dropdowns (now "Uncensored Models" and "Premium Models")
+- [x] Rename "venice-uncensored" to "uncensored" in Chat.tsx
+- [x] Remove Venice from error messages, toasts, and Settings.tsx
+- [x] Backend still uses Venice API but frontend shows generic Chofesh branding
+
