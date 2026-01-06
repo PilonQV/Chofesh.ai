@@ -1440,3 +1440,23 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Gate Uncensored Assistant persona behind age verification
 - [x] Gate Venice Uncensored model selection behind age verification
 - [x] Show appropriate messaging when age not verified
+
+
+---
+
+## Phase 48: Chat UI Fixes
+
+### Sidebar Collapse
+- [x] Add toggle button to collapse/expand left sidebar
+- [x] Remember collapse state in localStorage
+- [x] Show icons only when collapsed with tooltips
+
+### Uncensored Button Visibility
+- [x] Move Uncensored button to be always visible (not just new chat)
+- [x] Added to Quick Feature Toggles area next to Deep Research
+- [x] Show current mode indicator (18+ vs Uncensored)
+
+### Venice Fallback for Grok
+- [x] Add Grok-specific refusal patterns to detection
+- [x] Test with "adhere to guidelines that prioritize" pattern
+- [x] Ensure auto-retry triggers for all model refusals

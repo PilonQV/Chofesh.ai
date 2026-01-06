@@ -120,6 +120,17 @@ export const REFUSAL_PATTERNS = [
   /against my (?:programming|guidelines|policies)/i,
   /not (?:able|allowed|permitted) to (?:generate|create|write|produce)/i,
   /unable to (?:comply|assist|help) with/i,
+  // Grok-specific refusal patterns
+  /I'm sorry,? but I must adhere to/i,
+  /adhere to guidelines that prioritize/i,
+  /prioritize respectful and appropriate content/i,
+  /content of an explicit nature/i,
+  /I must adhere to guidelines/i,
+  /guidelines that prioritize/i,
+  /respectful and appropriate content/i,
+  /If you're looking for assistance with something else/i,
+  /I'd be happy to help with that/i,
+  /exploring relationship dynamics in a non-explicit way/i,
 ];
 
 /**
