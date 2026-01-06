@@ -3680,15 +3680,19 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
       }
       
       // Create checkout session for NSFW add-on
-      // Price: $7.99/month - Product ID: prod_Tk7nyPzmVCnsTt
-      const NSFW_ADDON_PRICE_ID = "price_1SmdXZGcthikBvdKJOEh6ymu";
+      // Price: $7.99/month - Uses STRIPE_UNCENSORED_PRICE_ID for billing privacy
+      const UNCENSORED_PRICE_ID = process.env.STRIPE_UNCENSORED_PRICE_ID;
+      
+      if (!UNCENSORED_PRICE_ID) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Uncensored pricing not configured" });
+      }
       
       const session = await stripe.checkout.sessions.create({
         customer: customerId,
         payment_method_types: ["card"],
         line_items: [
           {
-            price: NSFW_ADDON_PRICE_ID,
+            price: UNCENSORED_PRICE_ID,
             quantity: 1,
           },
         ],
