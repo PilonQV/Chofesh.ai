@@ -1690,3 +1690,9 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Cmd/Ctrl+, for settings
 - [x] Escape to close modals (Radix UI built-in)
 
+
+## Phase 44: Remove Keyboard Shortcuts
+
+- [x] Remove useKeyboardShortcuts hook from App.tsx
+- [x] Delete useKeyboardShortcuts.ts file
+
