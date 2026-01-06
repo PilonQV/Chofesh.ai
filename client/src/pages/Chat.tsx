@@ -1739,88 +1739,9 @@ export default function Chat() {
               </div>
             )}
             
-            {/* Quick Feature Toggles */}
-            <div className="flex flex-wrap gap-2 mb-3">
-              {/* Response Format Selector */}
-              <Select value={responseFormat} onValueChange={(v) => setResponseFormat(v as typeof responseFormat)}>
-                <SelectTrigger className="w-[130px] h-8 text-xs">
-                  <SelectValue placeholder="Format" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="auto">Auto</SelectItem>
-                  <SelectItem value="detailed">Detailed</SelectItem>
-                  <SelectItem value="concise">Concise</SelectItem>
-                  <SelectItem value="bullet">Bullet Points</SelectItem>
-                  <SelectItem value="table">Table</SelectItem>
-                </SelectContent>
-              </Select>
-              
-              {/* Deep Research Toggle */}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant={deepResearchEnabled ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setDeepResearchEnabled(!deepResearchEnabled)}
-                    className={`h-8 text-xs ${deepResearchEnabled ? "bg-purple-600 hover:bg-purple-700" : ""}`}
-                  >
-                    <Brain className="w-3 h-3 mr-1" />
-                    Deep Research
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  Multi-step research with citations from multiple sources
-                </TooltipContent>
-              </Tooltip>
-              
-              {/* Uncensored Mode Toggle - Shows 18+ gate if not verified, Uncensored button if verified */}
-              {!ageVerified ? (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowAgeVerification(true)}
-                      className="h-8 text-xs border-rose-500/50 text-rose-500 hover:bg-rose-500/10"
-                    >
-                      <Shield className="w-3 h-3 mr-1" />
-                      18+
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    Verify age to unlock uncensored mode
-                  </TooltipContent>
-                </Tooltip>
-              ) : (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant={isUncensoredMode ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => {
-                        setIsUncensoredMode(!isUncensoredMode);
-                        if (!isUncensoredMode) {
-                          setSelectedModel("venice-uncensored");
-                          toast.success("Uncensored mode enabled");
-                        } else {
-                          setSelectedModel("auto");
-                          toast.info("Uncensored mode disabled");
-                        }
-                      }}
-                      className={`h-8 text-xs ${isUncensoredMode ? "bg-rose-600 hover:bg-rose-700" : "border-rose-500/50 text-rose-500 hover:bg-rose-500/10"}`}
-                    >
-                      <Shield className="w-3 h-3 mr-1" />
-                      {isUncensoredMode ? "Uncensored ON" : "Uncensored"}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {isUncensoredMode ? "Click to disable uncensored mode" : "Click to enable uncensored mode (no content restrictions)"}
-                  </TooltipContent>
-                </Tooltip>
-              )}
-            </div>
+
             
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-end">
               {/* Hidden file input for images */}
               <input
                 ref={imageInputRef}
@@ -1830,6 +1751,94 @@ export default function Chat() {
                 onChange={handleImageUpload}
                 className="hidden"
               />
+              
+              {/* Chat Settings Popover */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="relative"
+                  >
+                    <Sliders className="w-4 h-4" />
+                    {(deepResearchEnabled || isUncensoredMode || responseFormat !== "auto") && (
+                      <span className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full" />
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-64 p-3">
+                  <DropdownMenuLabel className="text-xs font-medium text-muted-foreground mb-2">Chat Settings</DropdownMenuLabel>
+                  
+                  {/* Response Format */}
+                  <div className="mb-3">
+                    <Label className="text-xs mb-1.5 block">Response Format</Label>
+                    <Select value={responseFormat} onValueChange={(v) => setResponseFormat(v as typeof responseFormat)}>
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue placeholder="Format" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="auto">Auto</SelectItem>
+                        <SelectItem value="detailed">Detailed</SelectItem>
+                        <SelectItem value="concise">Concise</SelectItem>
+                        <SelectItem value="bullet">Bullet Points</SelectItem>
+                        <SelectItem value="table">Table</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <DropdownMenuSeparator />
+                  
+                  {/* Deep Research Toggle */}
+                  <div className="flex items-center justify-between py-2">
+                    <div className="flex items-center gap-2">
+                      <Brain className="w-4 h-4 text-purple-500" />
+                      <span className="text-sm">Deep Research</span>
+                    </div>
+                    <Switch
+                      checked={deepResearchEnabled}
+                      onCheckedChange={setDeepResearchEnabled}
+                    />
+                  </div>
+                  
+                  <DropdownMenuSeparator />
+                  
+                  {/* Uncensored Mode Toggle */}
+                  <div className="flex items-center justify-between py-2">
+                    <div className="flex items-center gap-2">
+                      <Shield className="w-4 h-4 text-rose-500" />
+                      <span className="text-sm">Uncensored Mode</span>
+                    </div>
+                    {!ageVerified ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowAgeVerification(true)}
+                        className="h-7 text-xs border-rose-500/50 text-rose-500 hover:bg-rose-500/10"
+                      >
+                        Verify 18+
+                      </Button>
+                    ) : (
+                      <Switch
+                        checked={isUncensoredMode}
+                        onCheckedChange={(checked) => {
+                          setIsUncensoredMode(checked);
+                          if (checked) {
+                            setSelectedModel("venice-uncensored");
+                            toast.success("Uncensored mode enabled");
+                          } else {
+                            setSelectedModel("auto");
+                            toast.info("Uncensored mode disabled");
+                          }
+                        }}
+                      />
+                    )}
+                  </div>
+                  
+                  {isUncensoredMode && (
+                    <p className="text-xs text-rose-500/70 mt-1">Content filters disabled</p>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
               
               {/* Image Upload Button */}
               <Tooltip>

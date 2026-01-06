@@ -1702,3 +1702,34 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Remove "(Shift+Enter for new line)" from placeholder
 - [x] Remove shortcut hint from footer text
 
+
+## Phase 46: UI Cleanup Research & Redesign
+
+- [ ] Research top 5 uncensored AI platforms UI patterns
+- [ ] Analyze sidebar/collapsible patterns
+- [ ] Analyze response format controls placement
+- [ ] Analyze NSFW/uncensored feature placement
+- [ ] Compare pricing flow integration
+- [ ] Present 2 design options to user
+
+
+## Phase 47: Venice-Style UI Redesign
+
+### Chat Input Area
+- [x] Remove response format dropdown from input area
+- [x] Remove Deep Research button from input area
+- [x] Remove 18+ button from input area
+- [x] Add settings gear icon to input area
+- [x] Create chat settings popover/modal
+
+### Sidebar
+- [x] Make sidebar collapsible (already implemented)
+- [x] Add toggle button to collapse/expand (already implemented)
+- [x] Persist sidebar state (already implemented)
+
+### Settings Page Updates
+- [x] Response format now in chat settings popover (not needed in Settings page)
+- [x] Uncensored mode now in chat settings popover with age verification
+- [x] Deep Research toggle now in chat settings popover
+- [x] Age verification integrated into chat settings popover
+
