@@ -49,6 +49,7 @@ import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
 import { isPuterAvailable, puterChatWithHistory } from "@/lib/puter";
 import { useConversations } from "@/hooks/useConversations";
+import { useSwipe } from "@/hooks/useSwipe";
 import { getLoginUrl } from "@/const";
 import { Link, useLocation } from "wouter";
 import { useState, useRef, useEffect, useCallback } from "react";
@@ -155,6 +156,13 @@ export default function Chat() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  
+  // Mobile swipe gestures for sidebar
+  useSwipe({
+    onSwipeRight: () => setSidebarOpen(true),
+    onSwipeLeft: () => setSidebarOpen(false),
+    enabled: window.innerWidth < 1024, // Only on mobile/tablet
+  });
   const [routingMode, setRoutingMode] = useState<RoutingMode>("auto");
   const [selectedModel, setSelectedModel] = useState<string>("auto");
   
@@ -214,7 +222,7 @@ export default function Chat() {
   } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const {
     conversations,
@@ -1453,15 +1461,37 @@ export default function Chat() {
           <div className="max-w-3xl mx-auto space-y-6 p-4">
             {/* Mode Info Banner */}
             {!currentConversation?.messages.length && (
-              <div className="text-center py-12 space-y-6">
-                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
-                  <img src="/chofesh-logo-48.webp" alt="Chofesh AI Logo" className="w-10 h-10 object-contain" />
+              <div className="text-center py-8 space-y-6 animate-in fade-in-50 duration-500">
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mx-auto shadow-lg shadow-primary/10">
+                  <img src="/chofesh-logo-48.webp" alt="Chofesh AI Logo" className="w-12 h-12 object-contain" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold mb-2">Start a conversation</h2>
+                  <h2 className="text-2xl font-bold mb-2">Welcome to Chofesh AI</h2>
                   <p className="text-muted-foreground max-w-md mx-auto">
                     {getModeDescription(routingMode)}
                   </p>
+                </div>
+                
+                {/* Quick Start Suggestions */}
+                <div className="space-y-3">
+                  <p className="text-sm font-medium text-muted-foreground">Try asking:</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-xl mx-auto">
+                    {[
+                      { icon: "💡", text: "Explain quantum computing simply" },
+                      { icon: "✍️", text: "Help me write a professional email" },
+                      { icon: "🔧", text: "Debug this code for me" },
+                      { icon: "📊", text: "Analyze the pros and cons of..." },
+                    ].map((suggestion, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setInput(suggestion.text)}
+                        className="flex items-center gap-2 p-3 rounded-lg border border-border hover:border-primary/50 hover:bg-primary/5 transition-all text-left text-sm group"
+                      >
+                        <span className="text-lg group-hover:scale-110 transition-transform">{suggestion.icon}</span>
+                        <span className="text-muted-foreground group-hover:text-foreground transition-colors">{suggestion.text}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 
                 {/* Quick Templates */}
@@ -1843,16 +1873,32 @@ export default function Chat() {
                 </TooltipContent>
               </Tooltip>
 
-              <Input
-                ref={inputRef}
-                value={isListening && interimTranscript ? input + interimTranscript : input}
-                onChange={(e) => !isListening && setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={uploadedImages.length > 0 ? "Ask about the image..." : (isListening ? "Listening... speak now" : "Type your message...")}
-                disabled={isGenerating || isListening}
-                className={`flex-1 ${isListening ? "bg-red-500/10 border-red-500/50" : ""}`}
-              />
-              <Button onClick={handleSend} disabled={(!input.trim() && uploadedImages.length === 0) || isGenerating}>
+              <div className="flex-1 relative">
+                <Textarea
+                  ref={inputRef}
+                  value={isListening && interimTranscript ? input + interimTranscript : input}
+                  onChange={(e) => !isListening && setInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSend();
+                    }
+                  }}
+                  placeholder={uploadedImages.length > 0 ? "Ask about the image..." : (isListening ? "Listening... speak now" : "Type your message... (Shift+Enter for new line)")}
+                  disabled={isGenerating || isListening}
+                  className={`min-h-[44px] max-h-[200px] resize-none pr-12 transition-all duration-200 focus:min-h-[80px] ${isListening ? "bg-red-500/10 border-red-500/50" : ""}`}
+                  rows={1}
+                />
+                {/* Character count */}
+                <span className={`absolute bottom-2 right-2 text-xs transition-colors ${input.length > 4000 ? "text-destructive" : "text-muted-foreground/50"}`}>
+                  {input.length > 0 && `${input.length.toLocaleString()}`}
+                </span>
+              </div>
+              <Button 
+                onClick={handleSend} 
+                disabled={(!input.trim() && uploadedImages.length === 0) || isGenerating}
+                className="self-end h-[44px]"
+              >
                 {isGenerating ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
@@ -1861,7 +1907,7 @@ export default function Chat() {
               </Button>
             </div>
             <p className="text-xs text-muted-foreground text-center mt-2">
-              Your conversations are encrypted and stored locally on your device.
+              Your conversations are encrypted locally. Press Enter to send, Shift+Enter for new line.
             </p>
           </div>
         </div>

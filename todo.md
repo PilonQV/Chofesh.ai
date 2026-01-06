@@ -1659,3 +1659,34 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Chat message actions (copy button, regenerate button on hover)
 - [x] Admin link already role-gated in navigation
 
+
+
+---
+
+## Phase 43: Outstanding Audit Fixes
+
+### Chat Input Area Improvements
+- [x] Add character count display
+- [x] Expand textarea on focus (min-h grows to 80px)
+- [x] Better visual feedback (multiline support with Shift+Enter)
+
+### Empty State for New Users
+- [x] Welcome message when no conversations ("Welcome to Chofesh AI")
+- [x] Quick start suggestions (4 clickable examples)
+
+### Mobile Sidebar UX
+- [x] Swipe gestures for sidebar open/close (useSwipe hook)
+- [x] Better touch targets (edge swipe detection)
+
+### Image Gallery Optimization
+- [x] Lazy loading for images (loading="lazy" + decoding="async")
+- [x] Fade-in animation on load
+
+### Global Keyboard Shortcuts
+- [x] Cmd/Ctrl+K for search/command palette
+- [x] Cmd/Ctrl+N for new chat
+- [x] Cmd/Ctrl+/ for go to chat
+- [x] Cmd/Ctrl+I for go to images
+- [x] Cmd/Ctrl+, for settings
+- [x] Escape to close modals (Radix UI built-in)
+

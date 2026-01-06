@@ -6,6 +6,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { CookieConsent } from "./components/CookieConsent";
 import { lazy, Suspense } from "react";
+import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { Loader2 } from "lucide-react";
 
 // Eagerly load critical pages (landing, login)
@@ -88,6 +89,9 @@ function Router() {
 }
 
 function App() {
+  // Global keyboard shortcuts
+  useKeyboardShortcuts();
+  
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="dark" switchable={true}>
