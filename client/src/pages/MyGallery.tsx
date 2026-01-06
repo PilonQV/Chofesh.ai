@@ -220,7 +220,11 @@ export default function MyGallery() {
                     <img
                       src={img.imageUrl}
                       alt={img.prompt.slice(0, 50)}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover transition-opacity duration-300"
+                      loading="lazy"
+                      decoding="async"
+                      onLoad={(e) => (e.target as HTMLImageElement).style.opacity = '1'}
+                      style={{ opacity: 0 }}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
