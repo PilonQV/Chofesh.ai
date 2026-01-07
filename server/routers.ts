@@ -3724,8 +3724,8 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
           },
         ],
         mode: "subscription",
-        success_url: `${process.env.VITE_OAUTH_PORTAL_URL?.replace('/login', '')}/settings?nsfw_success=true`,
-        cancel_url: `${process.env.VITE_OAUTH_PORTAL_URL?.replace('/login', '')}/settings?nsfw_canceled=true`,
+        success_url: `${process.env.VITE_OAUTH_PORTAL_URL?.replace('/login', '')}/image?nsfw_subscribed=true`,
+        cancel_url: `${process.env.VITE_OAUTH_PORTAL_URL?.replace('/login', '')}/image?nsfw_canceled=true`,
         metadata: {
           userId: ctx.user.id.toString(),
           type: "nsfw_subscription",
