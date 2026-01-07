@@ -1870,3 +1870,17 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Show pink shield indicator in sidebar chat list
 - [x] Tooltip explains "Contains uncensored content"
 
+
+
+## CRITICAL BUG FIX: Chat History Leaking Between Accounts
+
+### Issue
+- [x] Chat history stored in localStorage persists across different user accounts
+- [x] New users see previous account's conversations after login
+- [x] Privacy/security violation - users can see other users' chats on shared devices
+
+### Fix
+- [x] Scope localStorage keys by user ID (e.g., `chofesh-conversations-{userId}`)
+- [x] Conversations, folders, and encryption keys are now user-scoped
+- [x] Data automatically reloads when user changes
+

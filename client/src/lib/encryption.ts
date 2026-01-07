@@ -1,9 +1,41 @@
 /**
  * Client-side encryption utilities for storing conversations locally.
  * Uses Web Crypto API for secure AES-GCM encryption.
+ * 
+ * IMPORTANT: All conversation data is scoped by user ID to prevent
+ * data leakage between different accounts on the same browser.
  */
 
 const ENCRYPTION_KEY_NAME = "chofesh-ai-encryption-key";
+
+// Current user ID for scoping localStorage keys
+let currentUserId: string | null = null;
+
+/**
+ * Set the current user ID for scoping localStorage.
+ * Must be called when user logs in.
+ */
+export function setCurrentUserId(userId: string | null): void {
+  currentUserId = userId;
+}
+
+/**
+ * Get the current user ID.
+ */
+export function getCurrentUserId(): string | null {
+  return currentUserId;
+}
+
+/**
+ * Get user-scoped storage key.
+ * Falls back to legacy key if no user is set (for migration).
+ */
+function getUserScopedKey(baseKey: string): string {
+  if (currentUserId) {
+    return `${baseKey}-${currentUserId}`;
+  }
+  return baseKey;
+}
 
 // Generate a random encryption key
 async function generateKey(): Promise<CryptoKey> {
@@ -32,22 +64,23 @@ async function importKey(keyString: string): Promise<CryptoKey> {
   );
 }
 
-// Get or create encryption key
+// Get or create encryption key (user-scoped)
 async function getEncryptionKey(): Promise<CryptoKey> {
-  const storedKey = localStorage.getItem(ENCRYPTION_KEY_NAME);
+  const keyName = getUserScopedKey(ENCRYPTION_KEY_NAME);
+  const storedKey = localStorage.getItem(keyName);
   
   if (storedKey) {
     try {
       return await importKey(storedKey);
     } catch {
       // Key corrupted, generate new one
-      localStorage.removeItem(ENCRYPTION_KEY_NAME);
+      localStorage.removeItem(keyName);
     }
   }
   
   const newKey = await generateKey();
   const exportedKey = await exportKey(newKey);
-  localStorage.setItem(ENCRYPTION_KEY_NAME, exportedKey);
+  localStorage.setItem(keyName, exportedKey);
   return newKey;
 }
 
@@ -120,11 +153,11 @@ const FOLDERS_KEY = "chofesh-ai-folders";
 
 export async function saveFolders(folders: ChatFolder[]): Promise<void> {
   const encrypted = await encrypt(JSON.stringify(folders));
-  localStorage.setItem(FOLDERS_KEY, encrypted);
+  localStorage.setItem(getUserScopedKey(FOLDERS_KEY), encrypted);
 }
 
 export async function loadFolders(): Promise<ChatFolder[]> {
-  const encrypted = localStorage.getItem(FOLDERS_KEY);
+  const encrypted = localStorage.getItem(getUserScopedKey(FOLDERS_KEY));
   if (!encrypted) return [];
   
   try {
@@ -139,11 +172,11 @@ const CONVERSATIONS_KEY = "chofesh-ai-conversations";
 
 export async function saveConversations(conversations: Conversation[]): Promise<void> {
   const encrypted = await encrypt(JSON.stringify(conversations));
-  localStorage.setItem(CONVERSATIONS_KEY, encrypted);
+  localStorage.setItem(getUserScopedKey(CONVERSATIONS_KEY), encrypted);
 }
 
 export async function loadConversations(): Promise<Conversation[]> {
-  const encrypted = localStorage.getItem(CONVERSATIONS_KEY);
+  const encrypted = localStorage.getItem(getUserScopedKey(CONVERSATIONS_KEY));
   if (!encrypted) return [];
   
   try {
@@ -177,7 +210,7 @@ export async function deleteConversation(id: string): Promise<void> {
 }
 
 export async function clearAllConversations(): Promise<void> {
-  localStorage.removeItem(CONVERSATIONS_KEY);
+  localStorage.removeItem(getUserScopedKey(CONVERSATIONS_KEY));
 }
 
 // Generate unique ID
