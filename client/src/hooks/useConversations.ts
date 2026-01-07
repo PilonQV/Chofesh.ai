@@ -248,6 +248,22 @@ export function useConversations() {
     });
   }, [conversations]);
 
+  // Mark conversation as having used uncensored content
+  const markAsUncensored = useCallback((conversationId: string) => {
+    setConversations((prev) => {
+      const updated = prev.map((conv) =>
+        conv.id === conversationId ? { ...conv, usedUncensored: true, updatedAt: Date.now() } : conv
+      );
+      persistConversations(updated);
+      return updated;
+    });
+    if (currentConversation?.id === conversationId) {
+      setCurrentConversation((prev) =>
+        prev ? { ...prev, usedUncensored: true, updatedAt: Date.now() } : null
+      );
+    }
+  }, [currentConversation, persistConversations]);
+
   return {
     conversations,
     currentConversation,
@@ -267,5 +283,7 @@ export function useConversations() {
     // Pin functions
     togglePin,
     sortedConversations,
+    // Uncensored tracking
+    markAsUncensored,
   };
 }

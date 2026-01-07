@@ -184,6 +184,16 @@ function ConversationItem({
       title={sidebarCollapsed ? (conv.title || "New conversation") : undefined}
     >
       {conv.pinned && !sidebarCollapsed && <Pin className="w-3 h-3 text-primary flex-shrink-0" />}
+      {conv.usedUncensored && !sidebarCollapsed && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Shield className="w-3 h-3 text-pink-400 flex-shrink-0" />
+          </TooltipTrigger>
+          <TooltipContent side="right">
+            <p className="text-xs">Contains uncensored content</p>
+          </TooltipContent>
+        </Tooltip>
+      )}
       <MessageSquare className="w-4 h-4 flex-shrink-0" />
       {!sidebarCollapsed && (
         <>
@@ -322,7 +332,17 @@ export default function Chat() {
     cached: boolean;
     tokens?: { input: number; output: number; total: number };
     webSearchUsed?: boolean;
+    autoSwitchedToUncensored?: boolean;
   } | null>(null);
+  
+  // Banner for auto-switched uncensored mode
+  const [showUncensoredBanner, setShowUncensoredBanner] = useState(false);
+  const [dismissedUncensoredBanner, setDismissedUncensoredBanner] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('chofesh_dismissed_uncensored_banner') === 'true';
+    }
+    return false;
+  });
   const scrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -343,6 +363,7 @@ export default function Chat() {
     moveToFolder,
     togglePin,
     sortedConversations,
+    markAsUncensored,
   } = useConversations();
 
   const { data: models } = trpc.models.listText.useQuery();
@@ -706,7 +727,20 @@ export default function Chat() {
         cached: response.cached || false,
         tokens: response.tokens,
         webSearchUsed: response.webSearchUsed,
+        autoSwitchedToUncensored: response.autoSwitchedToUncensored,
       });
+      
+      // Show banner if auto-switched to uncensored and user hasn't dismissed it
+      if (response.autoSwitchedToUncensored && !dismissedUncensoredBanner) {
+        setShowUncensoredBanner(true);
+      }
+      
+      // Mark conversation as having used uncensored content
+      if (response.autoSwitchedToUncensored || response.model === 'venice-uncensored' || isUncensoredMode) {
+        if (conv?.id) {
+          markAsUncensored(conv.id);
+        }
+      }
     } catch (error) {
       toast.error("Failed to generate response. Please try again.");
       console.error("Chat error:", error);
@@ -1659,6 +1693,30 @@ export default function Chat() {
                 Memory Off
               </Badge>
             )}
+          </div>
+        )}
+
+        {/* Uncensored Mode Auto-Switch Banner */}
+        {showUncensoredBanner && (
+          <div className="bg-gradient-to-r from-pink-500/10 to-purple-500/10 border-b border-pink-500/20 px-4 py-2">
+            <div className="max-w-3xl mx-auto flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm">
+                <Shield className="w-4 h-4 text-pink-400" />
+                <span className="text-pink-200">Using enhanced model for unrestricted response</span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 text-pink-300 hover:text-pink-100 hover:bg-pink-500/20"
+                onClick={() => {
+                  setShowUncensoredBanner(false);
+                  setDismissedUncensoredBanner(true);
+                  localStorage.setItem('chofesh_dismissed_uncensored_banner', 'true');
+                }}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         )}
 

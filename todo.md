@@ -1851,3 +1851,22 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] If not subscribed, show inline upgrade button in modal
 - [x] Direct checkout flow without leaving page
 
+
+
+## Phase 53: Uncensored UX Improvements
+
+### 1. Uncensored Mode Banner
+- [x] Show subtle dismissible banner when auto-switching to uncensored mode
+- [x] Message: "Using enhanced model for unrestricted response"
+- [x] Allow user to dismiss and remember preference (localStorage)
+
+### 2. Subscription Success Redirect
+- [x] After Stripe checkout completes, redirect to image generation page
+- [x] Auto-enable NSFW mode on redirect
+- [x] Show success toast message
+
+### 3. Uncensored Chat History Indicator
+- [x] Mark conversations that used uncensored mode with badge/icon
+- [x] Show pink shield indicator in sidebar chat list
+- [x] Tooltip explains "Contains uncensored content"
+

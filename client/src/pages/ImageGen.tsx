@@ -148,6 +148,24 @@ export default function ImageGen() {
       setLocation("/");
     }
   }, [authLoading, isAuthenticated, setLocation]);
+  
+  // Handle subscription success redirect
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('nsfw_subscribed') === 'true') {
+      // Auto-enable NSFW mode after successful subscription
+      setNsfwMode(true);
+      setModel('lustify-sdxl');
+      toast.success('NSFW subscription activated! You can now generate uncensored images.', {
+        duration: 5000,
+      });
+      // Clean up URL
+      window.history.replaceState({}, '', '/image');
+    } else if (params.get('nsfw_canceled') === 'true') {
+      toast.info('Subscription checkout was canceled.');
+      window.history.replaceState({}, '', '/image');
+    }
+  }, []);
 
   const generateRandomSeed = () => {
     const newSeed = Math.floor(Math.random() * 2147483647);

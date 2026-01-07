@@ -104,6 +104,8 @@ export interface Conversation {
   // Chat organization
   folderId?: string;
   pinned?: boolean;
+  // Uncensored content indicator
+  usedUncensored?: boolean;
 }
 
 // Folder interface for organizing chats
