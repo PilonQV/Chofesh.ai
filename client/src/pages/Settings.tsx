@@ -134,7 +134,7 @@ function NsfwSubscriptionSection() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <ImageIcon className="w-5 h-5 text-pink-500" />
-          NSFW Image Generation
+          Uncensored Image Generation
           <span className="text-xs bg-pink-500/20 text-pink-500 px-2 py-0.5 rounded-full ml-2">
             Add-on
           </span>
@@ -164,7 +164,7 @@ function NsfwSubscriptionSection() {
               </p>
               <p className="text-sm text-muted-foreground">
                 {nsfwStatus?.ageVerified 
-                  ? "You can access NSFW content" 
+                  ? "You can access uncensored content" 
                   : "Required to access adult content"}
               </p>
             </div>
@@ -184,7 +184,7 @@ function NsfwSubscriptionSection() {
                     Age Verification Required
                   </DialogTitle>
                   <DialogDescription>
-                    You must be 18 years or older to access NSFW content.
+                    You must be 18 years or older to access uncensored content.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="py-4 space-y-4">
@@ -234,7 +234,7 @@ function NsfwSubscriptionSection() {
           )}
         </div>
         
-        {/* NSFW Subscription Status */}
+        {/* Uncensored Subscription Status */}
         <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
           <div className="flex items-center gap-3">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
@@ -246,7 +246,7 @@ function NsfwSubscriptionSection() {
             </div>
             <div>
               <p className="font-medium">
-                NSFW Add-on: {nsfwStatus?.hasNsfwSubscription ? "Active" : "Not Subscribed"}
+                Uncensored Add-on: {nsfwStatus?.hasNsfwSubscription ? "Active" : "Not Subscribed"}
               </p>
               <p className="text-sm text-muted-foreground">
                 {nsfwStatus?.hasNsfwSubscription 
@@ -316,7 +316,7 @@ function NsfwSubscriptionSection() {
               What's Included
             </h4>
             <ul className="text-sm text-muted-foreground space-y-1">
-              <li>• 100 NSFW images per month</li>
+              <li>• 100 uncensored images per month</li>
               <li>• Lustify SDXL & v7 models</li>
               <li>• Multiple aspect ratios</li>
               <li>• Private generation (no logging)</li>
@@ -343,7 +343,7 @@ function NsfwSubscriptionSection() {
             <div>
               <h4 className="font-semibold text-pink-500 mb-1">Content Guidelines</h4>
               <p className="text-sm text-muted-foreground">
-                NSFW content is for personal use only. You are responsible for ensuring 
+                Uncensored content is for personal use only. You are responsible for ensuring 
                 your use complies with local laws. Generated content must not depict minors 
                 or non-consensual scenarios.
               </p>
