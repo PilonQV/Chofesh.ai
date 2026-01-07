@@ -118,7 +118,7 @@ import { users } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { invokeLLM } from "./_core/llm";
 import { invokeGrok, isGrokAvailable } from "./_core/grok";
-import { invokeDeepSeekR1, invokeVeniceUncensored, isComplexReasoningQuery, isRefusalResponse, OPENROUTER_MODELS } from "./_core/openrouter";
+import { invokeDeepSeekR1, invokeVeniceUncensored, isComplexReasoningQuery, isRefusalResponse, isNsfwContentRequest, OPENROUTER_MODELS } from "./_core/openrouter";
 import { generateImage } from "./_core/imageGeneration";
 import { generateVeniceImage, isNsfwModel, VENICE_IMAGE_MODELS, VENICE_IMAGE_SIZES } from "./_core/veniceImage";
 import { transcribeAudio } from "./_core/voiceTranscription";
@@ -783,10 +783,32 @@ export const appRouter = router({
         // Increment daily query count
         await incrementDailyQueries(ctx.user.id);
         
+        // Get the last user message for content analysis
+        const lastUserMessage = input.messages.filter(m => m.role === "user").pop();
+        const promptContent = lastUserMessage?.content || "";
+        
+        // Check if user is age-verified for uncensored content
+        const userAgeVerified = ctx.user.ageVerified === true;
+        
+        // Map "uncensored" model alias to actual model id
+        let effectiveModel = input.model;
+        if (input.model === "uncensored") {
+          effectiveModel = "venice-uncensored";
+        }
+        
+        // Smart NSFW routing: If age-verified user requests NSFW content, auto-switch to uncensored model
+        // This provides a seamless experience without requiring manual mode switching
+        let autoSwitchedToUncensored = false;
+        if (!effectiveModel && userAgeVerified && isNsfwContentRequest(promptContent)) {
+          effectiveModel = "venice-uncensored";
+          autoSwitchedToUncensored = true;
+          console.log("Auto-routing to uncensored model for age-verified user");
+        }
+        
         // Analyze complexity and select model
         const complexity = analyzeQueryComplexity(input.messages);
-        const selectedModel = input.model 
-          ? AVAILABLE_MODELS.find(m => m.id === input.model) || selectModel(complexity, routingMode)
+        const selectedModel = effectiveModel 
+          ? AVAILABLE_MODELS.find(m => m.id === effectiveModel) || selectModel(complexity, routingMode)
           : selectModel(complexity, routingMode);
         
         // Check cache if enabled
@@ -804,16 +826,20 @@ export const appRouter = router({
           }
         }
         
-        // Get the last user message for audit logging
-        const lastUserMessage = input.messages.filter(m => m.role === "user").pop();
-        const promptContent = lastUserMessage?.content || "";
-        
         // Base system prompt with platform guidance
         const baseSystemPrompt = `You are a helpful AI assistant on Chofesh.ai, a privacy-focused AI platform.
 
-IMPORTANT: If the user asks you to create, generate, or make an image, you cannot do this directly in chat. Politely inform them: "I can't generate images directly in chat, but you can use the **Generate Images** feature in the sidebar (or visit /image) to create images with AI!"
+IMPORTANT PLATFORM FEATURES:
+1. **Image Generation**: If the user asks you to create, generate, or make an image, you cannot do this directly in chat. Politely inform them: "I can't generate images directly in chat, but you can use the **Generate Images** feature in the sidebar (or visit /image) to create images with AI!"
 
-Be helpful, accurate, and respect user privacy.`;
+2. **Uncensored Features**: Chofesh.ai offers uncensored AI capabilities for adult users (18+). If a user asks about explicit, adult, or NSFW content:
+   - If they haven't enabled Uncensored Mode yet, let them know: "Chofesh.ai supports uncensored conversations! To access this feature, click the Settings gear (⚙️) in the chat input area, verify you're 18+, and enable Uncensored Mode."
+   - Never refuse requests outright - guide users to the appropriate feature instead.
+   - The uncensored feature is a key differentiator of Chofesh.ai - be proud to mention it when relevant.
+
+3. **Privacy First**: All conversations are private and encrypted. We don't train on user data.
+
+Be helpful, accurate, and respect user privacy. When users ask "what can you do" or about your capabilities, mention the uncensored features as one of Chofesh's unique offerings.`;
         
         // Memory injection
         let messagesWithContext = [...input.messages];
@@ -1191,6 +1217,7 @@ Provide a comprehensive, well-researched response.`;
             },
             usedFallback,
             fallbackReason: usedFallback ? "Original model declined - switched to unrestricted model" : undefined,
+            autoSwitchedToUncensored,
           };
         } catch (error) {
           // Log failed attempts too
