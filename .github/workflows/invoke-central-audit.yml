@@ -1,5 +1,12 @@
 name: Run central repo audit
 
+# Grant the permissions required by the reusable workflow's jobs.
+# The reusable workflow requested `security-events: write` and possibly other permissions.
+permissions:
+  contents: read
+  actions: write
+  security-events: write
+
 on:
   workflow_dispatch:
     inputs:
