@@ -1804,3 +1804,50 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Update routers.ts to use the actual price ID instead of price_data
 - [ ] Test NSFW subscription checkout flow
 
+
+## Phase 52: Seamless Uncensored Experience
+
+### System Prompt Education
+- [ ] Update system prompt to mention uncensored features are available
+- [ ] When user asks about explicit content, guide them to age verification
+- [ ] Explain Chofesh's privacy-first uncensored capabilities
+
+### Automatic Model Switching
+- [ ] If user is age verified, automatically use uncensored model for chat
+- [ ] No manual toggle needed - system detects and switches seamlessly
+- [ ] User doesn't notice the switch - just works
+
+### Venice Chat Integration
+- [ ] Create Venice chat API integration for uncensored conversations
+- [ ] Route age-verified users to Venice automatically
+- [ ] Maintain conversation context across model switches
+
+### Smooth Upgrade Flow
+- [ ] For uncensored images, check subscription status
+- [ ] If not subscribed, show upgrade prompt inline
+- [ ] After upgrade, feature works immediately without page reload
+
+
+
+## Phase 52: Seamless Uncensored Experience
+
+### System Prompt Education
+- [x] Update system prompt to mention uncensored features are available
+- [x] When user asks about explicit content, guide them to age verification
+- [x] Explain Chofesh's privacy-first uncensored capabilities
+
+### Automatic Model Switching
+- [x] If user is age verified, automatically use uncensored model for chat
+- [x] No manual toggle needed - system detects NSFW content and switches seamlessly
+- [x] User doesn't notice the switch - just works
+
+### Venice Chat Integration
+- [x] Venice chat API integration for uncensored conversations (via OpenRouter)
+- [x] Route age-verified users to Venice automatically when NSFW content detected
+- [x] Maintain conversation context across model switches
+
+### Smooth Upgrade Flow
+- [x] For uncensored images, check subscription status
+- [x] If not subscribed, show inline upgrade button in modal
+- [x] Direct checkout flow without leaving page
+

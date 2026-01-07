@@ -117,6 +117,7 @@ export default function ImageGen() {
   });
   const { data: nsfwModels } = trpc.nsfw.getModels.useQuery();
   const nsfwGenerateMutation = trpc.nsfw.generate.useMutation();
+  const nsfwCheckoutMutation = trpc.nsfw.createCheckout.useMutation();
   
   // Image editing state
   const [editMode, setEditMode] = useState(false);
@@ -1024,17 +1025,60 @@ export default function ImageGen() {
               </ul>
             </div>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setShowNsfwModal(false)} className="flex-1">
+          <div className="flex flex-col gap-2">
+            {/* If not age verified, show age verification button */}
+            {!nsfwStatus?.ageVerified && (
+              <Link href="/settings" className="w-full">
+                <Button className="w-full bg-yellow-500 hover:bg-yellow-600 text-black">
+                  Verify Age (18+) in Settings
+                </Button>
+              </Link>
+            )}
+            
+            {/* If age verified but not subscribed, show subscribe button */}
+            {nsfwStatus?.ageVerified && !nsfwStatus?.hasNsfwSubscription && (
+              <Button 
+                className="w-full bg-pink-500 hover:bg-pink-600 text-white"
+                disabled={nsfwCheckoutMutation.isPending}
+                onClick={async () => {
+                  try {
+                    const result = await nsfwCheckoutMutation.mutateAsync();
+                    if (result.checkoutUrl) {
+                      window.location.href = result.checkoutUrl;
+                    }
+                  } catch (error) {
+                    toast.error("Failed to start checkout. Please try again.");
+                  }
+                }}
+              >
+                {nsfwCheckoutMutation.isPending ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Sparkles className="w-4 h-4 mr-2" />
+                )}
+                Subscribe Now - $7.99/month
+              </Button>
+            )}
+            
+            {/* If fully unlocked, show enable button */}
+            {nsfwStatus?.ageVerified && nsfwStatus?.hasNsfwSubscription && (
+              <Button 
+                className="w-full bg-pink-500 hover:bg-pink-600 text-white"
+                onClick={() => {
+                  setNsfwMode(true);
+                  setModel("lustify-sdxl");
+                  setShowNsfwModal(false);
+                  toast.success("NSFW mode enabled!");
+                }}
+              >
+                <ShieldAlert className="w-4 h-4 mr-2" />
+                Enable NSFW Mode
+              </Button>
+            )}
+            
+            <Button variant="outline" onClick={() => setShowNsfwModal(false)} className="w-full">
               Cancel
             </Button>
-            <Link href="/settings" className="flex-1">
-              <Button className="w-full bg-pink-500 hover:bg-pink-600 text-white">
-                {nsfwStatus?.ageVerified && !nsfwStatus?.hasNsfwSubscription
-                  ? "Subscribe Now"
-                  : "Go to Settings"}
-              </Button>
-            </Link>
           </div>
         </DialogContent>
       </Dialog>

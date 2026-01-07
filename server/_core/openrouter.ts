@@ -203,3 +203,51 @@ export function isComplexReasoningQuery(query: string): boolean {
   
   return false;
 }
+
+
+/**
+ * NSFW/Adult content patterns that indicate user is requesting explicit content
+ * Used to auto-route age-verified users to uncensored model seamlessly
+ */
+const NSFW_CONTENT_PATTERNS = [
+  // Explicit sexual content requests
+  /\b(nsfw|explicit|adult|erotic|sexual|porn|xxx|hentai|lewd)\b/i,
+  /\b(nude|naked|undress|strip|topless|bottomless)\b/i,
+  /\b(sex|intercourse|foreplay|orgasm|climax)\b/i,
+  /\b(fetish|kink|bdsm|bondage|dominat|submissive)\b/i,
+  
+  // Roleplay and fantasy indicators
+  /\b(roleplay|role-play|rp)\s+(as|with|scenario)/i,
+  /\b(seduc|flirt|teas|arousing|sensual)\b/i,
+  /\b(intimate|passion|lust|desire)\s+(scene|story|content)/i,
+  
+  // Creative writing requests
+  /\b(write|create|generate)\s+(me\s+)?(an?\s+)?(erotic|explicit|adult|nsfw|sexual)/i,
+  /\b(story|fiction|narrative|scene)\s+(with|about|involving)\s+(sex|explicit|adult)/i,
+  
+  // Body parts in sexual context
+  /\b(breast|boob|nipple|genital|penis|vagina|ass|butt)\b/i,
+  
+  // Relationship/dating context with explicit intent
+  /\b(girlfriend|boyfriend|wife|husband)\s+(experience|fantasy|roleplay)/i,
+  
+  // Uncensored/unrestricted requests
+  /\b(uncensored|unfiltered|unrestricted|no\s+limits|without\s+restrictions)\b/i,
+  /\b(don't\s+hold\s+back|be\s+explicit|get\s+dirty|talk\s+dirty)\b/i,
+];
+
+/**
+ * Check if a query appears to request NSFW/adult content
+ * Used to automatically route age-verified users to uncensored model
+ */
+export function isNsfwContentRequest(query: string): boolean {
+  const lowerQuery = query.toLowerCase();
+  
+  for (const pattern of NSFW_CONTENT_PATTERNS) {
+    if (pattern.test(lowerQuery)) {
+      return true;
+    }
+  }
+  
+  return false;
+}
