@@ -364,7 +364,7 @@ export default function Chat() {
     togglePin,
     sortedConversations,
     markAsUncensored,
-  } = useConversations();
+  } = useConversations(user?.openId);
 
   const { data: models } = trpc.models.listText.useQuery();
   const { data: templates } = trpc.templates.list.useQuery();

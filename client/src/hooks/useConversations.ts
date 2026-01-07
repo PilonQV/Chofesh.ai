@@ -7,17 +7,29 @@ import {
   loadFolders,
   saveFolders,
   generateId,
+  setCurrentUserId,
 } from "@/lib/encryption";
 
-export function useConversations() {
+export function useConversations(userId?: string | null) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
   const [folders, setFolders] = useState<ChatFolder[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load conversations and folders on mount
+  // Set user ID for scoped storage whenever it changes
+  useEffect(() => {
+    setCurrentUserId(userId || null);
+  }, [userId]);
+
+  // Load conversations and folders when user changes
   useEffect(() => {
     async function load() {
+      setIsLoading(true);
+      // Reset state when user changes
+      setConversations([]);
+      setCurrentConversation(null);
+      setFolders([]);
+      
       try {
         const [loadedConvs, loadedFolders] = await Promise.all([
           loadConversations(),
@@ -35,7 +47,7 @@ export function useConversations() {
       }
     }
     load();
-  }, []);
+  }, [userId]); // Reload when user changes
 
   // Save conversations whenever they change
   const persistConversations = useCallback(async (convs: Conversation[]) => {
