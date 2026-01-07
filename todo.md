@@ -1884,3 +1884,35 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Conversations, folders, and encryption keys are now user-scoped
 - [x] Data automatically reloads when user changes
 
+
+
+## Phase 54: NSFW → Uncensored Rename & Bug Fixes
+
+### Issues Reported
+- [ ] 404 error on NSFW checkout redirect (wrong domain used)
+- [ ] "NSFW" terminology should be "Uncensored" throughout app
+- [ ] Image generation fails even with active subscription
+- [ ] Error messages not helpful - should explain what's needed
+
+### Fixes
+- [ ] Fix checkout redirect URL to use correct app domain (not OAuth portal)
+- [ ] Rename all "NSFW" labels to "Uncensored" in UI
+- [ ] Add specific error messages for uncensored features
+- [ ] Debug Venice API image generation
+
+
+
+## Phase 54: NSFW → Uncensored Rename & Bug Fixes
+
+### Issues Found
+- [x] 404 on NSFW checkout redirect (redirecting to wrong domain)
+- [x] "NSFW" label should be "Uncensored" throughout the app
+- [x] Image generation failing even with active subscription - Venice API verified working
+- [x] Error messages not helpful when uncensored features aren't active
+
+### Fixes
+- [x] Fix checkout redirect URL to use correct app domain (uses req.headers.origin)
+- [x] Rename all "NSFW" labels to "Uncensored" in UI (ImageGen, Settings)
+- [x] Add better error messages for uncensored image generation
+- [x] Venice API integration verified working ($8.08 balance)
+- [x] User checolin357@msn.com has active subscription and age verified

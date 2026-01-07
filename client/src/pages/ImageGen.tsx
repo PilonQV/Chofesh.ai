@@ -152,16 +152,16 @@ export default function ImageGen() {
   // Handle subscription success redirect
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('nsfw_subscribed') === 'true') {
-      // Auto-enable NSFW mode after successful subscription
+    if (params.get('uncensored_subscribed') === 'true' || params.get('nsfw_subscribed') === 'true') {
+      // Auto-enable uncensored mode after successful subscription
       setNsfwMode(true);
       setModel('lustify-sdxl');
-      toast.success('NSFW subscription activated! You can now generate uncensored images.', {
+      toast.success('Uncensored subscription activated! You can now generate uncensored images.', {
         duration: 5000,
       });
       // Clean up URL
       window.history.replaceState({}, '', '/image');
-    } else if (params.get('nsfw_canceled') === 'true') {
+    } else if (params.get('uncensored_canceled') === 'true' || params.get('nsfw_canceled') === 'true') {
       toast.info('Subscription checkout was canceled.');
       window.history.replaceState({}, '', '/image');
     }
@@ -186,6 +186,18 @@ export default function ImageGen() {
       model === 'hidream' || model === 'flux-2-pro' || model === 'wai-Illustrious' || model === 'z-image-turbo';
     
     if (isNsfwModel) {
+      // Check if user has access to uncensored features
+      if (!nsfwStatus?.ageVerified) {
+        toast.error("Age verification required. Go to Settings to verify you're 18+.");
+        setShowNsfwModal(true);
+        return;
+      }
+      if (!nsfwStatus?.hasNsfwSubscription) {
+        toast.error("Uncensored subscription required. Subscribe to generate uncensored images.");
+        setShowNsfwModal(true);
+        return;
+      }
+      
       try {
         // Map aspect ratio to size format
         const sizeMap: Record<string, string> = {
@@ -224,7 +236,17 @@ export default function ImageGen() {
         return;
       } catch (error: any) {
         console.error("Image generation error:", error);
-        toast.error(error.message || "Failed to generate image. Please try again.");
+        // Provide specific error messages based on error type
+        if (error.message?.includes('subscription') || error.message?.includes('limit')) {
+          toast.error("You've reached your monthly limit. Upgrade or wait for reset.");
+        } else if (error.message?.includes('age') || error.message?.includes('verify')) {
+          toast.error("Age verification required. Go to Settings to verify.");
+          setShowNsfwModal(true);
+        } else if (error.message?.includes('VENICE_API_KEY') || error.message?.includes('not configured')) {
+          toast.error("Uncensored image service is temporarily unavailable. Please try again later.");
+        } else {
+          toast.error(error.message || "Failed to generate uncensored image. Please try again.");
+        }
         return;
       }
     }
@@ -562,7 +584,7 @@ export default function ImageGen() {
             <h1 className="font-semibold">Image Generation</h1>
           </div>
           <div className="flex items-center gap-2">
-            {/* NSFW Toggle */}
+            {/* Uncensored Toggle */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -592,8 +614,8 @@ export default function ImageGen() {
               </TooltipTrigger>
               <TooltipContent>
                 {nsfwStatus?.hasNsfwSubscription && nsfwStatus?.ageVerified
-                  ? `NSFW Mode: ${nsfwMode ? "ON" : "OFF"} (${nsfwStatus.nsfwImagesUsed}/${nsfwStatus.nsfwImagesLimit} used)`
-                  : "Unlock NSFW Image Generation"}
+                  ? `Uncensored: ${nsfwMode ? "ON" : "OFF"} (${nsfwStatus.nsfwImagesUsed}/${nsfwStatus.nsfwImagesLimit} used)`
+                  : "Unlock Uncensored Image Generation"}
               </TooltipContent>
             </Tooltip>
             
@@ -602,7 +624,7 @@ export default function ImageGen() {
                 <SelectValue placeholder="Model" />
               </SelectTrigger>
               <SelectContent>
-                {/* NSFW Models */}
+                {/* Uncensored Models */}
                 {nsfwMode && nsfwModels && (
                   <>
                     <div className="px-2 py-1.5 text-xs font-semibold text-pink-500 border-b mb-1 pb-2">
@@ -961,13 +983,13 @@ export default function ImageGen() {
         </div>
       </main>
       
-      {/* NSFW Unlock Modal */}
+      {/* Uncensored Unlock Modal */}
       <Dialog open={showNsfwModal} onOpenChange={setShowNsfwModal}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <ShieldAlert className="w-5 h-5 text-pink-500" />
-              Unlock NSFW Image Generation
+              Unlock Uncensored Image Generation
             </DialogTitle>
             <DialogDescription>
               Generate uncensored images with premium AI models.
@@ -1012,7 +1034,7 @@ export default function ImageGen() {
                   }`} />
                   <div>
                     <p className="font-medium">
-                      {nsfwStatus?.hasNsfwSubscription ? "NSFW Add-on Active" : "NSFW Add-on"}
+                      {nsfwStatus?.hasNsfwSubscription ? "Uncensored Add-on Active" : "Uncensored Add-on"}
                     </p>
                     <p className="text-sm text-muted-foreground">
                       {nsfwStatus?.hasNsfwSubscription 
@@ -1030,7 +1052,7 @@ export default function ImageGen() {
               <ul className="text-sm text-muted-foreground space-y-1">
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-pink-500" />
-                  100 NSFW images per month
+                  100 uncensored images per month
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-pink-500" />
@@ -1086,11 +1108,11 @@ export default function ImageGen() {
                   setNsfwMode(true);
                   setModel("lustify-sdxl");
                   setShowNsfwModal(false);
-                  toast.success("NSFW mode enabled!");
+                  toast.success("Uncensored mode enabled!");
                 }}
               >
                 <ShieldAlert className="w-4 h-4 mr-2" />
-                Enable NSFW Mode
+                Enable Uncensored Mode
               </Button>
             )}
             
