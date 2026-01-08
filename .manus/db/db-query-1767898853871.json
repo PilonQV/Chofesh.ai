@@ -1,0 +1,9 @@
+{
+  "query": "\n-- First, clear any existing credit packs\nDELETE FROM credit_packs;\n\n-- Insert the 4 credit packs with actual Stripe price IDs\nINSERT INTO credit_packs (name, displayName, credits, priceUsd, stripePriceId, isActive, sortOrder) VALUES \n('starter', 'Starter Pack', 300, 500, 'price_1SnORVGcthikBvdKXjyHkDEx', true, 0),\n('standard', 'Standard Pack', 1000, 1200, 'price_1SnOREGcthikBvdKdY08lZ8K', true, 1),\n('pro', 'Pro Pack', 3500, 3500, 'price_1SnORFGcthikBvdKIcILvtEl', true, 2),\n('power', 'Power Pack', 12000, 9900, 'price_1SnORGGcthikBvdKojYLZ6Gl', true, 3);\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 48hnjcx4CHbyzt9.87573283f85b --database ffmn4BbJe88bt6JMq4xy2a --execute \n-- First, clear any existing credit packs\nDELETE FROM credit_packs;\n\n-- Insert the 4 credit packs with actual Stripe price IDs\nINSERT INTO credit_packs (name, displayName, credits, priceUsd, stripePriceId, isActive, sortOrder) VALUES \n('starter', 'Starter Pack', 300, 500, 'price_1SnORVGcthikBvdKXjyHkDEx', true, 0),\n('standard', 'Standard Pack', 1000, 1200, 'price_1SnOREGcthikBvdKdY08lZ8K', true, 1),\n('pro', 'Pro Pack', 3500, 3500, 'price_1SnORFGcthikBvdKIcILvtEl', true, 2),\n('power', 'Power Pack', 12000, 9900, 'price_1SnORGGcthikBvdKojYLZ6Gl', true, 3);\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 64
+}

@@ -2121,3 +2121,12 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 
 ### Testing
 - [x] 14 unit tests for credits system (all passing)
+
+
+## Phase 65: Create Credit Pack Products in Stripe
+- [x] Create Starter Pack product ($5 for 150 credits) in Stripe
+- [x] Create Standard Pack product ($12 for 500 credits) in Stripe
+- [x] Create Pro Pack product ($35 for 1800 credits) in Stripe
+- [x] Create Power Pack product ($99 for 6000 credits) in Stripe
+- [x] Update application with correct Stripe price IDs
+- [x] Test credit purchase flow (Stripe checkout verified working)
