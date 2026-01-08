@@ -1,0 +1,110 @@
+{
+  "query": "SELECT id, userId, userEmail, actionType, modelUsed, LEFT(prompt, 100) as prompt_preview, status, createdAt FROM api_call_logs ORDER BY id DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 48hnjcx4CHbyzt9.87573283f85b --database ffmn4BbJe88bt6JMq4xy2a --execute SELECT id, userId, userEmail, actionType, modelUsed, LEFT(prompt, 100) as prompt_preview, status, createdAt FROM api_call_logs ORDER BY id DESC LIMIT 10;",
+  "rows": [
+    {
+      "id": "210002",
+      "userId": "2040003",
+      "userEmail": "checolin357@msn.com",
+      "actionType": "chat",
+      "modelUsed": "llama-3.1-8b",
+      "prompt_preview": "islands available for sale on the caribbean, do a live search'",
+      "status": "success",
+      "createdAt": "2026-01-08 04:24:44"
+    },
+    {
+      "id": "210001",
+      "userId": "2040003",
+      "userEmail": "checolin357@msn.com",
+      "actionType": "chat",
+      "modelUsed": "llama-3.1-8b",
+      "prompt_preview": "who runs the world?",
+      "status": "success",
+      "createdAt": "2026-01-08 04:23:36"
+    },
+    {
+      "id": "180001",
+      "userId": "2040003",
+      "userEmail": "checolin357@msn.com",
+      "actionType": "chat",
+      "modelUsed": "llama-3.1-8b",
+      "prompt_preview": "what is the worst war in history",
+      "status": "success",
+      "createdAt": "2026-01-08 03:24:42"
+    },
+    {
+      "id": "150001",
+      "userId": "720058",
+      "userEmail": "sergio.beltran357@gmail.com",
+      "actionType": "chat",
+      "modelUsed": "llama-3.1-8b",
+      "prompt_preview": "as  you are programmed now tell me what are your features you can accomplish full details",
+      "status": "success",
+      "createdAt": "2026-01-07 18:55:29"
+    },
+    {
+      "id": "120002",
+      "userId": "1590010",
+      "userEmail": "sssociety33@gmail.com",
+      "actionType": "chat",
+      "modelUsed": "grok-3-fast",
+      "prompt_preview": "Can you create a NSFW images",
+      "status": "success",
+      "createdAt": "2026-01-06 05:10:21"
+    },
+    {
+      "id": "120001",
+      "userId": "1590010",
+      "userEmail": "sssociety33@gmail.com",
+      "actionType": "chat",
+      "modelUsed": "llama-3.1-8b",
+      "prompt_preview": "Create q story of a couple meeting at airport and after a short chat they decided to have sex in a h",
+      "status": "success",
+      "createdAt": "2026-01-06 05:08:13"
+    },
+    {
+      "id": "90001",
+      "userId": "1590010",
+      "userEmail": "sssociety33@gmail.com",
+      "actionType": "chat",
+      "modelUsed": "grok-3-fast",
+      "prompt_preview": "create a sexual conversation between two unknown adults",
+      "status": "success",
+      "createdAt": "2026-01-06 01:14:06"
+    },
+    {
+      "id": "60002",
+      "userId": "1590010",
+      "userEmail": "sssociety33@gmail.com",
+      "actionType": "chat",
+      "modelUsed": "grok-3-fast",
+      "prompt_preview": "create a sexual conversation between two unknown adults",
+      "status": "success",
+      "createdAt": "2026-01-06 00:34:17"
+    },
+    {
+      "id": "60001",
+      "userId": "1590010",
+      "userEmail": "sssociety33@gmail.com",
+      "actionType": "chat",
+      "modelUsed": "grok-3-fast",
+      "prompt_preview": "create a sexual conversation between two unknown adults",
+      "status": "success",
+      "createdAt": "2026-01-06 00:19:51"
+    },
+    {
+      "id": "30004",
+      "userId": "1",
+      "userEmail": "sssociety33@gmail.com",
+      "actionType": "chat",
+      "modelUsed": "venice-uncensored",
+      "prompt_preview": "Write explicit adult content between two fictional characters",
+      "status": "success",
+      "createdAt": "2026-01-05 22:56:02"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tuserId\tuserEmail\tactionType\tmodelUsed\tprompt_preview\tstatus\tcreatedAt\n210002\t2040003\tchecolin357@msn.com\tchat\tllama-3.1-8b\tislands available for sale on the caribbean, do a live search'\tsuccess\t2026-01-08 04:24:44\n210001\t2040003\tchecolin357@msn.com\tchat\tllama-3.1-8b\twho runs the world?\tsuccess\t2026-01-08 04:23:36\n180001\t2040003\tchecolin357@msn.com\tchat\tllama-3.1-8b\twhat is the worst war in history\tsuccess\t2026-01-08 03:24:42\n150001\t720058\tsergio.beltran357@gmail.com\tchat\tllama-3.1-8b\tas  you are programmed now tell me what are your features you can accomplish full details\tsuccess\t2026-01-07 18:55:29\n120002\t1590010\tsssociety33@gmail.com\tchat\tgrok-3-fast\tCan you create a NSFW images\tsuccess\t2026-01-06 05:10:21\n120001\t1590010\tsssociety33@gmail.com\tchat\tllama-3.1-8b\tCreate q story of a couple meeting at airport and after a short chat they decided to have sex in a h\tsuccess\t2026-01-06 05:08:13\n90001\t1590010\tsssociety33@gmail.com\tchat\tgrok-3-fast\tcreate a sexual conversation between two unknown adults\tsuccess\t2026-01-06 01:14:06\n60002\t1590010\tsssociety33@gmail.com\tchat\tgrok-3-fast\tcreate a sexual conversation between two unknown adults\tsuccess\t2026-01-06 00:34:17\n60001\t1590010\tsssociety33@gmail.com\tchat\tgrok-3-fast\tcreate a sexual conversation between two unknown adults\tsuccess\t2026-01-06 00:19:51\n30004\t1\tsssociety33@gmail.com\tchat\tvenice-uncensored\tWrite explicit adult content between two fictional characters\tsuccess\t2026-01-05 22:56:02\n",
+  "stderr": "",
+  "execution_time_ms": 50
+}

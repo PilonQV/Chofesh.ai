@@ -77,7 +77,11 @@ export async function generateVeniceImage(
 ): Promise<VeniceImageResponse> {
   const apiKey = ENV.veniceApiKey;
   
+  // Debug logging for production troubleshooting
+  console.log(`[Venice] API Key configured: ${!!apiKey}, length: ${apiKey?.length || 0}`);
+  
   if (!apiKey) {
+    console.error("[Venice] ERROR: VENICE_API_KEY is not set in environment variables");
     throw new Error("VENICE_API_KEY is not configured. Please add your Venice API key in Settings.");
   }
 
