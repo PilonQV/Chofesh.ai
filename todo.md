@@ -2173,3 +2173,10 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Update settings/billing page to credits-based system
 - [x] Remove old subscription references from settings
 - [x] Test all changes
+
+
+## Phase 71: Update ImageGen to Credits-Based
+- [x] Update uncensored modal to show credits instead of subscription
+- [x] Remove $7.99/month subscription references
+- [x] Show credits cost for uncensored images
+- [x] Test the updated modal

@@ -149,20 +149,17 @@ export default function ImageGen() {
     }
   }, [authLoading, isAuthenticated, setLocation]);
   
-  // Handle subscription success redirect
+  // Handle credits purchase success redirect
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('uncensored_subscribed') === 'true' || params.get('nsfw_subscribed') === 'true') {
-      // Auto-enable uncensored mode after successful subscription
-      setNsfwMode(true);
-      setModel('lustify-sdxl');
-      toast.success('Uncensored subscription activated! You can now generate uncensored images.', {
+    if (params.get('credits_purchased') === 'true') {
+      toast.success('Credits purchased! You can now generate uncensored images.', {
         duration: 5000,
       });
       // Clean up URL
       window.history.replaceState({}, '', '/image');
-    } else if (params.get('uncensored_canceled') === 'true' || params.get('nsfw_canceled') === 'true') {
-      toast.info('Subscription checkout was canceled.');
+    } else if (params.get('credits_canceled') === 'true') {
+      toast.info('Credit purchase was canceled.');
       window.history.replaceState({}, '', '/image');
     }
   }, []);
@@ -192,11 +189,7 @@ export default function ImageGen() {
         setShowNsfwModal(true);
         return;
       }
-      if (!nsfwStatus?.hasNsfwSubscription) {
-        toast.error("Uncensored subscription required. Subscribe to generate uncensored images.");
-        setShowNsfwModal(true);
-        return;
-      }
+      // Credits-based system - just need age verification, credits will be deducted on generation
       
       try {
         // Map aspect ratio to size format
@@ -237,8 +230,8 @@ export default function ImageGen() {
       } catch (error: any) {
         console.error("Image generation error:", error);
         // Provide specific error messages based on error type
-        if (error.message?.includes('subscription') || error.message?.includes('limit')) {
-          toast.error("You've reached your monthly limit. Upgrade or wait for reset.");
+        if (error.message?.includes('credits') || error.message?.includes('insufficient')) {
+          toast.error("Insufficient credits. Purchase more credits to continue.");
         } else if (error.message?.includes('age') || error.message?.includes('verify')) {
           toast.error("Age verification required. Go to Settings to verify.");
           setShowNsfwModal(true);
@@ -615,7 +608,7 @@ export default function ImageGen() {
                   size="sm"
                   className={`gap-2 ${nsfwMode ? "bg-pink-500 hover:bg-pink-600" : ""}`}
                   onClick={() => {
-                    if (!nsfwStatus?.ageVerified || !nsfwStatus?.hasNsfwSubscription) {
+                    if (!nsfwStatus?.ageVerified) {
                       setShowNsfwModal(true);
                     } else {
                       setNsfwMode(!nsfwMode);
@@ -627,7 +620,7 @@ export default function ImageGen() {
                     }
                   }}
                 >
-                  {nsfwStatus?.hasNsfwSubscription && nsfwStatus?.ageVerified ? (
+                  {nsfwStatus?.ageVerified ? (
                     <ShieldAlert className="w-4 h-4" />
                   ) : (
                     <Lock className="w-4 h-4" />
@@ -636,8 +629,8 @@ export default function ImageGen() {
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                {nsfwStatus?.hasNsfwSubscription && nsfwStatus?.ageVerified
-                  ? `Uncensored: ${nsfwMode ? "ON" : "OFF"} (${nsfwStatus.nsfwImagesUsed}/${nsfwStatus.nsfwImagesLimit} used)`
+                {nsfwStatus?.ageVerified
+                  ? `Uncensored: ${nsfwMode ? "ON" : "OFF"} (8-10 credits/image)`
                   : "Unlock Uncensored Image Generation"}
               </TooltipContent>
             </Tooltip>
@@ -1007,10 +1000,10 @@ export default function ImageGen() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <ShieldAlert className="w-5 h-5 text-pink-500" />
-              Unlock Uncensored Image Generation
+              Uncensored Image Generation
             </DialogTitle>
             <DialogDescription>
-              Generate uncensored images with premium AI models.
+              Generate uncensored images using your credits. 8-10 credits per image.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">
@@ -1039,28 +1032,21 @@ export default function ImageGen() {
               </div>
             </div>
             
-            {/* Subscription Status */}
-            <div className={`p-4 rounded-lg border ${
-              nsfwStatus?.hasNsfwSubscription 
-                ? "border-pink-500/30 bg-pink-500/10" 
-                : "border-muted bg-muted/50"
-            }`}>
+            {/* Credits Info */}
+            <div className="p-4 rounded-lg border border-pink-500/30 bg-pink-500/10">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <ImageIcon className={`w-5 h-5 ${
-                    nsfwStatus?.hasNsfwSubscription ? "text-pink-500" : "text-muted-foreground"
-                  }`} />
+                  <ImageIcon className="w-5 h-5 text-pink-500" />
                   <div>
-                    <p className="font-medium">
-                      {nsfwStatus?.hasNsfwSubscription ? "Uncensored Add-on Active" : "Uncensored Add-on"}
-                    </p>
+                    <p className="font-medium">Pay with Credits</p>
                     <p className="text-sm text-muted-foreground">
-                      {nsfwStatus?.hasNsfwSubscription 
-                        ? `${nsfwStatus.nsfwImagesUsed}/${nsfwStatus.nsfwImagesLimit} images used` 
-                        : "$7.99/month • 100 images"}
+                      8-10 credits per uncensored image
                     </p>
                   </div>
                 </div>
+                <Link href="/credits">
+                  <Button variant="outline" size="sm">Buy Credits</Button>
+                </Link>
               </div>
             </div>
             
@@ -1070,15 +1056,15 @@ export default function ImageGen() {
               <ul className="text-sm text-muted-foreground space-y-1">
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-pink-500" />
-                  100 uncensored images per month
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-pink-500" />
                   Lustify SDXL & v7 models
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-pink-500" />
                   Private generation (no logging)
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-pink-500" />
+                  Pay only for what you use
                 </li>
               </ul>
             </div>
@@ -1093,40 +1079,15 @@ export default function ImageGen() {
               </Link>
             )}
             
-            {/* If age verified but not subscribed, show subscribe button */}
-            {nsfwStatus?.ageVerified && !nsfwStatus?.hasNsfwSubscription && (
-              <Button 
-                className="w-full bg-pink-500 hover:bg-pink-600 text-white"
-                disabled={nsfwCheckoutMutation.isPending}
-                onClick={async () => {
-                  try {
-                    const result = await nsfwCheckoutMutation.mutateAsync();
-                    if (result.checkoutUrl) {
-                      window.location.href = result.checkoutUrl;
-                    }
-                  } catch (error) {
-                    toast.error("Failed to start checkout. Please try again.");
-                  }
-                }}
-              >
-                {nsfwCheckoutMutation.isPending ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                ) : (
-                  <Sparkles className="w-4 h-4 mr-2" />
-                )}
-                Subscribe Now - $7.99/month
-              </Button>
-            )}
-            
-            {/* If fully unlocked, show enable button */}
-            {nsfwStatus?.ageVerified && nsfwStatus?.hasNsfwSubscription && (
+            {/* If age verified, show enable button */}
+            {nsfwStatus?.ageVerified && (
               <Button 
                 className="w-full bg-pink-500 hover:bg-pink-600 text-white"
                 onClick={() => {
                   setNsfwMode(true);
                   setModel("lustify-sdxl");
                   setShowNsfwModal(false);
-                  toast.success("Uncensored mode enabled!");
+                  toast.success("Uncensored mode enabled! 8-10 credits per image.");
                 }}
               >
                 <ShieldAlert className="w-4 h-4 mr-2" />
