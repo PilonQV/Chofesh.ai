@@ -776,7 +776,7 @@ export const appRouter = router({
       }))
       .mutation(async ({ ctx, input }) => {
         const Stripe = (await import("stripe")).default;
-        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
+        const stripe = new Stripe(process.env.Secretkey_live_stripe || process.env.STRIPE_SECRET_KEY || "");
         
         // Get the pack details
         const packs = await getCreditPacks();
@@ -813,7 +813,7 @@ export const appRouter = router({
       }))
       .mutation(async ({ ctx, input }) => {
         const Stripe = (await import("stripe")).default;
-        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
+        const stripe = new Stripe(process.env.Secretkey_live_stripe || process.env.STRIPE_SECRET_KEY || "");
         
         // Retrieve the checkout session
         const session = await stripe.checkout.sessions.retrieve(input.sessionId);
@@ -2569,7 +2569,7 @@ Provide a comprehensive, well-researched response.`;
         tier: z.enum(["starter", "pro", "unlimited"]),
       }))
       .mutation(async ({ ctx, input }) => {
-        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+        const stripe = new Stripe(process.env.Secretkey_live_stripe || process.env.STRIPE_SECRET_KEY || "", {
           apiVersion: "2025-12-15.clover",
         });
 
@@ -2616,7 +2616,7 @@ Provide a comprehensive, well-researched response.`;
         });
       }
 
-      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+      const stripe = new Stripe(process.env.Secretkey_live_stripe || process.env.STRIPE_SECRET_KEY || "", {
         apiVersion: "2025-12-15.clover",
       });
 
@@ -2636,7 +2636,7 @@ Provide a comprehensive, well-researched response.`;
         });
       }
 
-      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+      const stripe = new Stripe(process.env.Secretkey_live_stripe || process.env.STRIPE_SECRET_KEY || "", {
         apiVersion: "2025-12-15.clover",
       });
 
@@ -3887,7 +3887,7 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
         });
       }
       
-      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+      const stripe = new Stripe(process.env.Secretkey_live_stripe || process.env.STRIPE_SECRET_KEY || "", {
         apiVersion: "2025-12-15.clover",
       });
       
@@ -3964,7 +3964,7 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
         });
       }
       
-      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+      const stripe = new Stripe(process.env.Secretkey_live_stripe || process.env.STRIPE_SECRET_KEY || "", {
         apiVersion: "2025-12-15.clover",
       });
       
