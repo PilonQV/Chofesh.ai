@@ -1365,14 +1365,14 @@ export default function Chat() {
                   <span className="hidden sm:inline">Settings</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-lg">
+              <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Chat Settings</DialogTitle>
                   <DialogDescription>
                     Customize AI behavior for this conversation
                   </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-6 py-4">
+                <div className="space-y-6 py-4 pb-8">
                   {/* System Prompt */}
                   <div className="space-y-2">
                     <Label htmlFor="system-prompt">System Prompt</Label>

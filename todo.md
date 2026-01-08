@@ -2186,3 +2186,10 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Update AI response bubble - remove black background, use lighter color matching palette
 - [x] Match chat input box blue with rest of UI
 - [x] Improve dark theme readability
+
+
+## Phase 73: Fix Chat and ImageGen Issues
+- [x] Fix manual model selection - show model dropdown when Manual is selected
+- [x] Improve settings panel spacing for better readability at bottom
+- [ ] Fix 18+ still showing $7.99 subscription message on ImageGen
+- [ ] Optimize page scrolling performance (reduce slowdown)
