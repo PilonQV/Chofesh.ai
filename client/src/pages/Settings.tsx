@@ -724,6 +724,90 @@ export default function Settings() {
             </CardContent>
           </Card>
 
+          {/* Chat Settings Section */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Brain className="w-5 h-5" />
+                Chat Settings
+              </CardTitle>
+              <CardDescription>
+                Customize AI behavior and response preferences
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Response Format */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label className="text-base">Default Response Format</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Choose how AI responses are formatted
+                  </p>
+                </div>
+                <Select 
+                  defaultValue={localStorage.getItem('defaultResponseFormat') || 'auto'}
+                  onValueChange={(v) => {
+                    localStorage.setItem('defaultResponseFormat', v);
+                    toast.success('Response format updated');
+                  }}
+                >
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="Format" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="auto">Auto</SelectItem>
+                    <SelectItem value="detailed">Detailed</SelectItem>
+                    <SelectItem value="concise">Concise</SelectItem>
+                    <SelectItem value="bullet">Bullet Points</SelectItem>
+                    <SelectItem value="table">Table</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Deep Research Default */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label className="text-base flex items-center gap-2">
+                    <Brain className="w-4 h-4 text-purple-500" />
+                    Deep Research Mode
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Enable comprehensive research for complex queries
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    const current = localStorage.getItem('deepResearchDefault') === 'true';
+                    localStorage.setItem('deepResearchDefault', (!current).toString());
+                    toast.success(current ? 'Deep research disabled by default' : 'Deep research enabled by default');
+                  }}
+                  className="gap-2"
+                >
+                  {localStorage.getItem('deepResearchDefault') === 'true' ? 'Enabled' : 'Disabled'}
+                </Button>
+              </div>
+              
+              {/* Uncensored Mode Info */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label className="text-base flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-rose-500" />
+                    Uncensored Mode
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Access uncensored AI responses (requires age verification)
+                  </p>
+                </div>
+                <Link href="#nsfw-section">
+                  <Button variant="outline" className="gap-2 border-rose-500/50 text-rose-500 hover:bg-rose-500/10">
+                    Configure
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* API Keys Section */}
           <Card className="mb-6">
             <CardHeader>

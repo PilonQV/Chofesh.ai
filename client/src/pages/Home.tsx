@@ -67,7 +67,7 @@ export default function Home() {
   const { isInstallable, isInstalled, promptInstall } = usePWAInstall();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background aurora-bg">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 glass" role="banner" aria-label="Main navigation">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -195,12 +195,15 @@ export default function Home() {
       {/* Hero Section */}
       <main role="main">
       <section className="pt-24 pb-12 md:pt-32 md:pb-20 px-4 relative overflow-hidden" aria-labelledby="hero-heading">
-        {/* Background gradient effects */}
-        <div className="absolute top-20 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-accent/20 rounded-full blur-3xl" />
+        {/* Aurora background gradient effects */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-gradient-to-br from-primary/30 via-purple-500/20 to-transparent rounded-full blur-3xl animate-pulse" style={{ animationDuration: '8s' }} />
+          <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-gradient-to-tl from-cyan-500/20 via-blue-500/20 to-transparent rounded-full blur-3xl animate-pulse" style={{ animationDuration: '10s', animationDelay: '2s' }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-gradient-to-r from-purple-500/10 via-primary/15 to-cyan-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '12s', animationDelay: '4s' }} />
+        </div>
         
         <div className="container mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-primary text-sm font-medium mb-6 border border-primary/20">
             <Shield className="w-4 h-4" />
             Privacy-First AI Platform
           </div>
@@ -723,10 +726,10 @@ function FeatureCard({
   highlighted?: boolean;
 }) {
   return (
-    <div className={`group p-4 md:p-6 rounded-xl border transition-all duration-300 relative cursor-pointer ${
+    <div className={`group p-4 md:p-6 rounded-xl border transition-all duration-300 relative cursor-pointer backdrop-blur-sm ${
       highlighted 
-        ? 'bg-gradient-to-br from-primary/10 to-primary/5 border-primary/40 hover:border-primary shadow-lg shadow-primary/10 hover:shadow-xl hover:shadow-primary/20 hover:-translate-y-1' 
-        : 'bg-card border-border hover:border-primary/50 hover:bg-card/80 hover:-translate-y-1 hover:shadow-lg'
+        ? 'bg-gradient-to-br from-primary/15 to-primary/5 border-primary/40 hover:border-primary shadow-lg shadow-primary/10 hover:shadow-xl hover:shadow-primary/20 hover:-translate-y-1' 
+        : 'bg-card/50 border-border/50 hover:border-primary/50 hover:bg-card/70 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/5'
     }`}>
       {badge && (
         <span className={`absolute top-3 right-3 md:top-4 md:right-4 px-2 py-0.5 md:py-1 text-xs font-medium rounded-full transition-transform duration-300 group-hover:scale-110 ${

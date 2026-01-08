@@ -1,0 +1,8 @@
+{
+  "query": "SELECT COUNT(*) as total, user_id FROM generated_images GROUP BY user_id",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host ***REMOVED*** --port 4000 --user ***REMOVED*** --database ***REMOVED*** --execute SELECT COUNT(*) as total, user_id FROM generated_images GROUP BY user_id",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'user_id' in 'group statement'"
+  ]
+}

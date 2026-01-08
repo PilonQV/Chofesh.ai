@@ -1,0 +1,14 @@
+{
+  "query": "SELECT userId, COUNT(*) as count FROM generated_images WHERE userId = 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host ***REMOVED*** --port 4000 --user ***REMOVED*** --database ***REMOVED*** --execute SELECT userId, COUNT(*) as count FROM generated_images WHERE userId = 1;",
+  "rows": [
+    {
+      "userId": "NULL",
+      "count": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "userId\tcount\nNULL\t0\n",
+  "stderr": "",
+  "execution_time_ms": 72
+}

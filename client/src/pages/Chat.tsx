@@ -1567,14 +1567,12 @@ export default function Chat() {
                           }`}>
                             {model.speed === 'fast' ? '⚡' : model.speed === 'medium' ? '🚀' : '🐢'}
                           </span>
-                          {/* Cost indicator */}
-                          <span className={`text-[10px] px-1.5 py-0.5 rounded ${
-                            model.costPer1kInput === 0 ? 'bg-green-500/20 text-green-400' :
-                            model.costPer1kInput < 0.001 ? 'bg-blue-500/20 text-blue-400' :
-                            'bg-purple-500/20 text-purple-400'
-                          }`}>
-                            {model.costPer1kInput === 0 ? 'FREE' : `$${(model.costPer1kInput * 1000).toFixed(2)}/M`}
-                          </span>
+                          {/* Free badge for free models */}
+                          {model.costPer1kInput === 0 && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-500/20 text-green-400">
+                              FREE
+                            </span>
+                          )}
                         </div>
                       </div>
                     </SelectItem>
@@ -1646,9 +1644,7 @@ export default function Chat() {
                     {lastResponse.cached && (
                       <Badge variant="outline" className="text-[10px] px-1">cached</Badge>
                     )}
-                    {!lastResponse.cached && lastResponse.cost > 0 && (
-                      <span className="text-green-400">${lastResponse.cost.toFixed(4)}</span>
-                    )}
+
                   </div>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -1658,7 +1654,7 @@ export default function Chat() {
                     {lastResponse.tokens && (
                       <div>Tokens: {lastResponse.tokens.total} ({lastResponse.tokens.input} in / {lastResponse.tokens.output} out)</div>
                     )}
-                    <div>Cost: ${lastResponse.cost.toFixed(6)}</div>
+
                     {lastResponse.webSearchUsed && <div className="text-blue-400">Web search used</div>}
                     {lastResponse.cached && <div className="text-green-400">Served from cache</div>}
                   </div>
@@ -2034,93 +2030,7 @@ export default function Chat() {
                 className="hidden"
               />
               
-              {/* Chat Settings Popover */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="relative"
-                  >
-                    <Sliders className="w-4 h-4" />
-                    {(deepResearchEnabled || isUncensoredMode || responseFormat !== "auto") && (
-                      <span className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full" />
-                    )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-64 p-3">
-                  <DropdownMenuLabel className="text-xs font-medium text-muted-foreground mb-2">Chat Settings</DropdownMenuLabel>
-                  
-                  {/* Response Format */}
-                  <div className="mb-3">
-                    <Label className="text-xs mb-1.5 block">Response Format</Label>
-                    <Select value={responseFormat} onValueChange={(v) => setResponseFormat(v as typeof responseFormat)}>
-                      <SelectTrigger className="h-8 text-xs">
-                        <SelectValue placeholder="Format" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="auto">Auto</SelectItem>
-                        <SelectItem value="detailed">Detailed</SelectItem>
-                        <SelectItem value="concise">Concise</SelectItem>
-                        <SelectItem value="bullet">Bullet Points</SelectItem>
-                        <SelectItem value="table">Table</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <DropdownMenuSeparator />
-                  
-                  {/* Deep Research Toggle */}
-                  <div className="flex items-center justify-between py-2">
-                    <div className="flex items-center gap-2">
-                      <Brain className="w-4 h-4 text-purple-500" />
-                      <span className="text-sm">Deep Research</span>
-                    </div>
-                    <Switch
-                      checked={deepResearchEnabled}
-                      onCheckedChange={setDeepResearchEnabled}
-                    />
-                  </div>
-                  
-                  <DropdownMenuSeparator />
-                  
-                  {/* Uncensored Mode Toggle */}
-                  <div className="flex items-center justify-between py-2">
-                    <div className="flex items-center gap-2">
-                      <Shield className="w-4 h-4 text-rose-500" />
-                      <span className="text-sm">Uncensored Mode</span>
-                    </div>
-                    {!ageVerified ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setShowAgeVerification(true)}
-                        className="h-7 text-xs border-rose-500/50 text-rose-500 hover:bg-rose-500/10"
-                      >
-                        Verify 18+
-                      </Button>
-                    ) : (
-                      <Switch
-                        checked={isUncensoredMode}
-                        onCheckedChange={(checked) => {
-                          setIsUncensoredMode(checked);
-                          if (checked) {
-                            setSelectedModel("uncensored");
-                            toast.success("Uncensored mode enabled");
-                          } else {
-                            setSelectedModel("auto");
-                            toast.info("Uncensored mode disabled");
-                          }
-                        }}
-                      />
-                    )}
-                  </div>
-                  
-                  {isUncensoredMode && (
-                    <p className="text-xs text-rose-500/70 mt-1">Content filters disabled</p>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
+
               
               {/* Input container with image/voice buttons inside - glassmorphism */}
               <div className="flex-1 relative flex items-end rounded-xl glass-input focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary/50 transition-all duration-300">

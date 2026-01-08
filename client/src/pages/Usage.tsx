@@ -18,17 +18,16 @@ import { trpc } from "@/lib/trpc";
 import { Link, useLocation } from "wouter";
 import { useState, useEffect, useMemo } from "react";
 import {
-  Sparkles,
   ArrowLeft,
   BarChart3,
   MessageSquare,
   Image,
   FileText,
   TrendingUp,
-  DollarSign,
   Zap,
   Loader2,
   Settings,
+  Sparkles,
 } from "lucide-react";
 
 type TimeRange = "7d" | "30d" | "90d" | "all";
@@ -65,6 +64,12 @@ export default function Usage() {
     { enabled: isAuthenticated }
   );
 
+  // Get actual image count from gallery
+  const { data: galleryImages } = trpc.image.myGallery.useQuery(
+    undefined,
+    { enabled: isAuthenticated }
+  );
+
   const { data: recentUsage, isLoading: recentLoading } = trpc.usage.recent.useQuery(
     { limit: 20 },
     { enabled: isAuthenticated }
@@ -94,10 +99,11 @@ export default function Usage() {
     return num.toString();
   };
 
-  const formatCost = (cost: number) => {
-    if (cost < 0.01) return "<$0.01";
-    return "$" + cost.toFixed(2);
-  };
+  // Calculate actual image count from gallery
+  const imageCount = galleryImages?.length || 0;
+  const chatCount = stats?.byType?.chat?.count || 0;
+  const documentCount = stats?.byType?.document_chat?.count || 0;
+  const totalActivity = chatCount + imageCount + documentCount;
 
   return (
     <div className="min-h-screen bg-background">
@@ -114,7 +120,7 @@ export default function Usage() {
               <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
                 <BarChart3 className="w-5 h-5 text-primary-foreground" />
               </div>
-              <span className="text-xl font-bold">Usage Dashboard</span>
+              <span className="text-xl font-bold">Activity Dashboard</span>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -133,7 +139,7 @@ export default function Usage() {
         <div className="container mx-auto max-w-6xl">
           {/* Time Range Selector */}
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold">Your Usage</h1>
+            <h1 className="text-2xl font-bold">Your Activity</h1>
             <Select value={timeRange} onValueChange={(v) => setTimeRange(v as TimeRange)}>
               <SelectTrigger className="w-40">
                 <SelectValue />
@@ -147,39 +153,39 @@ export default function Usage() {
             </Select>
           </div>
 
-          {/* Stats Cards */}
+          {/* Stats Cards - No cost tracking */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <StatCard
-              icon={<Zap className="w-5 h-5" />}
-              title="Total Tokens"
-              value={formatNumber(stats?.totalTokens || 0)}
-              description="Tokens used"
-              color="text-yellow-500"
-              bgColor="bg-yellow-500/10"
-            />
-            <StatCard
-              icon={<TrendingUp className="w-5 h-5" />}
-              title="Total Requests"
-              value={formatNumber(stats?.totalRequests || 0)}
-              description="API calls made"
+              icon={<MessageSquare className="w-5 h-5" />}
+              title="Chat Messages"
+              value={formatNumber(chatCount)}
+              description="Conversations"
               color="text-blue-500"
               bgColor="bg-blue-500/10"
             />
             <StatCard
-              icon={<DollarSign className="w-5 h-5" />}
-              title="Estimated Cost"
-              value={formatCost(stats?.totalCost || 0)}
-              description="Based on usage"
+              icon={<Image className="w-5 h-5" />}
+              title="Images Created"
+              value={formatNumber(imageCount)}
+              description="In your gallery"
+              color="text-purple-500"
+              bgColor="bg-purple-500/10"
+            />
+            <StatCard
+              icon={<FileText className="w-5 h-5" />}
+              title="Documents"
+              value={formatNumber(documentCount)}
+              description="Document chats"
               color="text-green-500"
               bgColor="bg-green-500/10"
             />
             <StatCard
-              icon={<BarChart3 className="w-5 h-5" />}
-              title="Avg per Day"
-              value={formatNumber(Math.round((stats?.totalRequests || 0) / (timeRange === "7d" ? 7 : timeRange === "30d" ? 30 : timeRange === "90d" ? 90 : 30)))}
-              description="Requests/day"
-              color="text-purple-500"
-              bgColor="bg-purple-500/10"
+              icon={<Sparkles className="w-5 h-5" />}
+              title="Total Activity"
+              value={formatNumber(totalActivity)}
+              description="All interactions"
+              color="text-yellow-500"
+              bgColor="bg-yellow-500/10"
             />
           </div>
 
@@ -187,29 +193,29 @@ export default function Usage() {
           <div className="grid md:grid-cols-2 gap-6 mb-8">
             <Card>
               <CardHeader>
-                <CardTitle>Usage by Type</CardTitle>
-                <CardDescription>Breakdown of your activity</CardDescription>
+                <CardTitle>Activity Breakdown</CardTitle>
+                <CardDescription>Your usage by feature</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <UsageTypeRow
+                  <ActivityRow
                     icon={<MessageSquare className="w-5 h-5" />}
-                    label="Chat"
-                    count={stats?.byType?.chat?.count || 0}
+                    label="AI Chat"
+                    count={chatCount}
                     tokens={stats?.byType?.chat?.tokens || 0}
                     color="text-blue-500"
                   />
-                  <UsageTypeRow
+                  <ActivityRow
                     icon={<Image className="w-5 h-5" />}
                     label="Image Generation"
-                    count={stats?.byType?.image_generation?.count || 0}
+                    count={imageCount}
                     tokens={0}
                     color="text-purple-500"
                   />
-                  <UsageTypeRow
+                  <ActivityRow
                     icon={<FileText className="w-5 h-5" />}
                     label="Document Chat"
-                    count={stats?.byType?.document_chat?.count || 0}
+                    count={documentCount}
                     tokens={stats?.byType?.document_chat?.tokens || 0}
                     color="text-green-500"
                   />
@@ -254,7 +260,7 @@ export default function Usage() {
           <Card>
             <CardHeader>
               <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>Your latest API usage</CardDescription>
+              <CardDescription>Your latest interactions</CardDescription>
             </CardHeader>
             <CardContent>
               {recentLoading ? (
@@ -286,10 +292,10 @@ export default function Usage() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-medium">{formatNumber(record.totalTokens || 0)} tokens</p>
-                        <p className="text-xs text-muted-foreground">
-                          ~{formatCost(parseFloat(record.estimatedCost || "0"))}
-                        </p>
+                        {(record.totalTokens ?? 0) > 0 && (
+                          <p className="text-sm text-muted-foreground">{formatNumber(record.totalTokens ?? 0)} tokens</p>
+                        )}
+                        <p className="text-xs text-muted-foreground">{record.model}</p>
                       </div>
                     </div>
                   ))}
@@ -340,7 +346,7 @@ function StatCard({
   );
 }
 
-function UsageTypeRow({
+function ActivityRow({
   icon,
   label,
   count,
@@ -362,7 +368,7 @@ function UsageTypeRow({
         <span className="font-medium">{label}</span>
       </div>
       <div className="text-right">
-        <p className="font-medium">{count} requests</p>
+        <p className="font-medium">{count} {count === 1 ? 'item' : 'items'}</p>
         {tokens > 0 && (
           <p className="text-xs text-muted-foreground">{tokens.toLocaleString()} tokens</p>
         )}
