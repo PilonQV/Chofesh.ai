@@ -540,94 +540,132 @@ export default function Home() {
       <section id="pricing" className="py-12 md:py-20 px-4 bg-card/50" aria-labelledby="pricing-heading">
         <div className="container mx-auto">
           <h2 id="pricing-heading" className="text-3xl md:text-4xl font-bold text-center mb-4">
-            Simple, <span className="gradient-text">Transparent</span> Pricing
+            Simple, <span className="gradient-text">Pay-As-You-Go</span> Pricing
           </h2>
           <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-4">
-            Start free, upgrade when you need more.
+            30 free credits daily. Buy more when you need them.
           </p>
           <p className="text-sm text-muted-foreground text-center max-w-2xl mx-auto mb-12">
-            Save 20% with annual billing
+            Credits never expire • No subscriptions required
           </p>
           
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-5 max-w-7xl mx-auto">
-            <PricingCard
-              title="Free"
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-5 max-w-7xl mx-auto">
+            <CreditPackCard
+              title="Free Daily"
+              credits="30"
               price="$0"
-              description="Get started with powerful free models"
+              description="Refreshes every 24 hours"
               features={[
-                "25 queries per day",
-                "Llama 3.1 & DeepSeek R1",
-                "5 image generations/day",
-                "Local encrypted storage",
+                "30 credits/day",
+                "All AI models",
+                "Image generation",
+                "Never expires",
               ]}
-              buttonText="Get Started"
+              buttonText="Start Free"
               buttonVariant="outline"
               isAuthenticated={isAuthenticated}
             />
-            <PricingCard
-              title="Starter"
-              price="$4.99"
-              period="/month"
-              description="Perfect for casual users"
-              tier="starter"
+            <CreditPackCard
+              title="Starter Pack"
+              credits="300"
+              price="$5"
+              pricePerCredit="$1.67/100cr"
+              description="Perfect for trying out"
               features={[
-                "100 queries per day",
-                "+ Grok 3 Fast (Aug 2025)",
-                "20 image generations/day",
-                "Web search & voice",
+                "300 credits",
+                "All AI models",
+                "Never expires",
+                "One-time purchase",
               ]}
-              buttonText="Subscribe"
+              buttonText="Buy Credits"
               buttonVariant="outline"
+              packId="starter"
               isAuthenticated={isAuthenticated}
             />
-            <PricingCard
-              title="Pro"
-              price="$14.99"
-              period="/month"
-              description="For power users & creators"
-              tier="pro"
+            <CreditPackCard
+              title="Standard Pack"
+              credits="1,000"
+              price="$12"
+              pricePerCredit="$1.20/100cr"
+              description="Best for regular users"
+              badge="Best Value"
               features={[
-                "500 queries per day",
-                "All models incl. GPT-4o",
-                "100 image generations/day",
-                "Document chat & AI personas",
+                "1,000 credits",
+                "Save 28%",
+                "Never expires",
+                "One-time purchase",
               ]}
-              buttonText="Subscribe"
+              buttonText="Buy Credits"
               buttonVariant="default"
               highlighted
+              packId="standard"
               isAuthenticated={isAuthenticated}
             />
-            <PricingCard
-              title="Unlimited"
-              price="$27.99"
-              period="/month"
-              description="No limits, full freedom"
-              tier="unlimited"
+            <CreditPackCard
+              title="Pro Pack"
+              credits="3,500"
+              price="$35"
+              pricePerCredit="$1.00/100cr"
+              description="For power users"
               features={[
-                "Unlimited queries",
-                "All models & features",
-                "Unlimited images",
-                "Priority support",
+                "3,500 credits",
+                "Save 40%",
+                "Never expires",
+                "One-time purchase",
               ]}
-              buttonText="Subscribe"
+              buttonText="Buy Credits"
               buttonVariant="outline"
+              packId="pro"
               isAuthenticated={isAuthenticated}
             />
-            <PricingCard
+            <CreditPackCard
+              title="Power Pack"
+              credits="12,000"
+              price="$99"
+              pricePerCredit="$0.83/100cr"
+              description="Maximum value"
+              badge="Most Popular"
+              features={[
+                "12,000 credits",
+                "Save 50%",
+                "Never expires",
+                "One-time purchase",
+              ]}
+              buttonText="Buy Credits"
+              buttonVariant="outline"
+              packId="power"
+              isAuthenticated={isAuthenticated}
+            />
+            <CreditPackCard
               title="BYOK"
+              credits="∞"
               price="$0"
               description="Use your own API keys"
               features={[
-                "Unlimited everything",
-                "Your OpenAI/Anthropic keys",
-                "Pay only API costs",
-                "Full model access",
+                "Unlimited usage",
+                "Your API keys",
+                "Pay only costs",
+                "Full access",
               ]}
               buttonText="Add API Keys"
               buttonVariant="outline"
               isAuthenticated={isAuthenticated}
               isByok={true}
             />
+          </div>
+          
+          {/* Credit costs info */}
+          <div className="mt-12 text-center">
+            <p className="text-sm text-muted-foreground mb-4">How credits are used:</p>
+            <div className="flex flex-wrap justify-center gap-4 text-xs text-muted-foreground">
+              <span className="px-3 py-1 bg-card rounded-full border">Free models: 1 credit</span>
+              <span className="px-3 py-1 bg-card rounded-full border">Standard: 2 credits</span>
+              <span className="px-3 py-1 bg-card rounded-full border">Premium: 8 credits</span>
+              <span className="px-3 py-1 bg-card rounded-full border">Images: 8-10 credits</span>
+            </div>
+            <Link href="/credits" className="inline-block mt-4 text-sm text-primary hover:underline">
+              View full pricing details →
+            </Link>
           </div>
         </div>
       </section>
@@ -886,6 +924,113 @@ function PricingCard({
       </div>
       <p className="text-xs md:text-sm text-muted-foreground mb-3 md:mb-6 line-clamp-2">{description}</p>
       <ul className="space-y-1.5 md:space-y-3 mb-4 md:mb-6">
+        {features.map((feature, index) => (
+          <li key={index} className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm">
+            <Check className="w-3 h-3 md:w-4 md:h-4 text-green-500 flex-shrink-0" />
+            <span className="line-clamp-1">{feature}</span>
+          </li>
+        ))}
+      </ul>
+      <Button
+        variant={buttonVariant}
+        className="w-full"
+        disabled={isLoading}
+        onClick={handleClick}
+      >
+        {isLoading ? (
+          <>
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            Loading...
+          </>
+        ) : (
+          buttonText
+        )}
+      </Button>
+    </div>
+  );
+}
+
+
+// CreditPackCard component for credits-based pricing
+function CreditPackCard({
+  title,
+  credits,
+  price,
+  pricePerCredit,
+  description,
+  features,
+  buttonText,
+  buttonVariant,
+  highlighted,
+  badge,
+  packId,
+  isAuthenticated,
+  isByok,
+}: {
+  title: string;
+  credits: string;
+  price: string;
+  pricePerCredit?: string;
+  description: string;
+  features: string[];
+  buttonText: string;
+  buttonVariant: "default" | "outline";
+  highlighted?: boolean;
+  badge?: string;
+  packId?: string;
+  isAuthenticated?: boolean;
+  isByok?: boolean;
+}) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [, setLocation] = useLocation();
+  
+  const handleClick = () => {
+    // If not authenticated, redirect to login
+    if (!isAuthenticated) {
+      setLocation("/login");
+      return;
+    }
+
+    // If BYOK, go to settings to add API keys
+    if (isByok) {
+      setLocation("/settings");
+      return;
+    }
+
+    // If no packId (Free), go to chat
+    if (!packId) {
+      setLocation("/chat");
+      return;
+    }
+
+    // Go to credits page for purchase
+    setLocation("/credits");
+  };
+
+  return (
+    <div
+      className={`p-4 md:p-6 rounded-xl border ${
+        highlighted
+          ? "bg-primary/5 border-primary"
+          : "bg-card border-border"
+      } relative`}
+    >
+      {badge && (
+        <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-2 md:px-3 py-0.5 md:py-1 text-xs font-medium bg-primary text-primary-foreground rounded-full whitespace-nowrap">
+          {badge}
+        </span>
+      )}
+      <h3 className="text-lg md:text-xl font-bold mb-1 md:mb-2">{title}</h3>
+      <div className="mb-1">
+        <span className="text-3xl md:text-4xl font-bold text-primary">{credits}</span>
+        <span className="text-muted-foreground text-xs md:text-sm ml-1">credits</span>
+      </div>
+      <div className="mb-1 md:mb-2">
+        <span className="text-xl md:text-2xl font-bold">{price}</span>
+        {pricePerCredit && <span className="text-muted-foreground text-xs ml-2">{pricePerCredit}</span>}
+      </div>
+      <p className="text-xs md:text-sm text-muted-foreground mb-3 md:mb-4 line-clamp-2">{description}</p>
+      <ul className="space-y-1.5 md:space-y-2 mb-4 md:mb-6">
         {features.map((feature, index) => (
           <li key={index} className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm">
             <Check className="w-3 h-3 md:w-4 md:h-4 text-green-500 flex-shrink-0" />
