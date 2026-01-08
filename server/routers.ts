@@ -3705,7 +3705,7 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
       return { success: true, ageVerified: true };
     }),
 
-    // Check if user can generate NSFW images
+    // Check if user can generate NSFW images (credits-based)
     canGenerate: protectedProcedure.query(async ({ ctx }) => {
       const status = await getNsfwSubscriptionStatus(ctx.user.id);
       if (!status) {
@@ -3714,15 +3714,16 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
       if (!status.ageVerified) {
         return { canGenerate: false, reason: "Age verification required" };
       }
-      if (!status.hasNsfwSubscription) {
-        return { canGenerate: false, reason: "NSFW subscription required" };
+      // Credits-based system - check if user has enough credits (10 per image)
+      const creditsService = await import("./_core/credits");
+      const hasCredits = await creditsService.hasEnoughCredits(ctx.user.id, 10);
+      if (!hasCredits) {
+        return { canGenerate: false, reason: "Insufficient credits (10 credits per image)" };
       }
-      if (status.nsfwImagesUsed >= status.nsfwImagesLimit) {
-        return { canGenerate: false, reason: "Monthly limit reached" };
-      }
+      const balance = await creditsService.getUserCredits(ctx.user.id);
       return { 
         canGenerate: true, 
-        imagesRemaining: status.nsfwImagesLimit - status.nsfwImagesUsed 
+        creditsRemaining: (balance?.freeCredits || 0) + (balance?.purchasedCredits || 0)
       };
     }),
 
@@ -3768,23 +3769,19 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
             });
           }
           
-          // Check subscription
-          const status = await getNsfwSubscriptionStatus(ctx.user.id);
-          if (!status?.hasNsfwSubscription) {
+          // Credits-based system - deduct credits for uncensored images (8-10 credits)
+          const creditCost = 10; // 10 credits per uncensored image
+          const creditsService = await import("./_core/credits");
+          const hasCredits = await creditsService.hasEnoughCredits(ctx.user.id, creditCost);
+          if (!hasCredits) {
             throw new TRPCError({
               code: "FORBIDDEN",
-              message: "NSFW subscription required. Subscribe to the NSFW add-on ($7.99/month) in Settings.",
+              message: "Insufficient credits. Uncensored images cost 10 credits. Purchase more credits to continue.",
             });
           }
           
-          // Check usage limit
-          const usageResult = await incrementNsfwImageUsage(ctx.user.id);
-          if (!usageResult.success) {
-            throw new TRPCError({
-              code: "TOO_MANY_REQUESTS",
-              message: `Monthly NSFW image limit reached (${usageResult.imagesUsed}/${usageResult.imagesLimit}). Limit resets next month.`,
-            });
-          }
+          // Deduct credits
+          await creditsService.deductCredits(ctx.user.id, creditCost, "uncensored_image", `Uncensored image: ${input.model}`);
         }
         
         try {
