@@ -1,0 +1,9 @@
+{
+  "query": "\nDELETE FROM credit_packs;\nINSERT INTO credit_packs (name, displayName, credits, priceUsd, stripePriceId, isActive, sortOrder) VALUES ('starter', 'Starter Pack', 300, 500, 'price_1SnP9rJwTXD2kMMfeiZCaSe6', true, 0);\nINSERT INTO credit_packs (name, displayName, credits, priceUsd, stripePriceId, isActive, sortOrder) VALUES ('standard', 'Standard Pack', 1000, 1200, 'price_1SnP9sJwTXD2kMMfQtND5NF0', true, 1);\nINSERT INTO credit_packs (name, displayName, credits, priceUsd, stripePriceId, isActive, sortOrder) VALUES ('pro', 'Pro Pack', 3500, 3500, 'price_1SnP9sJwTXD2kMMfkIgqLi0U', true, 2);\nINSERT INTO credit_packs (name, displayName, credits, priceUsd, stripePriceId, isActive, sortOrder) VALUES ('power', 'Power Pack', 12000, 9900, 'price_1SnP9tJwTXD2kMMfwausJoRv', true, 3);\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 48hnjcx4CHbyzt9.87573283f85b --database ffmn4BbJe88bt6JMq4xy2a --execute \nDELETE FROM credit_packs;\nINSERT INTO credit_packs (name, displayName, credits, priceUsd, stripePriceId, isActive, sortOrder) VALUES ('starter', 'Starter Pack', 300, 500, 'price_1SnP9rJwTXD2kMMfeiZCaSe6', true, 0);\nINSERT INTO credit_packs (name, displayName, credits, priceUsd, stripePriceId, isActive, sortOrder) VALUES ('standard', 'Standard Pack', 1000, 1200, 'price_1SnP9sJwTXD2kMMfQtND5NF0', true, 1);\nINSERT INTO credit_packs (name, displayName, credits, priceUsd, stripePriceId, isActive, sortOrder) VALUES ('pro', 'Pro Pack', 3500, 3500, 'price_1SnP9sJwTXD2kMMfkIgqLi0U', true, 2);\nINSERT INTO credit_packs (name, displayName, credits, priceUsd, stripePriceId, isActive, sortOrder) VALUES ('power', 'Power Pack', 12000, 9900, 'price_1SnP9tJwTXD2kMMfwausJoRv', true, 3);\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 295
+}

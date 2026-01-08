@@ -2139,3 +2139,12 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Update database with live Stripe price IDs
 - [x] Update application to use Secretkey_live_stripe
 - [x] Test live Stripe checkout flow (verified working)
+
+## Phase 67: Correct Chofesh.ai Stripe Credit Pack Products
+- [x] Updated Secretkey_live_stripe to correct Chofesh.ai account (acct_1Sl9snJwTXD2kMMf)
+- [x] Create Starter Pack in Chofesh.ai Stripe (price_1SnP9rJwTXD2kMMfeiZCaSe6)
+- [x] Create Standard Pack in Chofesh.ai Stripe (price_1SnP9sJwTXD2kMMfQtND5NF0)
+- [x] Create Pro Pack in Chofesh.ai Stripe (price_1SnP9sJwTXD2kMMfkIgqLi0U)
+- [x] Create Power Pack in Chofesh.ai Stripe (price_1SnP9tJwTXD2kMMfwausJoRv)
+- [x] Update database with correct Stripe price IDs
+- [x] Test live Stripe checkout flow (verified working with Chofesh.ai merchant name)
