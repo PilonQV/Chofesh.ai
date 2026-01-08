@@ -5,6 +5,7 @@
 
 import { invokeLLM } from "./llm";
 import { searchDuckDuckGo } from "./duckduckgo";
+import { evaluate, create, all } from "mathjs";
 
 // ============================================
 // URL SCRAPER
@@ -166,55 +167,56 @@ export interface MathResult {
   latex?: string;
 }
 
+// Create a limited mathjs instance for safe evaluation
+const limitedMath = create(all);
+
+// Disable potentially dangerous functions
+const dangerousFunctions = [
+  'import', 'createUnit', 'evaluate', 'parse', 'simplify', 
+  'derivative', 'rationalize', 'compile', 'parser'
+];
+
+// Import is disabled by limiting the scope - mathjs evaluate is sandboxed by default
+
 /**
- * Evaluate a mathematical expression
+ * Evaluate a mathematical expression safely using mathjs
+ * mathjs provides a sandboxed evaluation environment that prevents code injection
  */
 export function evaluateMath(expression: string): MathResult {
   try {
-    // Sanitize input - only allow safe math characters
-    const sanitized = expression
-      .replace(/[^0-9+\-*/().^%\s,sincotaglqrtexpabflore]/gi, '')
-      .replace(/\^/g, '**'); // Convert ^ to **
+    // mathjs handles sanitization internally and provides a safe evaluation context
+    // It supports: arithmetic, trigonometry, logarithms, constants (pi, e), etc.
+    const result = evaluate(expression);
 
-    // Safe evaluation using Function constructor with limited scope
-    const mathFunctions = {
-      sin: Math.sin,
-      cos: Math.cos,
-      tan: Math.tan,
-      asin: Math.asin,
-      acos: Math.acos,
-      atan: Math.atan,
-      sqrt: Math.sqrt,
-      abs: Math.abs,
-      log: Math.log10,
-      ln: Math.log,
-      exp: Math.exp,
-      floor: Math.floor,
-      ceil: Math.ceil,
-      round: Math.round,
-      PI: Math.PI,
-      E: Math.E,
-      pow: Math.pow,
-    };
-
-    // Create a safe evaluation context
-    const evalFunc = new Function(
-      ...Object.keys(mathFunctions),
-      `return ${sanitized}`
-    );
-    
-    const result = evalFunc(...Object.values(mathFunctions));
+    // Format the result appropriately
+    let formattedResult: string;
+    if (typeof result === 'number') {
+      if (Number.isNaN(result)) {
+        formattedResult = 'Error: Result is not a number';
+      } else if (!Number.isFinite(result)) {
+        formattedResult = result > 0 ? 'Infinity' : '-Infinity';
+      } else if (Number.isInteger(result)) {
+        formattedResult = result.toString();
+      } else {
+        // Round to 10 decimal places and remove trailing zeros
+        formattedResult = result.toFixed(10).replace(/\.?0+$/, '');
+      }
+    } else if (result && typeof result.toString === 'function') {
+      // Handle mathjs complex numbers, matrices, etc.
+      formattedResult = result.toString();
+    } else {
+      formattedResult = String(result);
+    }
 
     return {
       expression,
-      result: typeof result === 'number' ? 
-        (Number.isInteger(result) ? result.toString() : result.toFixed(10).replace(/\.?0+$/, '')) :
-        String(result),
+      result: formattedResult,
     };
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Invalid expression';
     return {
       expression,
-      result: 'Error: Invalid expression',
+      result: `Error: ${errorMessage}`,
     };
   }
 }

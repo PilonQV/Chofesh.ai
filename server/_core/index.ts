@@ -49,18 +49,22 @@ async function startServer() {
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     // Permissions Policy
     res.setHeader('Permissions-Policy', 'camera=(), microphone=(self), geolocation=(), unload=()');
-    // Content Security Policy
+    // Content Security Policy - Hardened configuration
+    // Note: 'unsafe-inline' is still required for React's style injection and inline event handlers
+    // 'unsafe-eval' has been removed since we replaced new Function() with mathjs
     res.setHeader('Content-Security-Policy', [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-      "style-src 'self' 'unsafe-inline'",
-      "font-src 'self' data:",
+      "script-src 'self' 'unsafe-inline'",  // Removed 'unsafe-eval' - no longer needed
+      "style-src 'self' 'unsafe-inline'",   // Required for CSS-in-JS and dynamic styles
+      "font-src 'self' data: https://fonts.gstatic.com",
       "img-src 'self' data: blob: https:",
       "connect-src 'self' https: wss:",
-      "media-src 'self' blob:",
+      "media-src 'self' blob: https:",
       "frame-ancestors 'self'",
       "base-uri 'self'",
-      "form-action 'self'",
+      "form-action 'self' https://checkout.stripe.com",  // Allow Stripe checkout
+      "object-src 'none'",                  // Prevent Flash/plugins
+      "upgrade-insecure-requests",          // Force HTTPS for all resources
     ].join('; '));
     next();
   });
