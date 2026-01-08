@@ -4,6 +4,15 @@ import type { TrpcContext } from "./_core/context";
 
 // Mock the database functions
 vi.mock("./db", () => ({
+  getDb: vi.fn().mockResolvedValue({
+    select: vi.fn().mockReturnThis(),
+    from: vi.fn().mockReturnThis(),
+    where: vi.fn().mockResolvedValue([{ freeCredits: 30, purchasedCredits: 100, freeCreditsLastRefresh: new Date() }]),
+    insert: vi.fn().mockReturnThis(),
+    values: vi.fn().mockResolvedValue(undefined),
+    update: vi.fn().mockReturnThis(),
+    set: vi.fn().mockReturnThis(),
+  }),
   createAuditLog: vi.fn().mockResolvedValue(undefined),
   getAuditLogs: vi.fn().mockResolvedValue({ logs: [], total: 0 }),
   getAuditLogStats: vi.fn().mockResolvedValue({

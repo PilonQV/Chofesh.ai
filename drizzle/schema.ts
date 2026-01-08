@@ -469,3 +469,106 @@ export const auditSettings = mysqlTable("audit_settings", {
 
 export type AuditSetting = typeof auditSettings.$inferSelect;
 export type InsertAuditSetting = typeof auditSettings.$inferInsert;
+
+
+/**
+ * User credits table for the credits-based billing system.
+ * Tracks both free daily credits and purchased credits separately.
+ */
+export const userCredits = mysqlTable("user_credits", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").references(() => users.id, { onDelete: "cascade" }).notNull().unique(),
+  
+  // Free credits (refresh daily, use-it-or-lose-it)
+  freeCredits: int("freeCredits").default(30).notNull(),
+  freeCreditsLastRefresh: timestamp("freeCreditsLastRefresh").defaultNow().notNull(),
+  
+  // Purchased credits (never expire)
+  purchasedCredits: int("purchasedCredits").default(0).notNull(),
+  
+  // Lifetime stats
+  totalCreditsUsed: int("totalCreditsUsed").default(0).notNull(),
+  totalCreditsPurchased: int("totalCreditsPurchased").default(0).notNull(),
+  
+  // Timestamps
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type UserCredit = typeof userCredits.$inferSelect;
+export type InsertUserCredit = typeof userCredits.$inferInsert;
+
+/**
+ * Credit transactions table for audit trail.
+ * Records all credit additions (purchases) and deductions (usage).
+ */
+export const creditTransactions = mysqlTable("credit_transactions", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  
+  // Transaction type
+  type: mysqlEnum("type", ["purchase", "usage", "refund", "bonus", "daily_refresh"]).notNull(),
+  
+  // Amount (positive for additions, negative for deductions)
+  amount: int("amount").notNull(),
+  
+  // Balance after transaction
+  balanceAfter: int("balanceAfter").notNull(),
+  
+  // Source of credits used (for usage transactions)
+  creditSource: mysqlEnum("creditSource", ["free", "purchased"]),
+  
+  // Details
+  description: varchar("description", { length: 255 }),
+  actionType: varchar("actionType", { length: 64 }), // chat, image_generation, etc.
+  model: varchar("model", { length: 64 }), // Model used for this action
+  
+  // For purchases: Stripe reference
+  stripePaymentId: varchar("stripePaymentId", { length: 64 }),
+  packName: varchar("packName", { length: 64 }), // starter, standard, pro, power
+  
+  // Timestamps
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type CreditTransaction = typeof creditTransactions.$inferSelect;
+export type InsertCreditTransaction = typeof creditTransactions.$inferInsert;
+
+/**
+ * Credit packs configuration table.
+ * Defines available credit packs for purchase.
+ */
+export const creditPacks = mysqlTable("credit_packs", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 64 }).notNull().unique(), // starter, standard, pro, power
+  displayName: varchar("displayName", { length: 100 }).notNull(),
+  credits: int("credits").notNull(),
+  priceUsd: int("priceUsd").notNull(), // Price in cents (e.g., 500 = $5.00)
+  stripePriceId: varchar("stripePriceId", { length: 64 }), // Stripe Price ID
+  isActive: boolean("isActive").default(true).notNull(),
+  sortOrder: int("sortOrder").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type CreditPack = typeof creditPacks.$inferSelect;
+export type InsertCreditPack = typeof creditPacks.$inferInsert;
+
+/**
+ * Credit costs configuration table.
+ * Defines how many credits each action costs.
+ */
+export const creditCosts = mysqlTable("credit_costs", {
+  id: int("id").autoincrement().primaryKey(),
+  actionType: varchar("actionType", { length: 64 }).notNull(), // chat, image_generation, etc.
+  modelTier: varchar("modelTier", { length: 64 }), // free, standard, premium, uncensored
+  model: varchar("model", { length: 64 }), // Specific model name (optional)
+  credits: int("credits").notNull(),
+  description: varchar("description", { length: 255 }),
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type CreditCost = typeof creditCosts.$inferSelect;
+export type InsertCreditCost = typeof creditCosts.$inferInsert;
