@@ -1326,7 +1326,7 @@ export default function Chat() {
       {/* Main Chat Area */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Chat Header */}
-        <header className="h-14 min-h-14 shrink-0 border-b border-border flex items-center justify-between px-2 sm:px-4">
+        <header className="h-14 min-h-14 shrink-0 border-b border-border flex items-center justify-between px-2 sm:px-4 bg-primary text-primary-foreground dark:bg-card dark:text-foreground">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <Button
               variant="ghost"
