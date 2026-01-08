@@ -2157,3 +2157,11 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Remove any test/sandbox Stripe references
 - [x] Verify all secrets are correct
 - [x] Test checkout flow with live keys
+
+
+## Phase 69: Update Home Page for Credits-Based Billing
+- [x] Review current pricing section on home page
+- [x] Update pricing cards to show credit packs instead of subscriptions
+- [x] Review features section for accuracy
+- [x] Update any outdated feature descriptions (none needed)
+- [x] Test home page display
