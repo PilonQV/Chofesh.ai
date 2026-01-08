@@ -12,7 +12,7 @@ const stripe = new Stripe(process.env.Secretkey_live_stripe || process.env.STRIP
   apiVersion: "2025-12-15.clover",
 });
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || "";
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET_LIVE || process.env.STRIPE_WEBHOOK_SECRET || "";
 
 // Webhook endpoint - must use raw body for signature verification
 router.post("/", raw({ type: "application/json" }), async (req, res) => {

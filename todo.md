@@ -2148,3 +2148,12 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Create Power Pack in Chofesh.ai Stripe (price_1SnP9tJwTXD2kMMfwausJoRv)
 - [x] Update database with correct Stripe price IDs
 - [x] Test live Stripe checkout flow (verified working with Chofesh.ai merchant name)
+
+
+## Phase 68: Update to Live Stripe Keys Only
+- [x] Update server to use Secretkey_live_stripe as primary (remove test key fallback)
+- [x] Update client to use STRIPE_PUBLISHABLE_KEY_LIVE
+- [x] Update webhook handler to use live webhook secret
+- [x] Remove any test/sandbox Stripe references
+- [x] Verify all secrets are correct
+- [x] Test checkout flow with live keys
