@@ -250,7 +250,7 @@ function NsfwSubscriptionSection() {
               </p>
               <p className="text-sm text-muted-foreground">
                 {nsfwStatus?.ageVerified 
-                  ? "8-10 credits per image • Uses your credit balance" 
+                  ? "10 credits for 4 images • Uses your credit balance" 
                   : "Complete age verification to access"}
               </p>
             </div>
@@ -273,7 +273,7 @@ function NsfwSubscriptionSection() {
               <li>• Lustify SDXL & v7 models</li>
               <li>• Multiple aspect ratios</li>
               <li>• Private generation (no logging)</li>
-              <li>• 8-10 credits per image</li>
+              <li>• 10 credits for 4 images</li>
             </ul>
           </div>
           <div className="p-4 rounded-lg bg-muted/50">

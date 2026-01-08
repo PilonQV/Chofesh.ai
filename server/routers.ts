@@ -3718,7 +3718,7 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
       const creditsService = await import("./_core/credits");
       const hasCredits = await creditsService.hasEnoughCredits(ctx.user.id, 10);
       if (!hasCredits) {
-        return { canGenerate: false, reason: "Insufficient credits (10 credits per image)" };
+        return { canGenerate: false, reason: "Insufficient credits (10 credits for 4 images)" };
       }
       const balance = await creditsService.getUserCredits(ctx.user.id);
       return { 
@@ -3770,13 +3770,13 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
           }
           
           // Credits-based system - deduct credits for uncensored images (8-10 credits)
-          const creditCost = 10; // 10 credits per uncensored image
+          const creditCost = 10; // 10 credits for 4 uncensored images
           const creditsService = await import("./_core/credits");
           const hasCredits = await creditsService.hasEnoughCredits(ctx.user.id, creditCost);
           if (!hasCredits) {
             throw new TRPCError({
               code: "FORBIDDEN",
-              message: "Insufficient credits. Uncensored images cost 10 credits. Purchase more credits to continue.",
+              message: "Insufficient credits. Uncensored images cost 10 credits for 4 images. Purchase more credits to continue.",
             });
           }
           

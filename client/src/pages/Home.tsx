@@ -661,7 +661,7 @@ export default function Home() {
               <span className="px-3 py-1 bg-card rounded-full border">Free models: 1 credit</span>
               <span className="px-3 py-1 bg-card rounded-full border">Standard: 2 credits</span>
               <span className="px-3 py-1 bg-card rounded-full border">Premium: 8 credits</span>
-              <span className="px-3 py-1 bg-card rounded-full border">Images: 8-10 credits</span>
+              <span className="px-3 py-1 bg-card rounded-full border">Images: 10 credits/4 images</span>
             </div>
             <Link href="/credits" className="inline-block mt-4 text-sm text-primary hover:underline">
               View full pricing details →

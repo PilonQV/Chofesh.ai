@@ -251,7 +251,7 @@ export default function Credits() {
                     </h4>
                     <ul className="space-y-2 text-sm text-gray-400">
                       <li className="flex justify-between"><span>Standard (Flux)</span><span className="text-blue-400">8 credits</span></li>
-                      <li className="flex justify-between"><span>Uncensored (Lustify)</span><span className="text-purple-400">10 credits</span></li>
+                      <li className="flex justify-between"><span>Uncensored (4 images)</span><span className="text-purple-400">10 credits</span></li>
                       <li className="flex justify-between"><span>Premium (DALL-E 3)</span><span className="text-amber-400">20 credits</span></li>
                     </ul>
                   </div>

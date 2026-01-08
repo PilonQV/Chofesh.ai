@@ -630,7 +630,7 @@ export default function ImageGen() {
               </TooltipTrigger>
               <TooltipContent>
                 {nsfwStatus?.ageVerified
-                  ? `Uncensored: ${nsfwMode ? "ON" : "OFF"} (8-10 credits/image)`
+                  ? `Uncensored: ${nsfwMode ? "ON" : "OFF"} (10 credits/4 images)`
                   : "Unlock Uncensored Image Generation"}
               </TooltipContent>
             </Tooltip>
@@ -1003,7 +1003,7 @@ export default function ImageGen() {
               Uncensored Image Generation
             </DialogTitle>
             <DialogDescription>
-              Generate uncensored images using your credits. 8-10 credits per image.
+              Generate uncensored images using your credits. 10 credits for 4 images.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">
@@ -1040,7 +1040,7 @@ export default function ImageGen() {
                   <div>
                     <p className="font-medium">Pay with Credits</p>
                     <p className="text-sm text-muted-foreground">
-                      8-10 credits per uncensored image
+                      10 credits for 4 uncensored images
                     </p>
                   </div>
                 </div>
@@ -1087,7 +1087,7 @@ export default function ImageGen() {
                   setNsfwMode(true);
                   setModel("lustify-sdxl");
                   setShowNsfwModal(false);
-                  toast.success("Uncensored mode enabled! 8-10 credits per image.");
+                  toast.success("Uncensored mode enabled! 10 credits for 4 images.");
                 }}
               >
                 <ShieldAlert className="w-4 h-4 mr-2" />
