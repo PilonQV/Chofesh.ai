@@ -1974,3 +1974,25 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Review API endpoint security (Zod validation, protected procedures)
 - [x] Check CORS and CSP configurations (comprehensive headers configured)
 - [x] Generate comprehensive security report (SECURITY_AUDIT_REPORT.md)
+
+## Phase 59: Security Fixes
+
+### Dependency Updates
+- [x] Update pnpm to version 10.27.0+ (CVE-2025-69262)
+- [x] Update drizzle-kit to latest version
+- [x] Update @trpc packages to 11.8.1 (GHSA-43p4-m455-4f4j)
+- [x] Add pnpm overrides for esbuild and qs
+- [x] Verify all vulnerabilities are resolved (0 vulnerabilities found)
+
+### Math Evaluation Security
+- [x] Install mathjs library (v15.1.0)
+- [x] Replace new Function() with mathjs.evaluate()
+- [x] Update tests for math evaluation (all 30 tests passing)
+
+### CSP Hardening
+- [x] Remove 'unsafe-eval' from script-src (safe now after mathjs migration)
+- [x] Keep 'unsafe-inline' for script-src (required for React)
+- [x] Add 'object-src none' to prevent Flash/plugins
+- [x] Add 'upgrade-insecure-requests' to force HTTPS
+- [x] Add Stripe checkout to form-action whitelist
+- [x] Test application functionality after CSP changes (verified working)
