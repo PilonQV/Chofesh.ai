@@ -1,0 +1,20 @@
+{
+  "query": "SELECT userId, actionType, COUNT(*) as count FROM usage_records WHERE userId = 1 GROUP BY actionType;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 48hnjcx4CHbyzt9.87573283f85b --database ffmn4BbJe88bt6JMq4xy2a --execute SELECT userId, actionType, COUNT(*) as count FROM usage_records WHERE userId = 1 GROUP BY actionType;",
+  "rows": [
+    {
+      "userId": "1",
+      "actionType": "image_generation",
+      "count": "1"
+    },
+    {
+      "userId": "1",
+      "actionType": "chat",
+      "count": "11"
+    }
+  ],
+  "messages": [],
+  "stdout": "userId\tactionType\tcount\n1\timage_generation\t1\n1\tchat\t11\n",
+  "stderr": "",
+  "execution_time_ms": 56
+}

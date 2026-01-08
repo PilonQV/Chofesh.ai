@@ -2035,3 +2035,21 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Add model cost/speed indicators to model selector
 - [x] Improve typography with Outfit + Plus Jakarta Sans fonts
 - [x] Test all UI changes across pages (verified working)
+
+## Phase 63: UI/UX Fixes
+
+### Issues Reported
+- [ ] Homepage has no Aurora UI changes applied
+- [ ] Chat bubble colors not visible/user-friendly
+- [ ] Dashboard shows 0 images but gallery has 22 images
+- [ ] Cost tracking is misleading - remove it
+- [ ] Chat settings button should be moved to main Settings page
+- [ ] Consolidate all settings under one space
+
+### Tasks
+- [x] Fix chat bubble colors - make more visible and user-friendly
+- [x] Fix dashboard to count image generation requests accurately (uses gallery count)
+- [x] Remove cost tracking from model selector and dashboard
+- [x] Remove chat settings button from chat page
+- [x] Add chat settings to main Settings page
+- [x] Apply Aurora UI to homepage (gradients, glassmorphism)

@@ -304,24 +304,27 @@
                 0 0 40px oklch(0.72 0.18 280 / 0.1);
   }
   
-  /* Message bubble styles with glassmorphism */
+  /* Message bubble styles - clean, high-contrast, user-friendly */
   .message-user {
-    background: linear-gradient(135deg, oklch(0.55 0.2 280), oklch(0.50 0.18 300));
-    box-shadow: 0 4px 16px oklch(0.55 0.2 280 / 0.25);
+    background: oklch(0.55 0.18 265);
+    color: white;
   }
   
   .message-assistant {
-    background: oklch(0.18 0.02 280 / 0.7);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid oklch(0.30 0.02 280 / 0.3);
+    background: oklch(0.25 0.02 280);
+    color: oklch(0.95 0.01 280);
+    border: 1px solid oklch(0.35 0.02 280);
+  }
+  
+  .light .message-user {
+    background: oklch(0.55 0.18 265);
+    color: white;
   }
   
   .light .message-assistant {
-    background: oklch(0.97 0.005 280 / 0.8);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid oklch(0.90 0.01 280 / 0.5);
+    background: oklch(0.96 0.01 280);
+    color: oklch(0.20 0.02 280);
+    border: 1px solid oklch(0.90 0.01 280);
   }
   
   /* Aurora orb decorations */

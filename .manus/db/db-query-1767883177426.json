@@ -1,0 +1,20 @@
+{
+  "query": "SELECT actionType, COUNT(*) as count, SUM(totalTokens) as tokens FROM usage_records GROUP BY actionType;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 48hnjcx4CHbyzt9.87573283f85b --database ffmn4BbJe88bt6JMq4xy2a --execute SELECT actionType, COUNT(*) as count, SUM(totalTokens) as tokens FROM usage_records GROUP BY actionType;",
+  "rows": [
+    {
+      "actionType": "chat",
+      "count": "31",
+      "tokens": "35837"
+    },
+    {
+      "actionType": "image_generation",
+      "count": "3",
+      "tokens": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "actionType\tcount\ttokens\nchat\t31\t35837\nimage_generation\t3\t0\n",
+  "stderr": "",
+  "execution_time_ms": 57
+}
