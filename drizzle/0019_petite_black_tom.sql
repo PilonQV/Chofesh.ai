@@ -1,0 +1,1 @@
+ALTER TABLE `api_call_logs` ADD `isUncensored` boolean DEFAULT false NOT NULL;

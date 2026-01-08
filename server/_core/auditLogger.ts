@@ -25,6 +25,7 @@ export type ApiCallLogInput = {
   status?: "success" | "error" | "rate_limited";
   errorMessage?: string;
   usedFallback?: boolean; // True if auto-fallback to uncensored model was used
+  isUncensored?: boolean; // True if using uncensored model or NSFW content
 };
 
 export type ImageAccessLogInput = {
@@ -60,6 +61,7 @@ export async function auditLogApiCall(input: ApiCallLogInput): Promise<void> {
     userAgent: input.userAgent || null,
     status: input.status || "success",
     errorMessage: input.errorMessage || null,
+    isUncensored: input.isUncensored || false,
   };
   
   // Log asynchronously to not block the response

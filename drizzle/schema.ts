@@ -421,6 +421,9 @@ export const apiCallLogs = mysqlTable("api_call_logs", {
   status: mysqlEnum("status", ["success", "error", "rate_limited"]).default("success").notNull(),
   errorMessage: text("errorMessage"),
   
+  // Uncensored/NSFW flag
+  isUncensored: boolean("isUncensored").default(false).notNull(),
+  
   // Timestamps
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });

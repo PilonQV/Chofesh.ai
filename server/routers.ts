@@ -1196,6 +1196,7 @@ Provide a comprehensive, well-researched response.`;
             ipAddress: getClientIp(ctx.req),
             userAgent: getUserAgent(ctx.req),
             status: "success",
+            isUncensored: actualModelUsed.isUncensored === true || autoSwitchedToUncensored,
           });
 
           return {
@@ -3365,7 +3366,9 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
     getApiCallLogs: protectedProcedure
       .input(z.object({
         userId: z.number().optional(),
+        userEmail: z.string().optional(),
         actionType: z.string().optional(),
+        isUncensored: z.boolean().optional(),
         startDate: z.string().optional(),
         endDate: z.string().optional(),
         limit: z.number().min(1).max(500).optional(),
@@ -3379,7 +3382,9 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
         
         return await getApiCallLogs({
           userId: input.userId,
+          userEmail: input.userEmail,
           actionType: input.actionType,
+          isUncensored: input.isUncensored,
           startDate: input.startDate ? new Date(input.startDate) : undefined,
           endDate: input.endDate ? new Date(input.endDate) : undefined,
           limit: input.limit || 100,
