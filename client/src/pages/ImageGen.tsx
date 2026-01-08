@@ -389,21 +389,44 @@ export default function ImageGen() {
     toast.success("Image deleted");
   };
 
+  const downloadProxyMutation = trpc.image.downloadProxy.useMutation();
+  
   const handleDownload = async (image: GeneratedImage) => {
     try {
-      const response = await fetch(image.url);
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `chofesh-ai-${image.id}.png`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      toast.success("Image downloaded!");
+      // First try direct fetch (works for same-origin or CORS-enabled URLs)
+      const response = await fetch(image.url, { mode: 'cors' });
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `chofesh-ai-${image.id}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        toast.success("Image downloaded!");
+        return;
+      }
+      throw new Error('Direct fetch failed');
     } catch {
-      toast.error("Failed to download image");
+      // Fallback: use server-side proxy to avoid CORS
+      try {
+        const result = await downloadProxyMutation.mutateAsync({ imageUrl: image.url });
+        if (result.success && result.data) {
+          const a = document.createElement("a");
+          a.href = result.data;
+          a.download = `chofesh-ai-${image.id}.png`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          toast.success("Image downloaded!");
+        }
+      } catch {
+        // Last resort: open in new tab
+        window.open(image.url, '_blank');
+        toast.info("Image opened in new tab. Right-click to save.");
+      }
     }
   };
 
@@ -624,7 +647,7 @@ export default function ImageGen() {
                 <SelectValue placeholder="Model" />
               </SelectTrigger>
               <SelectContent>
-                {/* Uncensored Models */}
+                {/* Uncensored Models - Only Lustify models support NSFW content */}
                 {nsfwMode && nsfwModels && (
                   <>
                     <div className="px-2 py-1.5 text-xs font-semibold text-pink-500 border-b mb-1 pb-2">
@@ -635,14 +658,9 @@ export default function ImageGen() {
                         {m.name}
                       </SelectItem>
                     ))}
-                    <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground border-t mt-1 pt-2">
-                      Premium Models
+                    <div className="px-2 py-1.5 text-xs text-muted-foreground/70 border-t mt-1 pt-2 italic">
+                      Only Lustify models support uncensored content
                     </div>
-                    {nsfwModels.sfwModels.map((m: { id: string; name: string }) => (
-                      <SelectItem key={m.id} value={m.id}>
-                        {m.name}
-                      </SelectItem>
-                    ))}
                   </>
                 )}
                 {/* Standard models */}
