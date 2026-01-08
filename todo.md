@@ -2180,3 +2180,9 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Remove $7.99/month subscription references
 - [x] Show credits cost for uncensored images
 - [x] Test the updated modal
+
+
+## Phase 72: Fix Chat Styling
+- [x] Update AI response bubble - remove black background, use lighter color matching palette
+- [x] Match chat input box blue with rest of UI
+- [x] Improve dark theme readability

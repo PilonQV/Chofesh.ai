@@ -271,18 +271,18 @@
       inset 0 1px 0 oklch(1 0 0 / 0.8);
   }
   
-  /* Glass input - Blue background with white text for high contrast */
+  /* Glass input - Matching primary blue with white text for high contrast */
   .glass-input {
-    background: oklch(0.45 0.15 265);
+    background: oklch(0.55 0.18 265);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid oklch(0.55 0.18 265 / 0.5);
+    border: 1px solid oklch(0.60 0.18 265 / 0.6);
     color: white;
     transition: all 0.2s ease;
   }
   
   .glass-input::placeholder {
-    color: oklch(0.9 0 0 / 0.7);
+    color: oklch(0.95 0 0 / 0.7);
   }
   
   .glass-input:focus {
@@ -291,8 +291,8 @@
   }
   
   .light .glass-input {
-    background: oklch(0.50 0.15 265);
-    border: 1px solid oklch(0.55 0.18 265 / 0.5);
+    background: oklch(0.55 0.18 265);
+    border: 1px solid oklch(0.60 0.18 265 / 0.6);
     color: white;
   }
   
@@ -321,9 +321,9 @@
   }
   
   .message-assistant {
-    background: oklch(0.25 0.02 280);
-    color: oklch(0.95 0.01 280);
-    border: 1px solid oklch(0.35 0.02 280);
+    background: oklch(0.30 0.04 265);
+    color: oklch(0.92 0.01 265);
+    border: 1px solid oklch(0.40 0.06 265);
   }
   
   .light .message-user {
@@ -332,9 +332,9 @@
   }
   
   .light .message-assistant {
-    background: oklch(0.96 0.01 280);
-    color: oklch(0.20 0.02 280);
-    border: 1px solid oklch(0.90 0.01 280);
+    background: oklch(0.94 0.02 265);
+    color: oklch(0.25 0.05 265);
+    border: 1px solid oklch(0.85 0.03 265);
   }
   
   /* Aurora orb decorations */
