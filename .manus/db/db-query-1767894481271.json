@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO credit_costs (actionType, modelTier, credits, description, isActive) VALUES \n('chat', 'free', 1, 'Free models (Groq Llama)', true),\n('chat', 'standard', 2, 'Standard models (GPT-4o-mini)', true),\n('chat', 'premium', 8, 'Premium models (GPT-4o, Claude)', true),\n('chat', 'uncensored', 3, 'Uncensored models (Venice)', true),\n('image_generation', 'standard', 8, 'Standard image (Flux)', true),\n('image_generation', 'premium', 20, 'Premium image (DALL-E 3)', true),\n('image_generation', 'uncensored', 10, 'Uncensored image (Lustify)', true),\n('document_chat', NULL, 3, 'Document chat query', true),\n('image_upscale', NULL, 4, 'Image upscaling', true),\n('voice_transcription', NULL, 2, 'Voice input (STT)', true),\n('voice_synthesis', NULL, 2, 'Voice output (TTS)', true);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 48hnjcx4CHbyzt9.87573283f85b --database ffmn4BbJe88bt6JMq4xy2a --execute INSERT INTO credit_costs (actionType, modelTier, credits, description, isActive) VALUES \n('chat', 'free', 1, 'Free models (Groq Llama)', true),\n('chat', 'standard', 2, 'Standard models (GPT-4o-mini)', true),\n('chat', 'premium', 8, 'Premium models (GPT-4o, Claude)', true),\n('chat', 'uncensored', 3, 'Uncensored models (Venice)', true),\n('image_generation', 'standard', 8, 'Standard image (Flux)', true),\n('image_generation', 'premium', 20, 'Premium image (DALL-E 3)', true),\n('image_generation', 'uncensored', 10, 'Uncensored image (Lustify)', true),\n('document_chat', NULL, 3, 'Document chat query', true),\n('image_upscale', NULL, 4, 'Image upscaling', true),\n('voice_transcription', NULL, 2, 'Voice input (STT)', true),\n('voice_synthesis', NULL, 2, 'Voice output (TTS)', true);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 77
+}

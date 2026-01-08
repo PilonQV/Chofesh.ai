@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO credit_packs (name, displayName, credits, priceUsd, stripePriceId, isActive, sortOrder) VALUES \n('starter', 'Starter Pack', 300, 500, 'price_1SnNJ4GcthikBvdKlWYBQwbG', true, 0),\n('standard', 'Standard Pack', 1000, 1200, 'price_1SnNJ5GcthikBvdKYRzWP3e1', true, 1),\n('pro', 'Pro Pack', 3500, 3500, 'price_1SnNJ6GcthikBvdKcZlIJbQX', true, 2),\n('power', 'Power Pack', 12000, 9900, 'price_1SnNJ7GcthikBvdKKDWm1GG1', true, 3);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 48hnjcx4CHbyzt9.87573283f85b --database ffmn4BbJe88bt6JMq4xy2a --execute INSERT INTO credit_packs (name, displayName, credits, priceUsd, stripePriceId, isActive, sortOrder) VALUES \n('starter', 'Starter Pack', 300, 500, 'price_1SnNJ4GcthikBvdKlWYBQwbG', true, 0),\n('standard', 'Standard Pack', 1000, 1200, 'price_1SnNJ5GcthikBvdKYRzWP3e1', true, 1),\n('pro', 'Pro Pack', 3500, 3500, 'price_1SnNJ6GcthikBvdKcZlIJbQX', true, 2),\n('power', 'Power Pack', 12000, 9900, 'price_1SnNJ7GcthikBvdKKDWm1GG1', true, 3);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 97
+}

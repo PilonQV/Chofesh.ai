@@ -2053,3 +2053,71 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Remove chat settings button from chat page
 - [x] Add chat settings to main Settings page
 - [x] Apply Aurora UI to homepage (gradients, glassmorphism)
+
+
+## Phase 64: Credits-Based Billing System
+
+### Proposal & Planning
+- [x] Update credits proposal with margin optimizations (68-72% blended margin)
+- [x] Finalize credit costs per action
+
+### Database Schema
+- [x] Create credits table (user_id, free_balance, purchased_balance)
+- [x] Create credit_transactions table (history/audit)
+- [x] Create credit_packs table (product definitions)
+- [x] Create credit_costs table (action pricing)
+- [ ] Add daily refresh cron job for free credits
+
+### Stripe Integration
+- [x] Create credit pack products in Stripe (4 packs: $5, $12, $35, $99)
+- [x] Build purchase checkout flow
+- [x] Handle payment success webhooks (webhook handler in place)
+- [x] Add credits to user account on purchase
+
+### Backend Logic
+- [x] Create credit deduction service (credits.ts)
+- [x] Add credits router with balance, packs, history, checkout endpoints
+- [ ] Implement smart model routing (free models first)
+- [x] Integrate credit deduction into chat/image endpoints
+- [x] Add credit balance checks before API calls
+- [ ] Create low-credits warning system
+
+### Frontend UI
+- [ ] Add credits display to header/sidebar
+- [x] Create "Buy Credits" page with pack options
+- [ ] Add low-credits warning modal
+- [ ] Update usage dashboard with credits view
+- [ ] Remove old subscription UI
+
+### Migration
+- [ ] Convert existing subscribers to credit balance
+- [ ] Update pricing page with new model
+
+
+## Phase 64: Credits-Based Billing System
+
+### Database Schema
+- [x] Create user_credits table (free_balance, purchased_balance)
+- [x] Create credit_transactions table (history/audit)
+- [x] Create credit_packs table (product definitions)
+- [x] Create credit_costs table (action pricing)
+
+### Stripe Integration
+- [x] Create credit pack products in Stripe (4 packs: $5, $12, $35, $99)
+- [x] Insert credit packs into database with Stripe price IDs
+- [x] Build purchase checkout flow
+
+### Backend Logic
+- [x] Create credit deduction service (credits.ts)
+- [x] Add credits router with balance, packs, history, checkout endpoints
+- [x] Integrate credit deduction into chat endpoint
+- [x] Integrate credit deduction into image generation endpoint
+
+### Frontend UI
+- [x] Create Credits page with purchase flow
+- [x] Show credit balance with free/purchased breakdown
+- [x] Display credit packs with pricing
+- [x] Show credit costs table
+
+### Testing
+- [x] 14 unit tests for credits system (all passing)

@@ -5,6 +5,7 @@ import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { checkRateLimit, recordFailedAttempt, clearRateLimit } from "./_core/rateLimit";
+import { getUserCredits, getCreditPacks, getCreditHistory, deductCredits, addPurchasedCredits, getCreditCost, getModelTier } from "./_core/credits";
 import { 
   createAuditLog, 
   getAuditLogs, 
@@ -737,6 +738,114 @@ export const appRouter = router({
       }),
   }),
 
+  // Credits system
+  credits: router({
+    // Get user's current credits balance
+    balance: protectedProcedure.query(async ({ ctx }) => {
+      return await getUserCredits(ctx.user.id);
+    }),
+    
+    // Get available credit packs for purchase
+    packs: publicProcedure.query(async () => {
+      return await getCreditPacks();
+    }),
+    
+    // Get credit transaction history
+    history: protectedProcedure
+      .input(z.object({ limit: z.number().min(1).max(100).optional() }).optional())
+      .query(async ({ ctx, input }) => {
+        return await getCreditHistory(ctx.user.id, input?.limit || 50);
+      }),
+    
+    // Get cost for a specific action
+    getCost: publicProcedure
+      .input(z.object({
+        actionType: z.string(),
+        model: z.string().optional(),
+      }))
+      .query(async ({ input }) => {
+        const cost = await getCreditCost(input.actionType, input.model);
+        return { cost, tier: input.model ? getModelTier(input.model) : "default" };
+      }),
+    
+    // Create Stripe checkout session for credit pack purchase
+    createCheckout: protectedProcedure
+      .input(z.object({
+        packName: z.string(),
+        priceId: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const Stripe = (await import("stripe")).default;
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
+        
+        // Get the pack details
+        const packs = await getCreditPacks();
+        const pack = packs.find(p => p.name === input.packName);
+        if (!pack) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Credit pack not found" });
+        }
+        
+        // Create checkout session
+        const session = await stripe.checkout.sessions.create({
+          mode: "payment",
+          payment_method_types: ["card"],
+          line_items: [{
+            price: input.priceId,
+            quantity: 1,
+          }],
+          success_url: `${process.env.VITE_APP_URL || "https://chofesh.ai"}/credits?success=true&session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${process.env.VITE_APP_URL || "https://chofesh.ai"}/credits?canceled=true`,
+          metadata: {
+            userId: ctx.user.id.toString(),
+            packName: input.packName,
+            credits: pack.credits.toString(),
+          },
+          customer_email: ctx.user.email || undefined,
+        });
+        
+        return { sessionId: session.id, url: session.url };
+      }),
+    
+    // Verify purchase and add credits (called after successful payment)
+    verifyPurchase: protectedProcedure
+      .input(z.object({
+        sessionId: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const Stripe = (await import("stripe")).default;
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
+        
+        // Retrieve the checkout session
+        const session = await stripe.checkout.sessions.retrieve(input.sessionId);
+        
+        if (session.payment_status !== "paid") {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Payment not completed" });
+        }
+        
+        // Verify the user matches
+        if (session.metadata?.userId !== ctx.user.id.toString()) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Session does not belong to this user" });
+        }
+        
+        // Add credits to user account
+        const credits = parseInt(session.metadata?.credits || "0", 10);
+        const packName = session.metadata?.packName || "unknown";
+        
+        if (credits > 0) {
+          const result = await addPurchasedCredits(
+            ctx.user.id,
+            credits,
+            packName,
+            session.payment_intent as string
+          );
+          
+          return { success: true, newBalance: result.newBalance, creditsAdded: credits };
+        }
+        
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid credit amount" });
+      }),
+  }),
+
   // Cache management
   cache: router({
     clear: protectedProcedure.mutation(() => {
@@ -782,6 +891,16 @@ export const appRouter = router({
         
         // Increment daily query count
         await incrementDailyQueries(ctx.user.id);
+        
+        // Check and deduct credits before making API call
+        // We'll determine the exact cost after model selection, but check if user has any credits first
+        const userCreditsBalance = await getUserCredits(ctx.user.id);
+        if (userCreditsBalance.totalCredits <= 0) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Insufficient credits. Please purchase more credits to continue.",
+          });
+        }
         
         // Get the last user message for content analysis
         const lastUserMessage = input.messages.filter(m => m.role === "user").pop();
@@ -1145,6 +1264,20 @@ Provide a comprehensive, well-researched response.`;
             setCachedResponse(cacheKey, assistantContent, selectedModel.id);
           }
           
+          // Deduct credits based on model tier
+          const creditCost = await getCreditCost("chat", actualModelUsed.id);
+          const creditDeduction = await deductCredits(
+            ctx.user.id,
+            creditCost,
+            "chat",
+            actualModelUsed.id,
+            `Chat with ${actualModelUsed.name}`
+          );
+          
+          if (!creditDeduction.success) {
+            console.warn("Credit deduction failed:", creditDeduction.error);
+          }
+          
           // Create usage record
           await createUsageRecord({
             userId: ctx.user.id,
@@ -1219,6 +1352,8 @@ Provide a comprehensive, well-researched response.`;
             usedFallback,
             fallbackReason: usedFallback ? "Original model declined - switched to unrestricted model" : undefined,
             autoSwitchedToUncensored,
+            creditsUsed: creditCost,
+            creditsRemaining: creditDeduction.remainingCredits,
           };
         } catch (error: any) {
           // Log the actual error for debugging
@@ -1310,6 +1445,34 @@ Provide a comprehensive, well-researched response.`;
       }))
       .mutation(async ({ ctx, input }) => {
         const startTime = Date.now();
+        const imageModel = input.model || "flux";
+        
+        // Check and deduct credits before generating
+        const creditCost = await getCreditCost("image_generation", imageModel);
+        const userCreditsBalance = await getUserCredits(ctx.user.id);
+        
+        if (userCreditsBalance.totalCredits < creditCost) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: `Insufficient credits. Need ${creditCost}, have ${userCreditsBalance.totalCredits}. Please purchase more credits.`,
+          });
+        }
+        
+        // Deduct credits upfront
+        const creditDeduction = await deductCredits(
+          ctx.user.id,
+          creditCost,
+          "image_generation",
+          imageModel,
+          `Image generation with ${imageModel}`
+        );
+        
+        if (!creditDeduction.success) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: creditDeduction.error || "Failed to deduct credits",
+          });
+        }
         
         try {
           const result = await generateImage({

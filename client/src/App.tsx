@@ -40,6 +40,7 @@ const ComponentShowcase = lazy(() => import("./pages/ComponentShowcase"));
 const Tools = lazy(() => import("./pages/Tools"));
 const AdminAuditLogs = lazy(() => import("./pages/AdminAuditLogs"));
 const PrivacyVault = lazy(() => import("./pages/PrivacyVault"));
+const Credits = lazy(() => import("./pages/Credits"));
 
 // Loading fallback component
 function PageLoader() {
@@ -70,6 +71,7 @@ function Router() {
         <Route path="/memory" component={Memory} />
         <Route path="/artifacts" component={Artifacts} />
         <Route path="/subscription" component={Subscription} />
+        <Route path="/credits" component={Credits} />
         <Route path="/gallery" component={MyGallery} />
         <Route path="/code" component={CodeWorkspace} />
         <Route path="/workflows" component={Workflows} />
