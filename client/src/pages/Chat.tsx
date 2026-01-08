@@ -1555,9 +1555,27 @@ export default function Chat() {
                   {/* Cloud models */}
                   {models.map((model) => (
                     <SelectItem key={model.id} value={model.id}>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 w-full">
                         {getTierIcon(model.tier)}
-                        <span>{model.name}</span>
+                        <span className="flex-1">{model.name}</span>
+                        <div className="flex items-center gap-1.5 ml-auto">
+                          {/* Speed indicator */}
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded ${
+                            model.speed === 'fast' ? 'bg-green-500/20 text-green-400' :
+                            model.speed === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                            'bg-orange-500/20 text-orange-400'
+                          }`}>
+                            {model.speed === 'fast' ? '⚡' : model.speed === 'medium' ? '🚀' : '🐢'}
+                          </span>
+                          {/* Cost indicator */}
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded ${
+                            model.costPer1kInput === 0 ? 'bg-green-500/20 text-green-400' :
+                            model.costPer1kInput < 0.001 ? 'bg-blue-500/20 text-blue-400' :
+                            'bg-purple-500/20 text-purple-400'
+                          }`}>
+                            {model.costPer1kInput === 0 ? 'FREE' : `$${(model.costPer1kInput * 1000).toFixed(2)}/M`}
+                          </span>
+                        </div>
                       </div>
                     </SelectItem>
                   ))}
@@ -1860,10 +1878,10 @@ export default function Chat() {
               >
                 <div className="flex flex-col gap-1 max-w-[85%]">
                   <div
-                    className={`rounded-2xl px-4 py-3 ${
+                    className={`rounded-2xl px-4 py-3 transition-all duration-200 ${
                       message.role === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted"
+                        ? "message-user text-white"
+                        : "message-assistant"
                     }`}
                   >
                     {message.role === "assistant" ? (
@@ -2104,8 +2122,8 @@ export default function Chat() {
                 </DropdownMenuContent>
               </DropdownMenu>
               
-              {/* Input container with image/voice buttons inside */}
-              <div className="flex-1 relative flex items-end border border-input rounded-md bg-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
+              {/* Input container with image/voice buttons inside - glassmorphism */}
+              <div className="flex-1 relative flex items-end rounded-xl glass-input focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary/50 transition-all duration-300">
                 {/* Image and Voice buttons inside the input area */}
                 <div className="flex items-center gap-1 pl-2 pb-2 self-end">
                   {/* Image Upload Button */}
