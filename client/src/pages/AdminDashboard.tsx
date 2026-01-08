@@ -562,8 +562,16 @@ export default function AdminDashboard() {
                   <div>
                     <CardTitle>Audit Logs</CardTitle>
                     <CardDescription>
-                      Activity logs for legal compliance. Content is hashed, not stored.
+                      Activity logs for legal compliance. Content is hashed for privacy.
                     </CardDescription>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Link href="/admin/audit-logs">
+                      <Button variant="default" size="sm" className="gap-2">
+                        <Eye className="w-4 h-4" />
+                        View Full Content Logs
+                      </Button>
+                    </Link>
                   </div>
                   <Select value={actionFilter} onValueChange={setActionFilter}>
                     <SelectTrigger className="w-40">

@@ -1916,3 +1916,26 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Add better error messages for uncensored image generation
 - [x] Venice API integration verified working ($8.08 balance)
 - [x] User checolin357@msn.com has active subscription and age verified
+
+
+## CRITICAL: Gallery Privacy Bug
+
+- [ ] Gallery shows ALL users' images instead of only current user's images
+- [ ] Failed image attempts visible to everyone (privacy violation)
+- [ ] Need to filter gallery by userId in the query
+
+
+## Phase 55: Admin Audit Content Viewer & Venice Debug
+
+- [ ] Add detailed API call logs with actual content for admin review
+- [ ] Create admin UI to view actual prompts and responses (not just hashes)
+- [ ] Debug Venice API production issue - still failing after adding key to Render
+
+
+## Phase 55: Admin Audit Content Viewing & Production Debugging
+
+- [x] Add "View Full Content Logs" button to admin dashboard
+- [x] Link from hashed audit logs to detailed API call logs page
+- [x] Debug Venice API production issue - identified missing OPENROUTER_API_KEY
+- [x] Add better error logging to veniceImage.ts
+- [x] Improve chat error handling to show actual error messages

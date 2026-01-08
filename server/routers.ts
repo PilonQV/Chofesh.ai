@@ -1219,7 +1219,10 @@ Provide a comprehensive, well-researched response.`;
             fallbackReason: usedFallback ? "Original model declined - switched to unrestricted model" : undefined,
             autoSwitchedToUncensored,
           };
-        } catch (error) {
+        } catch (error: any) {
+          // Log the actual error for debugging
+          console.error("[Chat] Error generating response:", error.message || error);
+          
           // Log failed attempts too
           await createAuditLog({
             userId: ctx.user.id,
@@ -1232,15 +1235,27 @@ Provide a comprehensive, well-researched response.`;
             promptLength: promptContent.length,
             metadata: JSON.stringify({
               error: true,
+              errorMessage: error.message || "Unknown error",
               duration: Date.now() - startTime,
               complexity,
               routingMode,
             }),
             timestamp: new Date(),
           });
+          
+          // Provide more specific error messages
+          let errorMessage = "Failed to generate response. Please try again.";
+          if (error.message?.includes("API key") || error.message?.includes("not configured")) {
+            errorMessage = "AI service temporarily unavailable. Please try again later.";
+          } else if (error.message?.includes("rate limit") || error.message?.includes("429")) {
+            errorMessage = "Too many requests. Please wait a moment and try again.";
+          } else if (error.message?.includes("timeout")) {
+            errorMessage = "Request timed out. Please try again.";
+          }
+          
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
-            message: "Failed to generate response",
+            message: errorMessage,
           });
         }
       }),
