@@ -234,11 +234,11 @@ function NsfwSubscriptionSection() {
           )}
         </div>
         
-        {/* Uncensored Subscription Status */}
+        {/* Uncensored Images - Credits Based */}
         <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
           <div className="flex items-center gap-3">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-              nsfwStatus?.hasNsfwSubscription 
+              nsfwStatus?.ageVerified 
                 ? "bg-pink-500/20 text-pink-500" 
                 : "bg-muted text-muted-foreground"
             }`}>
@@ -246,67 +246,21 @@ function NsfwSubscriptionSection() {
             </div>
             <div>
               <p className="font-medium">
-                Uncensored Add-on: {nsfwStatus?.hasNsfwSubscription ? "Active" : "Not Subscribed"}
+                Uncensored Images: {nsfwStatus?.ageVerified ? "Enabled" : "Requires Age Verification"}
               </p>
               <p className="text-sm text-muted-foreground">
-                {nsfwStatus?.hasNsfwSubscription 
-                  ? `${nsfwStatus.nsfwImagesUsed}/${nsfwStatus.nsfwImagesLimit} images used this month` 
-                  : "$7.99/month • 100 images/month"}
+                {nsfwStatus?.ageVerified 
+                  ? "8-10 credits per image • Uses your credit balance" 
+                  : "Complete age verification to access"}
               </p>
             </div>
           </div>
-          {nsfwStatus?.hasNsfwSubscription ? (
-            <Button 
-              variant="outline" 
-              className="border-red-500/50 text-red-500 hover:bg-red-500/10"
-              onClick={() => cancelSubscriptionMutation.mutate()}
-              disabled={cancelSubscriptionMutation.isPending}
-            >
-              {cancelSubscriptionMutation.isPending ? (
-                <Loader2 className="w-4 h-4 animate-spin mr-2" />
-              ) : (
-                <XCircle className="w-4 h-4 mr-2" />
-              )}
-              Cancel
+          <Link href="/credits">
+            <Button variant="outline">
+              View Credits
             </Button>
-          ) : (
-            <Button 
-              className="bg-pink-500 hover:bg-pink-600 text-white"
-              onClick={() => createCheckoutMutation.mutate()}
-              disabled={!nsfwStatus?.ageVerified || createCheckoutMutation.isPending}
-            >
-              {createCheckoutMutation.isPending ? (
-                <Loader2 className="w-4 h-4 animate-spin mr-2" />
-              ) : (
-                <Sparkles className="w-4 h-4 mr-2" />
-              )}
-              Subscribe $7.99/mo
-            </Button>
-          )}
+          </Link>
         </div>
-        
-        {/* Usage Progress */}
-        {nsfwStatus?.hasNsfwSubscription && (
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Monthly Usage</span>
-              <span className="font-medium">
-                {nsfwStatus.nsfwImagesUsed} / {nsfwStatus.nsfwImagesLimit} images
-              </span>
-            </div>
-            <div className="h-2 bg-muted rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-pink-500 transition-all duration-300"
-                style={{ 
-                  width: `${Math.min((nsfwStatus.nsfwImagesUsed / nsfwStatus.nsfwImagesLimit) * 100, 100)}%` 
-                }}
-              />
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Resets at the start of each billing cycle
-            </p>
-          </div>
-        )}
         
         {/* Features */}
         <div className="grid md:grid-cols-2 gap-4">
@@ -316,10 +270,10 @@ function NsfwSubscriptionSection() {
               What's Included
             </h4>
             <ul className="text-sm text-muted-foreground space-y-1">
-              <li>• 100 uncensored images per month</li>
               <li>• Lustify SDXL & v7 models</li>
               <li>• Multiple aspect ratios</li>
               <li>• Private generation (no logging)</li>
+              <li>• 8-10 credits per image</li>
             </ul>
           </div>
           <div className="p-4 rounded-lg bg-muted/50">
@@ -331,7 +285,7 @@ function NsfwSubscriptionSection() {
               <li>• Premium uncensored image models</li>
               <li>• Private - no prompts stored externally</li>
               <li>• Age verification required</li>
-              <li>• Cancel anytime</li>
+              <li>• Pay only for what you use</li>
             </ul>
           </div>
         </div>
@@ -583,97 +537,78 @@ export default function Settings() {
       {/* Main Content */}
       <main className="pt-24 pb-12 px-4">
         <div className="container mx-auto max-w-4xl">
-          {/* Subscription Section */}
+          {/* Credits Section */}
           <Card className="mb-6 border-primary/20">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CreditCard className="w-5 h-5" />
-                Subscription
+                Credits
               </CardTitle>
               <CardDescription>
-                Manage your subscription plan and usage limits
+                Pay-as-you-go credits for AI usage. 30 free credits refresh daily.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Current Plan */}
+              {/* Current Credits */}
               <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
                 <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    user?.subscriptionTier === 'unlimited' ? 'bg-gradient-to-r from-purple-500 to-pink-500' :
-                    user?.subscriptionTier === 'pro' ? 'bg-gradient-to-r from-blue-500 to-cyan-500' :
-                    user?.subscriptionTier === 'starter' ? 'bg-gradient-to-r from-green-500 to-emerald-500' :
-                    'bg-muted'
-                  }`}>
-                    {user?.subscriptionTier === 'unlimited' ? <Crown className="w-5 h-5 text-white" /> :
-                     user?.subscriptionTier === 'pro' ? <Zap className="w-5 h-5 text-white" /> :
-                     user?.subscriptionTier === 'starter' ? <Sparkles className="w-5 h-5 text-white" /> :
-                     <Clock className="w-5 h-5" />}
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-r from-blue-500 to-cyan-500">
+                    <Zap className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <p className="font-semibold capitalize">
-                      {user?.subscriptionTier || 'Free'} Plan
-                    </p>
+                    <p className="font-semibold">Your Credits</p>
                     <p className="text-sm text-muted-foreground">
-                      {user?.subscriptionTier === 'unlimited' ? 'Unlimited queries per day' :
-                       user?.subscriptionTier === 'pro' ? '500 queries per day' :
-                       user?.subscriptionTier === 'starter' ? '100 queries per day' :
-                       '25 queries per day'}
+                      30 free credits refresh every 24 hours
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold text-lg">
-                    {user?.subscriptionTier === 'unlimited' ? '$27.99' :
-                     user?.subscriptionTier === 'pro' ? '$14.99' :
-                     user?.subscriptionTier === 'starter' ? '$4.99' :
-                     'Free'}
-                    {user?.subscriptionTier && user.subscriptionTier !== 'free' && <span className="text-sm font-normal text-muted-foreground">/mo</span>}
-                  </p>
+                  <Link href="/credits">
+                    <Button variant="default" size="sm">
+                      View Balance
+                    </Button>
+                  </Link>
                 </div>
               </div>
 
-              {/* Upgrade Options */}
-              {(!user?.subscriptionTier || user.subscriptionTier === 'free') && (
-                <div className="grid gap-4 md:grid-cols-3">
-                  <Card className="border-green-500/30 hover:border-green-500/50 transition-colors cursor-pointer" onClick={() => window.open('/api/stripe/checkout?tier=starter', '_blank')}>
-                    <CardContent className="pt-6">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Sparkles className="w-4 h-4 text-green-500" />
-                        <span className="font-semibold">Starter</span>
-                      </div>
-                      <p className="text-2xl font-bold">$4.99<span className="text-sm font-normal text-muted-foreground">/mo</span></p>
-                      <p className="text-sm text-muted-foreground mt-2">100 queries/day + Grok 3</p>
-                    </CardContent>
-                  </Card>
-                  <Card className="border-blue-500/30 hover:border-blue-500/50 transition-colors cursor-pointer relative" onClick={() => window.open('/api/stripe/checkout?tier=pro', '_blank')}>
-                    <div className="absolute -top-2 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-blue-500 text-white text-xs rounded-full">Most Popular</div>
-                    <CardContent className="pt-6">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Zap className="w-4 h-4 text-blue-500" />
-                        <span className="font-semibold">Pro</span>
-                      </div>
-                      <p className="text-2xl font-bold">$14.99<span className="text-sm font-normal text-muted-foreground">/mo</span></p>
-                      <p className="text-sm text-muted-foreground mt-2">500 queries/day + GPT-4o</p>
-                    </CardContent>
-                  </Card>
-                  <Card className="border-purple-500/30 hover:border-purple-500/50 transition-colors cursor-pointer" onClick={() => window.open('/api/stripe/checkout?tier=unlimited', '_blank')}>
-                    <CardContent className="pt-6">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Crown className="w-4 h-4 text-purple-500" />
-                        <span className="font-semibold">Unlimited</span>
-                      </div>
-                      <p className="text-2xl font-bold">$27.99<span className="text-sm font-normal text-muted-foreground">/mo</span></p>
-                      <p className="text-sm text-muted-foreground mt-2">Unlimited everything</p>
-                    </CardContent>
-                  </Card>
-                </div>
-              )}
+              {/* Credit Packs */}
+              <div className="grid gap-4 md:grid-cols-4">
+                <Card className="border-green-500/30 hover:border-green-500/50 transition-colors cursor-pointer" onClick={() => window.location.href = '/credits'}>
+                  <CardContent className="pt-6 text-center">
+                    <p className="text-2xl font-bold text-primary">300</p>
+                    <p className="text-sm text-muted-foreground">credits</p>
+                    <p className="text-lg font-bold mt-2">$5</p>
+                  </CardContent>
+                </Card>
+                <Card className="border-blue-500/30 hover:border-blue-500/50 transition-colors cursor-pointer relative" onClick={() => window.location.href = '/credits'}>
+                  <div className="absolute -top-2 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-blue-500 text-white text-xs rounded-full">Best Value</div>
+                  <CardContent className="pt-6 text-center">
+                    <p className="text-2xl font-bold text-primary">1,000</p>
+                    <p className="text-sm text-muted-foreground">credits</p>
+                    <p className="text-lg font-bold mt-2">$12</p>
+                  </CardContent>
+                </Card>
+                <Card className="border-purple-500/30 hover:border-purple-500/50 transition-colors cursor-pointer" onClick={() => window.location.href = '/credits'}>
+                  <CardContent className="pt-6 text-center">
+                    <p className="text-2xl font-bold text-primary">3,500</p>
+                    <p className="text-sm text-muted-foreground">credits</p>
+                    <p className="text-lg font-bold mt-2">$35</p>
+                  </CardContent>
+                </Card>
+                <Card className="border-pink-500/30 hover:border-pink-500/50 transition-colors cursor-pointer" onClick={() => window.location.href = '/credits'}>
+                  <CardContent className="pt-6 text-center">
+                    <p className="text-2xl font-bold text-primary">12,000</p>
+                    <p className="text-sm text-muted-foreground">credits</p>
+                    <p className="text-lg font-bold mt-2">$99</p>
+                  </CardContent>
+                </Card>
+              </div>
 
-              {/* Manage Subscription */}
+              {/* Buy Credits Button */}
               <div className="flex gap-2">
-                <Link href="/subscription">
-                  <Button variant="outline">
-                    Manage Subscription
+                <Link href="/credits">
+                  <Button variant="default">
+                    Buy Credits
                   </Button>
                 </Link>
               </div>

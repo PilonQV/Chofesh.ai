@@ -2165,3 +2165,11 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Review features section for accuracy
 - [x] Update any outdated feature descriptions (none needed)
 - [x] Test home page display
+
+
+## Phase 70: UI Fixes and Billing Update
+- [x] Fix chat input box contrast (blue background, white text)
+- [x] Update header styling for better contrast
+- [x] Update settings/billing page to credits-based system
+- [x] Remove old subscription references from settings
+- [x] Test all changes
