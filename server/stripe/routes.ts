@@ -12,7 +12,7 @@ import { SUBSCRIPTION_TIERS } from "./products";
 import { sdk } from "../_core/sdk";
 import * as db from "../db";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+const stripe = new Stripe(process.env.Secretkey_live_stripe || process.env.STRIPE_SECRET_KEY || "", {
   apiVersion: "2025-04-30.basil" as any,
 });
 

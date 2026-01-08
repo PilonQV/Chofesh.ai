@@ -2130,3 +2130,12 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Create Power Pack product ($99 for 6000 credits) in Stripe
 - [x] Update application with correct Stripe price IDs
 - [x] Test credit purchase flow (Stripe checkout verified working)
+
+## Phase 66: Live Stripe Credit Pack Products
+- [x] Create Starter Pack in live Stripe (price_1SnOn3PociGoI1Q1wgxznnM1)
+- [x] Create Standard Pack in live Stripe (price_1SnOn4PociGoI1Q1sF11iSUj)
+- [x] Create Pro Pack in live Stripe (price_1SnOn4PociGoI1Q1M7DZUEQ3)
+- [x] Create Power Pack in live Stripe (price_1SnOn5PociGoI1Q15b0DuZRJ)
+- [x] Update database with live Stripe price IDs
+- [x] Update application to use Secretkey_live_stripe
+- [x] Test live Stripe checkout flow (verified working)

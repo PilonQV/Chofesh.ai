@@ -13,7 +13,7 @@ export const ENV = {
   // Venice AI for NSFW image generation
   veniceApiKey: process.env.VENICE_API_KEY ?? "",
   // Stripe
-  stripeSecretKey: process.env.STRIPE_SECRET_KEY ?? "",
+  stripeSecretKey: process.env.Secretkey_live_stripe || (process.env.STRIPE_SECRET_KEY ?? ""),
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? "",
   stripeUncensoredPriceId: process.env.STRIPE_UNCENSORED_PRICE_ID ?? "",
 };
