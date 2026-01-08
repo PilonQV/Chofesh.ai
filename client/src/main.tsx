@@ -1,9 +1,16 @@
 import { trpc } from "@/lib/trpc";
-// Geist fonts - locally bundled for better performance
-import "@fontsource/geist-sans/400.css";
-import "@fontsource/geist-sans/500.css";
-import "@fontsource/geist-sans/600.css";
-import "@fontsource/geist-sans/700.css";
+// Fonts - locally bundled for better performance
+// Outfit for headers (modern, friendly)
+import "@fontsource/outfit/400.css";
+import "@fontsource/outfit/500.css";
+import "@fontsource/outfit/600.css";
+import "@fontsource/outfit/700.css";
+// Plus Jakarta Sans for body text (highly legible)
+import "@fontsource/plus-jakarta-sans/400.css";
+import "@fontsource/plus-jakarta-sans/500.css";
+import "@fontsource/plus-jakarta-sans/600.css";
+import "@fontsource/plus-jakarta-sans/700.css";
+// Geist Mono for code
 import "@fontsource/geist-mono/400.css";
 import { UNAUTHED_ERR_MSG } from '@shared/const';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";

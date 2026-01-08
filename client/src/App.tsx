@@ -39,6 +39,7 @@ const KnowledgeBase = lazy(() => import("./pages/KnowledgeBase"));
 const ComponentShowcase = lazy(() => import("./pages/ComponentShowcase"));
 const Tools = lazy(() => import("./pages/Tools"));
 const AdminAuditLogs = lazy(() => import("./pages/AdminAuditLogs"));
+const PrivacyVault = lazy(() => import("./pages/PrivacyVault"));
 
 // Loading fallback component
 function PageLoader() {
@@ -76,6 +77,7 @@ function Router() {
         <Route path="/knowledge" component={KnowledgeBase} />
         <Route path="/showcase" component={ComponentShowcase} />
         <Route path="/tools" component={Tools} />
+        <Route path="/privacy-vault" component={PrivacyVault} />
         <Route path="/login" component={Login} />
         <Route path="/register" component={Register} />
         <Route path="/forgot-password" component={ForgotPassword} />
