@@ -1953,3 +1953,11 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Highlight uncensored/NSFW content rows in red
 - [x] Add user email search functionality
 - [x] Add uncensored content filter dropdown
+
+## Phase 57: Fix Premium Uncensored Image Models
+
+### Bug Report
+- [x] Venice SD35, HiDream, Z-Image Turbo produce blurry/censored results (CONFIRMED: Not NSFW-capable)
+- [x] Only Lustify SDXL and Lustify v7 work correctly for NSFW content (CONFIRMED by Venice docs)
+- [x] Remove non-NSFW models from 18+ mode dropdown
+- [x] Fix image download functionality not working (added server-side proxy)

@@ -1467,6 +1467,30 @@ Provide a comprehensive, well-researched response.`;
         
         return { success: true };
       }),
+    
+    // Download proxy - fetches image server-side to avoid CORS issues
+    downloadProxy: protectedProcedure
+      .input(z.object({ imageUrl: z.string().url() }))
+      .mutation(async ({ input }) => {
+        try {
+          const response = await fetch(input.imageUrl);
+          if (!response.ok) {
+            throw new Error(`Failed to fetch image: ${response.status}`);
+          }
+          const buffer = await response.arrayBuffer();
+          const base64 = Buffer.from(buffer).toString('base64');
+          const contentType = response.headers.get('content-type') || 'image/png';
+          return {
+            success: true,
+            data: `data:${contentType};base64,${base64}`,
+          };
+        } catch (error) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to download image",
+          });
+        }
+      }),
   }),
 
   // User settings
