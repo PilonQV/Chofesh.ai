@@ -1605,7 +1605,9 @@ export async function logApiCall(log: InsertApiCallLog): Promise<void> {
 
 export async function getApiCallLogs(options: {
   userId?: number;
+  userEmail?: string;
   actionType?: string;
+  isUncensored?: boolean;
   startDate?: Date;
   endDate?: Date;
   limit?: number;
@@ -1619,8 +1621,14 @@ export async function getApiCallLogs(options: {
   if (options.userId) {
     conditions.push(eq(apiCallLogs.userId, options.userId));
   }
+  if (options.userEmail) {
+    conditions.push(sql`${apiCallLogs.userEmail} LIKE ${`%${options.userEmail}%`}`);
+  }
   if (options.actionType) {
     conditions.push(eq(apiCallLogs.actionType, options.actionType as any));
+  }
+  if (options.isUncensored !== undefined) {
+    conditions.push(eq(apiCallLogs.isUncensored, options.isUncensored));
   }
   if (options.startDate) {
     conditions.push(gte(apiCallLogs.createdAt, options.startDate));

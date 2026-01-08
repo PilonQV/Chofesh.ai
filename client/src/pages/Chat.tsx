@@ -2104,49 +2104,53 @@ export default function Chat() {
                 </DropdownMenuContent>
               </DropdownMenu>
               
-              {/* Image Upload Button */}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => imageInputRef.current?.click()}
-                    disabled={isUploadingImage || isGenerating}
-                  >
-                    {isUploadingImage ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Image className="w-4 h-4" />
-                    )}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  Upload image for AI to analyze
-                </TooltipContent>
-              </Tooltip>
-              
-              {/* Voice Input Button */}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant={isListening ? "default" : "outline"}
-                    size="icon"
-                    onClick={toggleVoiceInput}
-                    className={isListening ? "bg-red-500 hover:bg-red-600 animate-pulse" : ""}
-                  >
-                    {isListening ? (
-                      <MicOff className="w-4 h-4" />
-                    ) : (
-                      <Mic className="w-4 h-4" />
-                    )}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {isListening ? "Stop listening (continuous mode)" : "Voice input (continuous)"}
-                </TooltipContent>
-              </Tooltip>
-
-              <div className="flex-1 relative">
+              {/* Input container with image/voice buttons inside */}
+              <div className="flex-1 relative flex items-end border border-input rounded-md bg-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
+                {/* Image and Voice buttons inside the input area */}
+                <div className="flex items-center gap-1 pl-2 pb-2 self-end">
+                  {/* Image Upload Button */}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={() => imageInputRef.current?.click()}
+                        disabled={isUploadingImage || isGenerating}
+                        className="p-1.5 rounded hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isUploadingImage ? (
+                          <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                        ) : (
+                          <Image className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                        )}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Upload image for AI to analyze
+                    </TooltipContent>
+                  </Tooltip>
+                  
+                  {/* Voice Input Button */}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={toggleVoiceInput}
+                        className={`p-1.5 rounded transition-colors ${isListening ? "bg-red-500 text-white animate-pulse" : "hover:bg-muted text-muted-foreground hover:text-foreground"}`}
+                      >
+                        {isListening ? (
+                          <MicOff className="w-4 h-4" />
+                        ) : (
+                          <Mic className="w-4 h-4" />
+                        )}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {isListening ? "Stop listening (continuous mode)" : "Voice input (continuous)"}
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                
+                {/* Textarea */}
                 <Textarea
                   ref={inputRef}
                   value={isListening && interimTranscript ? input + interimTranscript : input}
@@ -2159,7 +2163,7 @@ export default function Chat() {
                   }}
                   placeholder={uploadedImages.length > 0 ? "Ask about the image..." : (isListening ? "Listening... speak now" : "Type your message...")}
                   disabled={isGenerating || isListening}
-                  className={`min-h-[44px] max-h-[200px] resize-none pr-12 transition-all duration-200 focus:min-h-[80px] ${isListening ? "bg-red-500/10 border-red-500/50" : ""}`}
+                  className={`flex-1 min-h-[44px] max-h-[200px] resize-none pr-12 border-0 focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-200 focus:min-h-[80px] ${isListening ? "bg-red-500/10" : ""}`}
                   rows={1}
                 />
                 {/* Character count */}

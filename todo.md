@@ -1939,3 +1939,17 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Debug Venice API production issue - identified missing OPENROUTER_API_KEY
 - [x] Add better error logging to veniceImage.ts
 - [x] Improve chat error handling to show actual error messages
+
+
+## Phase 56: Chat UX & Admin Dashboard Improvements
+
+### Chat Interface
+- [x] Fix manual model selection - show model dropdown when Manual mode selected (verified working)
+- [x] Move image upload button inside chatbox input area
+- [x] Move voice input button inside chatbox input area
+
+### Admin Dashboard
+- [x] Add search/filter by user ID in audit logs
+- [x] Highlight uncensored/NSFW content rows in red
+- [x] Add user email search functionality
+- [x] Add uncensored content filter dropdown
