@@ -2296,3 +2296,14 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
   - Settings.tsx: "Images: 3 credits each (or 10 for 4 variations)"
   - routers.ts: Updated credit checks and deductions to 3 credits
 - [x] Agent mode now generates 1 image by default, 4 for batch requests
+
+
+## Phase 84: Fix Agent Mode Not Triggering Image Generation
+- [x] Investigated why agent mode shows enabled but doesn't generate images
+  - Issue: Intent patterns too strict, "create an image about" wasn't matching
+- [x] Fixed INTENT_PATTERNS to be more flexible:
+  - Added pattern for "create/make/generate an image about/of/for"
+  - Added pattern for "create a picture for this story"
+  - Added patterns for "image of", "picture about", etc.
+- [x] Added unit tests for new intent patterns (411 tests passing)
+- [x] Agent mode now properly detects image generation requests

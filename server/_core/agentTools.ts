@@ -247,12 +247,21 @@ export function getAgentTools(userId: string): AgentTools {
  */
 export const INTENT_PATTERNS = {
   image: [
+    // Direct commands: "draw me a cat", "paint a sunset"
     /^(please\s+)?(draw|paint|sketch|illustrate)\s+(me\s+)?/i,
-    /^(please\s+)?(generate|create|make)\s+(me\s+)?(a|an|the)?\s*(image|picture|photo|illustration|art|artwork|painting|portrait|scene|logo|icon)/i,
+    // "create an image", "generate a picture", "make an illustration"
+    /\b(generate|create|make)\s+(me\s+)?(a|an|the)?\s*(image|picture|photo|illustration|art|artwork|painting|portrait|scene|logo|icon)/i,
+    // "create an image about/of/for"
+    /\b(generate|create|make)\s+(an?|the)?\s*(image|picture)\s+(about|of|for|showing|depicting)/i,
+    // "show me an image", "visualize this"
     /\b(show|visualize|depict)\s+(me\s+)?.*\b(image|picture|visual)/i,
-    /\bimage\s+of\b/i,
-    /\bpicture\s+of\b/i,
+    // "image of a cat", "picture of sunset"
+    /\bimage\s+(of|about|for|showing)\b/i,
+    /\bpicture\s+(of|about|for|showing)\b/i,
+    // "generate an image"
     /\bgenerate\s+(an?\s+)?image/i,
+    // "create a picture for this story"
+    /\b(create|make|generate)\s+a\s+(picture|image)\s+(for|about)/i,
   ],
   imageBatch: [
     /\bgenerate\s+(4|four)\s+variations?/i,
