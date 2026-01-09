@@ -56,6 +56,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Streamdown } from "streamdown";
 import { AskDiaLinks } from "@/components/AskDiaLinks";
 import { AgeVerificationModal } from "@/components/AgeVerificationModal";
+import { useCommandCenter } from "@/components/CommandCenter";
 import {
   Send,
   Plus,
@@ -105,6 +106,7 @@ import {
   Folder,
   FolderPlus,
   FolderOpen,
+  Command,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -261,6 +263,7 @@ export default function Chat() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const { openCommandCenter } = useCommandCenter();
   
   // Mobile swipe gestures for sidebar
   useSwipe({
@@ -1345,6 +1348,27 @@ export default function Chat() {
 
           {/* Header Controls */}
           <div className="flex items-center gap-1 sm:gap-2">
+            {/* Command Center Button */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={openCommandCenter}
+                  className="h-8 gap-2 px-2 sm:px-3 bg-background/50 hover:bg-background"
+                >
+                  <Command className="w-4 h-4" />
+                  <span className="hidden sm:inline text-xs">Tools</span>
+                  <kbd className="hidden md:inline-flex h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+                    <span className="text-xs">⌘</span>K
+                  </kbd>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Open Command Center (⌘K)</p>
+              </TooltipContent>
+            </Tooltip>
+            
             {/* Theme Toggle */}
             <Button
               variant="ghost"
