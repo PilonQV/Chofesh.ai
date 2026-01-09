@@ -2264,3 +2264,12 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Merged image settings into the main uncensored toggle
 - [x] Shows all features unlocked: Uncensored chat, Adult image generation, Premium models, Private generation
 - [x] Test all settings work correctly
+
+## Phase 82: Fix Agent Mode and Duplicate Buttons
+- [x] Verified agent mode IS working - images generate inline in chat when agent mode is enabled
+- [x] Updated image generation to create 4 images for 10 credits:
+  - Modified AgentTools.generateImage to generate 4 images in parallel
+  - Updated ImageToolResult interface to use urls array instead of single url
+  - Updated routers.ts to format multiple images in response
+- [x] Added test for 4-image generation structure
+- [x] All 408 tests passing
