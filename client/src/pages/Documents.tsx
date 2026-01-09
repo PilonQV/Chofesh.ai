@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Checkbox } from "@/components/ui/checkbox";
 import { trpc } from "@/lib/trpc";
 import { Link, useLocation } from "wouter";
 import { useState, useEffect, useRef } from "react";
@@ -23,6 +24,9 @@ import {
   File,
   X,
   ChevronLeft,
+  CheckSquare,
+  Square,
+  Files,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Streamdown } from "streamdown";
@@ -35,7 +39,7 @@ interface Message {
 export default function Documents() {
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
-  const [selectedDocId, setSelectedDocId] = useState<number | null>(null);
+  const [selectedDocIds, setSelectedDocIds] = useState<number[]>([]);
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -48,8 +52,8 @@ export default function Documents() {
     enabled: isAuthenticated,
   });
 
-  // Get selected document from the list
-  const selectedDoc = documents?.find(d => d.id === selectedDocId);
+  // Get selected documents from the list
+  const selectedDocs = documents?.filter(d => selectedDocIds.includes(d.id)) || [];
 
   const uploadMutation = trpc.documents.upload.useMutation({
     onSuccess: () => {
@@ -64,7 +68,6 @@ export default function Documents() {
   const deleteMutation = trpc.documents.delete.useMutation({
     onSuccess: () => {
       toast.success("Document deleted");
-      if (selectedDocId) setSelectedDocId(null);
       utils.documents.list.invalidate();
     },
     onError: (error) => {
@@ -72,7 +75,19 @@ export default function Documents() {
     },
   });
 
+  // Single document chat mutation (for single doc selection)
   const chatMutation = trpc.documents.chat.useMutation({
+    onSuccess: (data) => {
+      setChatMessages((prev) => [...prev, { role: "assistant", content: data.answer }]);
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to get response");
+      setChatMessages((prev) => prev.slice(0, -1)); // Remove loading message
+    },
+  });
+
+  // Multi-document chat mutation
+  const multiChatMutation = trpc.documents.multiChat.useMutation({
     onSuccess: (data) => {
       setChatMessages((prev) => [...prev, { role: "assistant", content: data.answer }]);
     },
@@ -148,22 +163,58 @@ export default function Documents() {
   };
 
   const handleSendMessage = async () => {
-    if (!inputMessage.trim() || !selectedDocId || chatMutation.isPending) return;
+    if (!inputMessage.trim() || selectedDocIds.length === 0 || chatMutation.isPending || multiChatMutation.isPending) return;
 
     const userMessage = inputMessage.trim();
     setInputMessage("");
     setChatMessages((prev) => [...prev, { role: "user", content: userMessage }]);
 
-    await chatMutation.mutateAsync({
-      documentId: selectedDocId,
-      question: userMessage,
-    });
+    if (selectedDocIds.length === 1) {
+      // Single document chat
+      await chatMutation.mutateAsync({
+        documentId: selectedDocIds[0],
+        question: userMessage,
+      });
+    } else {
+      // Multi-document chat
+      await multiChatMutation.mutateAsync({
+        documentIds: selectedDocIds,
+        question: userMessage,
+      });
+    }
   };
 
-  const handleSelectDocument = (docId: number) => {
-    setSelectedDocId(docId);
+  const handleToggleDocument = (docId: number) => {
+    setSelectedDocIds(prev => {
+      if (prev.includes(docId)) {
+        return prev.filter(id => id !== docId);
+      } else {
+        return [...prev, docId];
+      }
+    });
+    // Clear chat when selection changes
     setChatMessages([]);
   };
+
+  const handleSelectAll = () => {
+    if (documents) {
+      setSelectedDocIds(documents.map(d => d.id));
+      setChatMessages([]);
+    }
+  };
+
+  const handleDeselectAll = () => {
+    setSelectedDocIds([]);
+    setChatMessages([]);
+  };
+
+  const handleDeleteDocument = (docId: number) => {
+    // Remove from selection if selected
+    setSelectedDocIds(prev => prev.filter(id => id !== docId));
+    deleteMutation.mutate({ id: docId });
+  };
+
+  const isPending = chatMutation.isPending || multiChatMutation.isPending;
 
   if (authLoading || docsLoading) {
     return (
@@ -201,7 +252,7 @@ export default function Documents() {
       {/* Main Content */}
       <main className="pt-16 h-screen flex">
         {/* Sidebar - Document List */}
-        <div className={`w-80 border-r border-border flex flex-col ${selectedDocId ? 'hidden md:flex' : 'flex'}`}>
+        <div className={`w-80 border-r border-border flex flex-col ${selectedDocIds.length > 0 ? 'hidden md:flex' : 'flex'}`}>
           <div className="p-4 border-b border-border">
             <input
               type="file"
@@ -232,6 +283,37 @@ export default function Documents() {
             </p>
           </div>
 
+          {/* Selection Controls */}
+          {documents && documents.length > 0 && (
+            <div className="px-4 py-2 border-b border-border flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">
+                {selectedDocIds.length} of {documents.length} selected
+              </span>
+              <div className="flex gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSelectAll}
+                  disabled={selectedDocIds.length === documents.length}
+                  className="h-7 text-xs"
+                >
+                  <CheckSquare className="w-3 h-3 mr-1" />
+                  All
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleDeselectAll}
+                  disabled={selectedDocIds.length === 0}
+                  className="h-7 text-xs"
+                >
+                  <Square className="w-3 h-3 mr-1" />
+                  None
+                </Button>
+              </div>
+            </div>
+          )}
+
           <ScrollArea className="flex-1">
             <div className="p-2 space-y-2">
               {documents && documents.length > 0 ? (
@@ -239,13 +321,19 @@ export default function Documents() {
                   <div
                     key={doc.id}
                     className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                      selectedDocId === doc.id
+                      selectedDocIds.includes(doc.id)
                         ? "bg-primary/10 border border-primary/50"
                         : "hover:bg-muted border border-transparent"
                     }`}
-                    onClick={() => handleSelectDocument(doc.id)}
+                    onClick={() => handleToggleDocument(doc.id)}
                   >
                     <div className="flex items-start gap-3">
+                      <Checkbox
+                        checked={selectedDocIds.includes(doc.id)}
+                        onCheckedChange={() => handleToggleDocument(doc.id)}
+                        onClick={(e) => e.stopPropagation()}
+                        className="mt-1"
+                      />
                       <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
                         <File className="w-5 h-5 text-muted-foreground" />
                       </div>
@@ -264,7 +352,7 @@ export default function Documents() {
                         className="flex-shrink-0 text-destructive hover:text-destructive"
                         onClick={(e) => {
                           e.stopPropagation();
-                          deleteMutation.mutate({ id: doc.id });
+                          handleDeleteDocument(doc.id);
                         }}
                       >
                         <Trash2 className="w-4 h-4" />
@@ -288,8 +376,8 @@ export default function Documents() {
         </div>
 
         {/* Chat Area */}
-        <div className={`flex-1 flex flex-col ${selectedDocId ? 'flex' : 'hidden md:flex'}`}>
-          {selectedDocId && selectedDoc ? (
+        <div className={`flex-1 flex flex-col ${selectedDocIds.length > 0 ? 'flex' : 'hidden md:flex'}`}>
+          {selectedDocIds.length > 0 && selectedDocs.length > 0 ? (
             <>
               {/* Document Header */}
               <div className="p-4 border-b border-border flex items-center gap-4">
@@ -297,16 +385,44 @@ export default function Documents() {
                   variant="ghost"
                   size="icon"
                   className="md:hidden"
-                  onClick={() => setSelectedDocId(null)}
+                  onClick={() => setSelectedDocIds([])}
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </Button>
                 <div className="flex-1 min-w-0">
-                  <h2 className="font-semibold truncate">{selectedDoc.originalName}</h2>
-                  <p className="text-sm text-muted-foreground">
-                    {selectedDoc.chunkCount} chunks • Ready for questions
-                  </p>
+                  {selectedDocs.length === 1 ? (
+                    <>
+                      <h2 className="font-semibold truncate">{selectedDocs[0].originalName}</h2>
+                      <p className="text-sm text-muted-foreground">
+                        {selectedDocs[0].chunkCount} chunks • Ready for questions
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <Files className="w-5 h-5 text-primary" />
+                        <h2 className="font-semibold">{selectedDocs.length} Documents Selected</h2>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {selectedDocs.reduce((acc, d) => acc + (d.chunkCount || 0), 0)} total chunks • Ask questions across all documents
+                      </p>
+                    </>
+                  )}
                 </div>
+                {selectedDocs.length > 1 && (
+                  <div className="hidden sm:flex flex-wrap gap-1 max-w-xs">
+                    {selectedDocs.slice(0, 3).map(doc => (
+                      <span key={doc.id} className="text-xs bg-muted px-2 py-1 rounded truncate max-w-[100px]">
+                        {doc.originalName}
+                      </span>
+                    ))}
+                    {selectedDocs.length > 3 && (
+                      <span className="text-xs bg-muted px-2 py-1 rounded">
+                        +{selectedDocs.length - 3} more
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Messages */}
@@ -315,11 +431,21 @@ export default function Documents() {
                   {chatMessages.length === 0 ? (
                     <div className="text-center py-12">
                       <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                        <MessageSquare className="w-8 h-8 text-primary" />
+                        {selectedDocs.length === 1 ? (
+                          <MessageSquare className="w-8 h-8 text-primary" />
+                        ) : (
+                          <Files className="w-8 h-8 text-primary" />
+                        )}
                       </div>
-                      <h3 className="font-semibold mb-2">Ask About This Document</h3>
+                      <h3 className="font-semibold mb-2">
+                        {selectedDocs.length === 1 
+                          ? "Ask About This Document" 
+                          : `Ask About ${selectedDocs.length} Documents`}
+                      </h3>
                       <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                        Ask any question about "{selectedDoc.originalName}" and get answers based on its content.
+                        {selectedDocs.length === 1 
+                          ? `Ask any question about "${selectedDocs[0].originalName}" and get answers based on its content.`
+                          : "Ask any question and get answers based on the content of all selected documents."}
                       </p>
                     </div>
                   ) : (
@@ -344,7 +470,7 @@ export default function Documents() {
                       </div>
                     ))
                   )}
-                  {chatMutation.isPending && (
+                  {isPending && (
                     <div className="flex justify-start">
                       <div className="bg-muted p-4 rounded-2xl">
                         <img src="/chofesh-logo-48.webp" alt="AI analyzing document" className="w-5 h-5 animate-pulse" />
@@ -362,13 +488,15 @@ export default function Documents() {
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSendMessage()}
-                    placeholder="Ask a question about this document..."
-                    disabled={chatMutation.isPending}
+                    placeholder={selectedDocs.length === 1 
+                      ? "Ask a question about this document..." 
+                      : `Ask a question across ${selectedDocs.length} documents...`}
+                    disabled={isPending}
                     className="flex-1"
                   />
                   <Button
                     onClick={handleSendMessage}
-                    disabled={!inputMessage.trim() || chatMutation.isPending}
+                    disabled={!inputMessage.trim() || isPending}
                   >
                     <Send className="w-4 h-4" />
                   </Button>
@@ -381,9 +509,9 @@ export default function Documents() {
                 <div className="w-20 h-20 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
                   <FileText className="w-10 h-10 text-muted-foreground" />
                 </div>
-                <h2 className="text-xl font-semibold mb-2">Select a Document</h2>
+                <h2 className="text-xl font-semibold mb-2">Select Documents</h2>
                 <p className="text-muted-foreground max-w-md">
-                  Choose a document from the sidebar to start asking questions about it.
+                  Choose one or more documents from the sidebar to start asking questions.
                 </p>
               </div>
             </div>

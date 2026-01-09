@@ -2057,6 +2057,162 @@ Provide a comprehensive, well-researched response.`;
           });
         }
       }),
+    
+    // Multi-document chat
+    multiChat: protectedProcedure
+      .input(z.object({
+        documentIds: z.array(z.number()).min(1).max(10),
+        question: z.string(),
+        routingMode: z.enum(["auto", "free", "manual"]).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const startTime = Date.now();
+        
+        // Get all documents
+        const docs = await Promise.all(
+          input.documentIds.map(id => getDocumentById(ctx.user.id, id))
+        );
+        
+        const validDocs = docs.filter((d): d is NonNullable<typeof d> => d !== null);
+        if (validDocs.length === 0) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "No valid documents found" });
+        }
+        
+        // Check for PDFs - we'll handle them differently
+        const pdfDocs = validDocs.filter(d => d.mimeType === 'application/pdf');
+        const textDocs = validDocs.filter(d => d.mimeType !== 'application/pdf');
+        
+        // Determine routing
+        const routingMode = (input.routingMode || "auto") as RoutingMode;
+        const messages = [{ role: "user" as const, content: input.question }];
+        const complexity = analyzeQueryComplexity(messages);
+        const selectedModel = selectModel(complexity, routingMode);
+        
+        let ragMessages: any[];
+        let chunksUsed = 0;
+        
+        // Build context from all documents
+        let combinedContext = "";
+        const docNames: string[] = [];
+        
+        // Get chunks from text documents
+        if (textDocs.length > 0) {
+          const chunks = await searchDocumentChunks(ctx.user.id, input.question, 10);
+          // Filter chunks to only include those from selected documents
+          const relevantChunks = chunks.filter(c => 
+            input.documentIds.includes(c.documentId)
+          );
+          combinedContext = relevantChunks.slice(0, 6).map(c => 
+            `[From ${c.documentName || 'Document'}]:\n${c.content}`
+          ).join("\n\n---\n\n");
+          chunksUsed = relevantChunks.length;
+          textDocs.forEach(d => docNames.push(d.filename));
+        }
+        
+        // For PDFs, we need to use file_url approach
+        // If there are PDFs, we'll include them as file attachments
+        if (pdfDocs.length > 0 && pdfDocs.some(d => d.storageUrl?.startsWith('http'))) {
+          const pdfContent = pdfDocs.map(d => ({
+            type: "file_url" as const,
+            file_url: {
+              url: d.storageUrl,
+              mime_type: "application/pdf",
+            },
+          }));
+          pdfDocs.forEach(d => docNames.push(d.filename));
+          chunksUsed += pdfDocs.length;
+          
+          ragMessages = [
+            {
+              role: "system" as const,
+              content: `You are a helpful assistant answering questions about multiple documents: ${docNames.join(", ")}. Analyze all provided documents and answer the user's question based on their combined content. If the answer is not in any document, say so. When referencing information, mention which document it came from.${combinedContext ? `\n\nText document context:\n${combinedContext}` : ''}`,
+            },
+            {
+              role: "user" as const,
+              content: [
+                ...pdfContent,
+                {
+                  type: "text" as const,
+                  text: input.question,
+                },
+              ],
+            },
+          ];
+        } else {
+          // Text-only documents
+          ragMessages = [
+            {
+              role: "system" as const,
+              content: `You are a helpful assistant answering questions about multiple documents: ${docNames.join(", ")}. Use the following context from these documents to answer the user's question. If the answer is not in the context, say so. When referencing information, mention which document it came from.\n\nContext:\n${combinedContext}`,
+            },
+            {
+              role: "user" as const,
+              content: input.question,
+            },
+          ];
+        }
+        
+        try {
+          const response = await invokeLLM({ messages: ragMessages });
+          const rawContent = response.choices[0]?.message?.content;
+          const answer = typeof rawContent === 'string' ? rawContent : '';
+          
+          // Estimate tokens
+          const inputTokens = pdfDocs.length > 0 ? 5000 * pdfDocs.length : ragMessages.reduce((acc, m) => {
+            if (typeof m.content === 'string') return acc + estimateTokens(m.content);
+            return acc + 100;
+          }, 0);
+          const outputTokens = estimateTokens(answer);
+          const cost = estimateCost(selectedModel, inputTokens, outputTokens);
+          
+          await createUsageRecord({
+            userId: ctx.user.id,
+            actionType: "document_chat",
+            model: selectedModel.id,
+            inputTokens,
+            outputTokens,
+            totalTokens: inputTokens + outputTokens,
+            estimatedCost: cost.toFixed(6),
+            timestamp: new Date(),
+          });
+          
+          await createAuditLog({
+            userId: ctx.user.id,
+            userOpenId: ctx.user.openId,
+            actionType: "document_chat",
+            ipAddress: getClientIp(ctx.req),
+            userAgent: ctx.req.headers["user-agent"] || null,
+            contentHash: hashContent(input.question + answer),
+            modelUsed: selectedModel.id,
+            promptLength: input.question.length,
+            responseLength: answer.length,
+            metadata: JSON.stringify({
+              documentIds: input.documentIds,
+              documentCount: validDocs.length,
+              chunksUsed,
+              hasPdfs: pdfDocs.length > 0,
+              duration: Date.now() - startTime,
+            }),
+            timestamp: new Date(),
+          });
+          
+          return {
+            answer,
+            model: selectedModel.id,
+            modelName: selectedModel.name,
+            tier: selectedModel.tier,
+            sourcesUsed: chunksUsed,
+            documentsUsed: validDocs.length,
+            cost,
+          };
+        } catch (error) {
+          console.error("Multi-document chat error:", error);
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to process multi-document question",
+          });
+        }
+      }),
   }),
 
   // AI Characters
