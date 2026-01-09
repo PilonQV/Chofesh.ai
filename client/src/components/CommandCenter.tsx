@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
 import { useLocation } from "wouter";
 import {
   CommandDialog,
@@ -14,7 +14,6 @@ import {
   MessageSquare,
   Image,
   Settings,
-  Wrench,
   Youtube,
   Globe,
   Calculator,
@@ -24,14 +23,12 @@ import {
   GitCompare,
   Send,
   Brain,
-  Search,
   FileText,
   BarChart3,
   CreditCard,
   Key,
   Moon,
   Sun,
-  Sparkles,
   Shield,
   Database,
   Users,
@@ -39,39 +36,66 @@ import {
   Palette,
   Home,
   LogOut,
-  HelpCircle,
-  Zap,
   ImagePlus,
 } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 
-interface CommandCenterProps {
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
+// Context for Command Center state
+interface CommandCenterContextType {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  toggle: () => void;
+  openCommandCenter: () => void;
+  closeCommandCenter: () => void;
 }
 
-export function CommandCenter({ open: controlledOpen, onOpenChange }: CommandCenterProps) {
-  const [internalOpen, setInternalOpen] = useState(false);
-  const [, setLocation] = useLocation();
-  const { theme, toggleTheme } = useTheme();
-  const { logout, isAuthenticated } = useAuth();
+const CommandCenterContext = createContext<CommandCenterContextType | null>(null);
 
-  const open = controlledOpen ?? internalOpen;
-  const setOpen = onOpenChange ?? setInternalOpen;
+// Provider component
+export function CommandCenterProvider({ children }: { children: ReactNode }) {
+  const [open, setOpen] = useState(false);
+
+  const toggle = useCallback(() => setOpen(prev => !prev), []);
+  const openCommandCenter = useCallback(() => setOpen(true), []);
+  const closeCommandCenter = useCallback(() => setOpen(false), []);
 
   // Keyboard shortcut: Cmd/Ctrl + K
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setOpen(!open);
+        setOpen(prev => !prev);
       }
     };
 
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
-  }, [open, setOpen]);
+  }, []);
+
+  return (
+    <CommandCenterContext.Provider value={{ open, setOpen, toggle, openCommandCenter, closeCommandCenter }}>
+      {children}
+      <CommandCenterDialog />
+    </CommandCenterContext.Provider>
+  );
+}
+
+// Hook to use Command Center from anywhere
+export function useCommandCenter() {
+  const context = useContext(CommandCenterContext);
+  if (!context) {
+    throw new Error("useCommandCenter must be used within a CommandCenterProvider");
+  }
+  return context;
+}
+
+// The actual Command Center dialog
+function CommandCenterDialog() {
+  const { open, setOpen } = useCommandCenter();
+  const [, setLocation] = useLocation();
+  const { theme, toggleTheme } = useTheme();
+  const { logout, isAuthenticated } = useAuth();
 
   const runCommand = useCallback((command: (() => void) | undefined) => {
     setOpen(false);
@@ -246,21 +270,4 @@ export function CommandCenter({ open: controlledOpen, onOpenChange }: CommandCen
   );
 }
 
-// Hook to use Command Center from anywhere
-export function useCommandCenter() {
-  const [open, setOpen] = useState(false);
-
-  const toggle = useCallback(() => setOpen(prev => !prev), []);
-  const openCommandCenter = useCallback(() => setOpen(true), []);
-  const closeCommandCenter = useCallback(() => setOpen(false), []);
-
-  return {
-    open,
-    setOpen,
-    toggle,
-    openCommandCenter,
-    closeCommandCenter,
-  };
-}
-
-export default CommandCenter;
+export default CommandCenterProvider;
