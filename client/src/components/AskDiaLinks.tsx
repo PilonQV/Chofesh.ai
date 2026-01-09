@@ -70,8 +70,72 @@ function generateFollowUpQuestion(term: string): string {
   return `Tell me more about ${term}`;
 }
 
+// Check if content contains markdown images
+function containsMarkdownImages(content: string): boolean {
+  return /!\[.*?\]\(.*?\)/.test(content);
+}
+
+// Render content with inline images
+function renderWithImages(content: string): React.ReactNode[] {
+  const parts: React.ReactNode[] = [];
+  const imageRegex = /!\[(.*?)\]\((.*?)\)/g;
+  let lastIndex = 0;
+  let match;
+  let key = 0;
+
+  while ((match = imageRegex.exec(content)) !== null) {
+    // Add text before the image
+    if (match.index > lastIndex) {
+      const textBefore = content.slice(lastIndex, match.index);
+      parts.push(<Streamdown key={`text-${key++}`}>{textBefore}</Streamdown>);
+    }
+
+    // Add the image
+    const altText = match[1];
+    const imageUrl = match[2];
+    parts.push(
+      <div key={`img-${key++}`} className="my-4">
+        <img
+          src={imageUrl}
+          alt={altText}
+          className="max-w-full h-auto rounded-lg shadow-lg"
+          loading="lazy"
+          onError={(e) => {
+            // If image fails to load, show the URL as a link
+            const target = e.target as HTMLImageElement;
+            target.style.display = 'none';
+            const fallback = document.createElement('a');
+            fallback.href = imageUrl;
+            fallback.target = '_blank';
+            fallback.rel = 'noopener noreferrer';
+            fallback.textContent = `View image: ${altText}`;
+            fallback.className = 'text-primary underline';
+            target.parentNode?.appendChild(fallback);
+          }}
+        />
+        {altText && <p className="text-sm text-muted-foreground mt-2 italic">{altText}</p>}
+      </div>
+    );
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Add remaining text after the last image
+  if (lastIndex < content.length) {
+    const remainingText = content.slice(lastIndex);
+    parts.push(<Streamdown key={`text-${key++}`}>{remainingText}</Streamdown>);
+  }
+
+  return parts;
+}
+
 export function AskDiaLinks({ content, onAskFollowUp }: AskDiaLinksProps) {
   const [hoveredTerm, setHoveredTerm] = useState<string | null>(null);
+  
+  // If content contains markdown images, render them specially
+  if (containsMarkdownImages(content)) {
+    return <div className="ask-dia-links">{renderWithImages(content)}</div>;
+  }
   
   const clickableTerms = useMemo(() => extractClickableTerms(content), [content]);
   
