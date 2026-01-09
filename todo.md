@@ -2273,3 +2273,26 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
   - Updated routers.ts to format multiple images in response
 - [x] Added test for 4-image generation structure
 - [x] All 408 tests passing
+
+## Phase 83: Agent Mode Default + New Image Pricing
+- [ ] Enable agent mode by default (remove toggle from settings)
+- [ ] Update agent mode to generate 1 image by default (was 4)
+- [ ] Charge 3 credits for 1 image generation
+- [ ] Add "Generate 4 variations" button after image is generated
+- [ ] Charge 10 credits for 4 variations
+- [ ] Update Settings page pricing text (was "10 credits for 4 images")
+- [ ] Update any other pricing references across the app
+- [ ] Test agent mode image generation with new pricing
+
+
+## Phase 83: Agent Mode Default + Image Pricing Update
+- [x] Enable agent mode by default (set agentMode = true in Chat.tsx)
+- [x] Update default image generation to 1 image for 3 credits
+- [x] Add "Generate 4 variations" option for 10 credits (imageBatch intent)
+- [x] Updated all pricing text across the app:
+  - Credits.tsx: "Single image: 3 credits, 4 variations: 10 credits"
+  - Home.tsx: "Images: 3 credits/image"
+  - ImageGen.tsx: "3 credits per image (or 10 for 4 variations)"
+  - Settings.tsx: "Images: 3 credits each (or 10 for 4 variations)"
+  - routers.ts: Updated credit checks and deductions to 3 credits
+- [x] Agent mode now generates 1 image by default, 4 for batch requests

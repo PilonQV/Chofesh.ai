@@ -287,7 +287,7 @@ export default function Chat() {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [responseFormat, setResponseFormat] = useState<"auto" | "detailed" | "concise" | "bullet" | "table">("auto");
   const [deepResearchEnabled, setDeepResearchEnabled] = useState(false);
-  const [agentModeEnabled, setAgentModeEnabled] = useState(false);
+  const [agentModeEnabled, setAgentModeEnabled] = useState(true); // Agent mode enabled by default
   const imageInputRef = useRef<HTMLInputElement>(null);
   
   // Voice features
