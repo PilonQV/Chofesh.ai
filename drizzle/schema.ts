@@ -572,3 +572,25 @@ export const creditCosts = mysqlTable("credit_costs", {
 
 export type CreditCost = typeof creditCosts.$inferSelect;
 export type InsertCreditCost = typeof creditCosts.$inferInsert;
+
+
+/**
+ * Support requests table for customer support tickets.
+ */
+export const supportRequests = mysqlTable("support_requests", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 320 }).notNull(),
+  subject: varchar("subject", { length: 500 }).notNull(),
+  category: varchar("category", { length: 64 }).default("general").notNull(),
+  priority: varchar("priority", { length: 32 }).default("normal").notNull(),
+  message: text("message").notNull(),
+  userId: int("userId"),
+  status: mysqlEnum("status", ["open", "in_progress", "resolved", "closed"]).default("open").notNull(),
+  adminNotes: text("adminNotes"),
+  resolvedAt: timestamp("resolvedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type SupportRequest = typeof supportRequests.$inferSelect;
+export type InsertSupportRequest = typeof supportRequests.$inferInsert;

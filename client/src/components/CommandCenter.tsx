@@ -37,6 +37,7 @@ import {
   Home,
   LogOut,
   ImagePlus,
+  HelpCircle,
 } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -254,6 +255,10 @@ function CommandCenterDialog() {
           <CommandItem onSelect={() => navigateTo("/terms")}>
             <FileText className="mr-2 h-4 w-4" />
             <span>Terms of Service</span>
+          </CommandItem>
+          <CommandItem onSelect={() => navigateTo("/support")}>
+            <HelpCircle className="mr-2 h-4 w-4 text-green-500" />
+            <span>Customer Support</span>
           </CommandItem>
           {isAuthenticated && (
             <CommandItem onSelect={() => runCommand(async () => {

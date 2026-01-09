@@ -2307,3 +2307,39 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
   - Added patterns for "image of", "picture about", etc.
 - [x] Added unit tests for new intent patterns (411 tests passing)
 - [x] Agent mode now properly detects image generation requests
+
+
+## Phase 85: Remove Duplicate Button & Add Customer Support
+- [ ] Remove duplicate ⌘K button from chat header (keep just "Tools" button)
+- [ ] Create customer support form request page (/support)
+- [ ] Add support link to navigation/footer
+- [ ] Include form fields: name, email, subject, message, priority
+- [ ] Store support requests in database
+- [ ] Send email notification to owner on new request
+
+
+---
+
+## Phase 83: Customer Support Feature
+
+### Support Form
+- [x] Create Support page with form UI
+- [x] Add support request database table
+- [x] Create support.submit tRPC endpoint
+- [x] Store support requests in database
+- [x] Send email notification to owner on new request
+- [x] Add Support link to Command Center
+- [x] Add /support route to App.tsx
+- [x] Add 14 unit tests for support feature
+
+### Support Categories
+- [x] General Question
+- [x] Bug Report
+- [x] Feature Request
+- [x] Billing & Credits
+- [x] Account Issue
+
+### Support Priorities
+- [x] Low - General inquiry
+- [x] Normal - Need help soon
+- [x] High - Urgent issue
