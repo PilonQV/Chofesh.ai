@@ -1936,7 +1936,7 @@ Provide a comprehensive, well-researched response.`;
         const startTime = Date.now();
         
         // Get document
-        const doc = await getDocumentById(input.documentId, ctx.user.id);
+        const doc = await getDocumentById(ctx.user.id, input.documentId);
         if (!doc) {
           throw new TRPCError({ code: "NOT_FOUND", message: "Document not found" });
         }
