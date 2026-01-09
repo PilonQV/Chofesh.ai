@@ -42,6 +42,7 @@ const Tools = lazy(() => import("./pages/Tools"));
 const AdminAuditLogs = lazy(() => import("./pages/AdminAuditLogs"));
 const PrivacyVault = lazy(() => import("./pages/PrivacyVault"));
 const Credits = lazy(() => import("./pages/Credits"));
+const Support = lazy(() => import("./pages/Support"));
 
 // Loading fallback component
 function PageLoader() {
@@ -86,6 +87,7 @@ function Router() {
         <Route path="/forgot-password" component={ForgotPassword} />
         <Route path="/reset-password" component={ResetPassword} />
         <Route path="/verify-email" component={VerifyEmail} />
+        <Route path="/support" component={Support} />
         <Route path="/404" component={NotFound} />
         <Route component={NotFound} />
       </Switch>

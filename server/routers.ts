@@ -115,7 +115,7 @@ import {
   isUserAgeVerified,
 } from "./db";
 import { getDb } from "./db";
-import { users } from "../drizzle/schema";
+import { users, supportRequests } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { invokeLLM } from "./_core/llm";
 import { invokeGrok, isGrokAvailable } from "./_core/grok";
@@ -4103,6 +4103,66 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
       
       return { success: true, message: "Subscription will be canceled at the end of the billing period" };
     }),
+  }),
+  
+  // Customer Support
+  support: router({
+    submit: publicProcedure
+      .input(z.object({
+        name: z.string().min(1),
+        email: z.string().email(),
+        subject: z.string().min(1),
+        category: z.string().default("general"),
+        priority: z.string().default("normal"),
+        message: z.string().min(1),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const db = await getDb();
+        
+        // Store support request in database
+        if (db) {
+          try {
+            await db.insert(supportRequests).values({
+              name: input.name,
+              email: input.email,
+              subject: input.subject,
+              category: input.category,
+              priority: input.priority,
+              message: input.message,
+              userId: ctx.user?.id || null,
+              status: "open",
+              createdAt: new Date(),
+            });
+          } catch (e) {
+            console.error("Failed to store support request:", e);
+          }
+        }
+        
+        // Send email notification to owner
+        try {
+          const { sendEmail } = await import("./_core/resend");
+          const ownerEmail = process.env.OWNER_EMAIL || "support@chofesh.ai";
+          
+          await sendEmail({
+            to: ownerEmail,
+            subject: `[Support] ${input.priority.toUpperCase()}: ${input.subject}`,
+            html: `
+              <h2>New Support Request</h2>
+              <p><strong>From:</strong> ${input.name} (${input.email})</p>
+              <p><strong>Category:</strong> ${input.category}</p>
+              <p><strong>Priority:</strong> ${input.priority}</p>
+              <p><strong>Subject:</strong> ${input.subject}</p>
+              <hr/>
+              <p><strong>Message:</strong></p>
+              <p>${input.message.replace(/\n/g, "<br/>")}</p>
+            `,
+          });
+        } catch (e) {
+          console.error("Failed to send support email:", e);
+        }
+        
+        return { success: true };
+      }),
   }),
 });
 export type AppRouter = typeof appRouter;

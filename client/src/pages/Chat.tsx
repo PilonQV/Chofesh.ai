@@ -1359,9 +1359,6 @@ export default function Chat() {
                 >
                   <Command className="w-4 h-4" />
                   <span className="hidden sm:inline text-xs">Tools</span>
-                  <kbd className="hidden md:inline-flex h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-                    <span className="text-xs">⌘</span>K
-                  </kbd>
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
