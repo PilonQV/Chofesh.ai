@@ -3744,6 +3744,64 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
           return await parseConversionRequest(input.text);
         }),
     }),
+
+    // API Proxy for testing external APIs
+    apiProxy: protectedProcedure
+      .input(z.object({
+        url: z.string().url(),
+        method: z.enum(["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"]),
+        headers: z.record(z.string(), z.string()).optional(),
+        body: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const startTime = Date.now();
+        try {
+          const headerEntries = input.headers ? Object.entries(input.headers) : [];
+          const options: RequestInit = {
+            method: input.method,
+            headers: headerEntries,
+          };
+
+          if (input.method !== "GET" && input.method !== "HEAD" && input.body) {
+            options.body = input.body;
+          }
+
+          const res = await fetch(input.url, options);
+          const endTime = Date.now();
+
+          const contentType = res.headers.get("content-type") || "";
+          let data;
+
+          if (contentType.includes("application/json")) {
+            try {
+              data = await res.json();
+            } catch {
+              data = await res.text();
+            }
+          } else {
+            data = await res.text();
+          }
+
+          // Convert headers to plain object
+          const responseHeaders: Record<string, string> = {};
+          res.headers.forEach((value, key) => {
+            responseHeaders[key] = value;
+          });
+
+          return {
+            status: res.status,
+            statusText: res.statusText,
+            headers: responseHeaders,
+            data,
+            responseTime: endTime - startTime,
+          };
+        } catch (error: any) {
+          return {
+            error: error.message || "Failed to fetch",
+            responseTime: Date.now() - startTime,
+          };
+        }
+      }),
   }),
 
   // Conversation folders router

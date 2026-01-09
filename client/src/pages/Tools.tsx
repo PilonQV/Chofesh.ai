@@ -473,17 +473,25 @@ function UnitConverter() {
       return;
     }
 
-    let res;
-    if (converterType === "units") {
-      res = await unitsQuery.refetch();
-    } else if (converterType === "currency") {
-      res = await currencyQuery.refetch();
-    } else {
-      res = await timezoneQuery.refetch();
-    }
+    try {
+      let res;
+      if (converterType === "units") {
+        res = await unitsQuery.refetch();
+      } else if (converterType === "currency") {
+        res = await currencyQuery.refetch();
+      } else {
+        res = await timezoneQuery.refetch();
+      }
 
-    if (res.data) {
-      setResult(res.data);
+      console.log("Converter result:", res);
+      if (res.data) {
+        setResult(res.data);
+      } else if (res.error) {
+        toast.error(res.error.message || "Conversion failed");
+      }
+    } catch (error: any) {
+      console.error("Converter error:", error);
+      toast.error(error.message || "Conversion failed");
     }
   };
 
@@ -906,6 +914,8 @@ function ApiTester() {
   const [loading, setLoading] = useState(false);
   const [responseTime, setResponseTime] = useState(0);
 
+  const apiProxyMutation = trpc.tools.apiProxy.useMutation();
+
   const handleSend = async () => {
     if (!url) {
       toast.error("Please enter a URL");
@@ -914,47 +924,37 @@ function ApiTester() {
 
     setLoading(true);
     setResponse(null);
-    const startTime = Date.now();
 
     try {
-      let parsedHeaders = {};
+      let parsedHeaders: Record<string, string> = {};
       try {
         parsedHeaders = JSON.parse(headers);
       } catch {
         // Ignore header parse errors
       }
 
-      const options: RequestInit = {
-        method,
+      const result = await apiProxyMutation.mutateAsync({
+        url,
+        method: method as "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "HEAD",
         headers: parsedHeaders,
-      };
-
-      if (method !== "GET" && method !== "HEAD" && body) {
-        options.body = body;
-      }
-
-      const res = await fetch(url, options);
-      const endTime = Date.now();
-      setResponseTime(endTime - startTime);
-
-      const contentType = res.headers.get("content-type") || "";
-      let data;
-
-      if (contentType.includes("application/json")) {
-        data = await res.json();
-      } else {
-        data = await res.text();
-      }
-
-      setResponse({
-        status: res.status,
-        statusText: res.statusText,
-        headers: Object.fromEntries(res.headers.entries()),
-        data,
+        body: method !== "GET" && method !== "HEAD" ? body : undefined,
       });
+
+      setResponseTime(result.responseTime || 0);
+
+      if ('error' in result && result.error) {
+        setResponse({ error: result.error });
+      } else {
+        setResponse({
+          status: result.status,
+          statusText: result.statusText,
+          headers: result.headers,
+          data: result.data,
+        });
+      }
     } catch (error: any) {
       setResponse({
-        error: error.message,
+        error: error.message || "Failed to fetch",
       });
     } finally {
       setLoading(false);

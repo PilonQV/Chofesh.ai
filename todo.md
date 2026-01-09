@@ -500,6 +500,18 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 
 ## Phase 23: Subscription Management Page
 - [x] Create dedicated /subscription page with all plan tiers
+
+
+## Bug Fix: Smart Tools Testing
+
+- [x] Fix YouTube Summarizer "Could not summarize video" error (rewrote to use YouTube Search API)
+- [x] Test URL Scraper - Working
+- [x] Test Math Calculator - Working
+- [x] Test Unit Converter - Working
+- [x] Test Regex Tester - Working
+- [x] Test JSON Formatter - Working
+- [x] Test Diff Viewer - Working
+- [x] Test API Tester - Fixed (added server-side proxy for CORS)
 - [x] Show current plan highlighted with upgrade/downgrade options
 - [x] Implement upgrade/downgrade flow via Stripe checkout
 - [x] Add cancel subscription with confirmation dialog
@@ -2361,3 +2373,17 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Show selected documents count in UI
 - [x] Combine context from multiple documents in chat
 - [x] Add "Select All" / "Deselect All" buttons
+
+
+---
+
+## Bug Fix: Smart Tools Not Working
+
+- [ ] Fix YouTube Summarizer "Could not summarize video" error
+- [ ] Test URL tool
+- [ ] Test Math tool
+- [ ] Test Convert tool
+- [ ] Test Regex tool
+- [ ] Test JSON tool
+- [ ] Test Diff tool
+- [ ] Test API tool
