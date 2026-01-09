@@ -5,7 +5,7 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { CookieConsent } from "./components/CookieConsent";
-import { CommandCenter } from "./components/CommandCenter";
+import { CommandCenterProvider } from "./components/CommandCenter";
 import { lazy, Suspense } from "react";
 
 import { Loader2 } from "lucide-react";
@@ -98,10 +98,11 @@ function App() {
     <ErrorBoundary>
       <ThemeProvider defaultTheme="dark" switchable={true}>
         <TooltipProvider>
-          <Toaster richColors position="top-center" />
-          <Router />
-          <CommandCenter />
-          <CookieConsent />
+          <CommandCenterProvider>
+            <Toaster richColors position="top-center" />
+            <Router />
+            <CookieConsent />
+          </CommandCenterProvider>
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>
