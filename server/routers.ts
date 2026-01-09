@@ -116,7 +116,7 @@ import {
 } from "./db";
 import { getDb } from "./db";
 import { users, supportRequests } from "../drizzle/schema";
-import { eq } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
 import { invokeLLM } from "./_core/llm";
 import { invokeGrok, isGrokAvailable } from "./_core/grok";
 import { invokeDeepSeekR1, invokeVeniceUncensored, isComplexReasoningQuery, isRefusalResponse, isNsfwContentRequest, OPENROUTER_MODELS } from "./_core/openrouter";
@@ -4394,6 +4394,129 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
         }
         
         return { success: true };
+      }),
+
+    // Admin: List all support tickets
+    listAll: protectedProcedure
+      .query(async ({ ctx }) => {
+        // Check if user is admin/owner
+        const ownerOpenId = process.env.OWNER_OPEN_ID;
+        if (ctx.user.openId !== ownerOpenId) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Admin access required",
+          });
+        }
+
+        const db = await getDb();
+        if (!db) {
+          return [];
+        }
+
+        const tickets = await db
+          .select()
+          .from(supportRequests)
+          .orderBy(desc(supportRequests.createdAt));
+
+        return tickets;
+      }),
+
+    // Admin: Update ticket status and add notes
+    updateTicket: protectedProcedure
+      .input(z.object({
+        ticketId: z.number(),
+        status: z.enum(["open", "in_progress", "resolved", "closed"]),
+        adminNotes: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Check if user is admin/owner
+        const ownerOpenId = process.env.OWNER_OPEN_ID;
+        if (ctx.user.openId !== ownerOpenId) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Admin access required",
+          });
+        }
+
+        const db = await getDb();
+        if (!db) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
+        }
+
+        const updateData: Record<string, unknown> = {
+          status: input.status,
+          updatedAt: new Date(),
+        };
+
+        if (input.adminNotes !== undefined) {
+          updateData.adminNotes = input.adminNotes;
+        }
+
+        if (input.status === "resolved" || input.status === "closed") {
+          updateData.resolvedAt = new Date();
+        }
+
+        await db
+          .update(supportRequests)
+          .set(updateData)
+          .where(eq(supportRequests.id, input.ticketId));
+
+        // If resolved, send email to customer
+        if (input.status === "resolved" && input.adminNotes) {
+          try {
+            const ticket = await db
+              .select()
+              .from(supportRequests)
+              .where(eq(supportRequests.id, input.ticketId))
+              .limit(1);
+
+            if (ticket[0]) {
+              const { sendEmail } = await import("./_core/resend");
+              await sendEmail({
+                to: ticket[0].email,
+                subject: `Re: ${ticket[0].subject} - Support Ticket #${input.ticketId}`,
+                html: `
+                  <h2>Your Support Request Has Been Resolved</h2>
+                  <p>Hello ${ticket[0].name},</p>
+                  <p>Your support ticket has been resolved. Here's our response:</p>
+                  <hr/>
+                  <p>${input.adminNotes.replace(/\n/g, "<br/>")}</p>
+                  <hr/>
+                  <p>If you have any further questions, please don't hesitate to reach out.</p>
+                  <p>Best regards,<br/>Chofesh.ai Support Team</p>
+                `,
+              });
+            }
+          } catch (e) {
+            console.error("Failed to send resolution email:", e);
+          }
+        }
+
+        return { success: true };
+      }),
+
+    // Get unread ticket count for admin badge
+    getOpenCount: protectedProcedure
+      .query(async ({ ctx }) => {
+        const ownerOpenId = process.env.OWNER_OPEN_ID;
+        if (ctx.user.openId !== ownerOpenId) {
+          return { count: 0 };
+        }
+
+        const db = await getDb();
+        if (!db) {
+          return { count: 0 };
+        }
+
+        const result = await db
+          .select({ count: sql<number>`count(*)` })
+          .from(supportRequests)
+          .where(eq(supportRequests.status, "open"));
+
+        return { count: result[0]?.count || 0 };
       }),
   }),
 });

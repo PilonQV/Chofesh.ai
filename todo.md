@@ -2403,3 +2403,30 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Comprehensive test: AI Personas - Working (route is /characters)
 - [x] Comprehensive test: User settings - Working
 - [x] Run all unit tests - 428 tests pass
+
+
+---
+
+## Feature: Admin Support Dashboard
+
+- [ ] Create admin support dashboard page at /admin/support
+- [ ] Display all support tickets with filtering (status, priority, category)
+- [ ] Add ticket detail view with conversation history
+- [ ] Implement status updates (open, in-progress, resolved, closed)
+- [ ] Add admin response functionality
+- [ ] Real-time alerts for new support tickets
+- [ ] Email notification to admin on new ticket
+- [ ] Badge/counter showing unread tickets in admin nav
+
+
+
+## Phase 24: Admin Support Dashboard
+
+- [x] Create admin support dashboard page (/admin/support)
+- [x] Add real-time notification badge for new tickets (30s polling)
+- [x] Add ticket list with filters (status, priority, category)
+- [x] Add ticket detail view with response capability
+- [x] Add status update functionality (open, in-progress, resolved)
+- [x] Add email notification to owner on new tickets
+- [x] Add Support link to admin navigation header
+- [x] Add backend endpoints (listAll, updateTicket, getOpenCount)
