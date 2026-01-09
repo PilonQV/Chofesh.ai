@@ -2435,3 +2435,10 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 ## Phase 25: Privacy Messaging Update
 
 - [x] Update Terms of Service with trust-focused privacy language
+
+
+## Phase 26: Privacy Policy Update & OpenRouter Models Evaluation
+
+- [x] Update Privacy Policy page with trust-focused language
+- [x] Research OpenRouter models for potential additions
+- [x] Evaluate GPT-5, new reasoning models, and other options
