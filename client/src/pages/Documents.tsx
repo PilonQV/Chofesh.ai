@@ -340,7 +340,7 @@ export default function Documents() {
                       <div className="flex-1 min-w-0">
                         <p className="font-medium truncate">{doc.originalName}</p>
                         <p className="text-xs text-muted-foreground">
-                          {(doc.fileSize / 1024).toFixed(1)} KB • {doc.chunkCount} chunks
+                          {(doc.fileSize / 1024).toFixed(1)} KB • {doc.chunkCount ?? 0} chunks
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {new Date(doc.createdAt).toLocaleDateString()}
@@ -394,7 +394,7 @@ export default function Documents() {
                     <>
                       <h2 className="font-semibold truncate">{selectedDocs[0].originalName}</h2>
                       <p className="text-sm text-muted-foreground">
-                        {selectedDocs[0].chunkCount} chunks • Ready for questions
+                        {selectedDocs[0].chunkCount ?? 0} chunks • Ready for questions
                       </p>
                     </>
                   ) : (

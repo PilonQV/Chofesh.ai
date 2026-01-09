@@ -1,6 +1,6 @@
 /**
  * YouTube Video Helper
- * Fetches video metadata and transcripts for summarization
+ * Fetches video metadata and generates summaries
  */
 
 import { callDataApi } from "./dataApi";
@@ -14,15 +14,7 @@ export interface YouTubeVideoInfo {
   publishedAt: string;
   thumbnail: string;
   duration?: string;
-}
-
-export interface YouTubeTranscript {
-  text: string;
-  segments: Array<{
-    text: string;
-    start: number;
-    duration: number;
-  }>;
+  viewCount?: string;
 }
 
 export interface YouTubeSummary {
@@ -58,122 +50,58 @@ export function containsYouTubeUrl(text: string): boolean {
 }
 
 /**
- * Fetch video information using YouTube Data API via Manus
+ * Fetch video information using YouTube Search API
  */
 export async function getVideoInfo(videoId: string): Promise<YouTubeVideoInfo | null> {
   try {
-    const result = await callDataApi("Youtube/videos", {
+    // Use search API to find the video by ID
+    const result = await callDataApi("Youtube/search", {
       query: {
-        part: "snippet,contentDetails",
-        id: videoId,
+        q: videoId,
+        hl: "en",
+        gl: "US",
       },
     }) as any;
 
-    if (!result?.items?.[0]) {
-      return null;
+    // Find the exact video in search results
+    const contents = result?.contents || [];
+    for (const content of contents) {
+      if (content?.type === 'video' && content?.video?.videoId === videoId) {
+        const video = content.video;
+        return {
+          videoId,
+          title: video.title || 'Unknown Title',
+          description: video.descriptionSnippet || video.description || '',
+          channelTitle: video.channelTitle || 'Unknown Channel',
+          publishedAt: video.publishedTimeText || '',
+          thumbnail: video.thumbnails?.[0]?.url || `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
+          duration: video.lengthText || '',
+          viewCount: video.viewCountText || '',
+        };
+      }
     }
 
-    const item = result.items[0];
-    const snippet = item.snippet;
-
+    // If not found in search, return basic info with thumbnail
     return {
       videoId,
-      title: snippet.title,
-      description: snippet.description,
-      channelTitle: snippet.channelTitle,
-      publishedAt: snippet.publishedAt,
-      thumbnail: snippet.thumbnails?.maxres?.url || 
-                 snippet.thumbnails?.high?.url || 
-                 snippet.thumbnails?.medium?.url ||
-                 `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
-      duration: item.contentDetails?.duration,
+      title: 'YouTube Video',
+      description: '',
+      channelTitle: 'Unknown',
+      publishedAt: '',
+      thumbnail: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
     };
   } catch (error) {
     console.error("Failed to fetch YouTube video info:", error);
-    return null;
+    // Return basic info even on error
+    return {
+      videoId,
+      title: 'YouTube Video',
+      description: '',
+      channelTitle: 'Unknown',
+      publishedAt: '',
+      thumbnail: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
+    };
   }
-}
-
-/**
- * Fetch video transcript/captions
- */
-export async function getVideoTranscript(videoId: string): Promise<YouTubeTranscript | null> {
-  try {
-    // Try to get captions via YouTube API
-    const result = await callDataApi("Youtube/captions", {
-      query: {
-        part: "snippet",
-        videoId,
-      },
-    }) as any;
-
-    // If captions available, try to download them
-    if (result?.items?.length > 0) {
-      // Find English captions or auto-generated
-      const caption = result.items.find((c: any) => 
-        c.snippet.language === 'en' || c.snippet.trackKind === 'asr'
-      ) || result.items[0];
-
-      if (caption) {
-        // Download caption track
-        const captionResult = await callDataApi("Youtube/captions/download", {
-          pathParams: { id: caption.id },
-          query: { tfmt: 'srt' },
-        }) as any;
-
-        if (captionResult) {
-          return parseTranscript(captionResult);
-        }
-      }
-    }
-
-    return null;
-  } catch (error) {
-    console.error("Failed to fetch YouTube transcript:", error);
-    return null;
-  }
-}
-
-/**
- * Parse SRT format transcript
- */
-function parseTranscript(srtContent: string): YouTubeTranscript {
-  const segments: Array<{ text: string; start: number; duration: number }> = [];
-  const blocks = srtContent.split(/\n\n+/);
-
-  for (const block of blocks) {
-    const lines = block.trim().split('\n');
-    if (lines.length >= 3) {
-      const timeLine = lines[1];
-      const textLines = lines.slice(2).join(' ');
-      
-      const timeMatch = timeLine.match(/(\d{2}):(\d{2}):(\d{2}),(\d{3})\s*-->\s*(\d{2}):(\d{2}):(\d{2}),(\d{3})/);
-      if (timeMatch) {
-        const startSeconds = 
-          parseInt(timeMatch[1]) * 3600 + 
-          parseInt(timeMatch[2]) * 60 + 
-          parseInt(timeMatch[3]) + 
-          parseInt(timeMatch[4]) / 1000;
-        
-        const endSeconds = 
-          parseInt(timeMatch[5]) * 3600 + 
-          parseInt(timeMatch[6]) * 60 + 
-          parseInt(timeMatch[7]) + 
-          parseInt(timeMatch[8]) / 1000;
-
-        segments.push({
-          text: textLines.replace(/<[^>]*>/g, '').trim(),
-          start: startSeconds,
-          duration: endSeconds - startSeconds,
-        });
-      }
-    }
-  }
-
-  return {
-    text: segments.map(s => s.text).join(' '),
-    segments,
-  };
 }
 
 /**
@@ -186,34 +114,48 @@ export async function summarizeVideo(videoId: string): Promise<YouTubeSummary | 
     return null;
   }
 
-  // Try to get transcript
-  const transcript = await getVideoTranscript(videoId);
-  
-  // Use description if no transcript available
-  const contentToSummarize = transcript?.text || videoInfo.description;
+  // Build content to summarize from available info
+  const contentParts: string[] = [];
+  if (videoInfo.title && videoInfo.title !== 'YouTube Video') {
+    contentParts.push(`Title: ${videoInfo.title}`);
+  }
+  if (videoInfo.channelTitle && videoInfo.channelTitle !== 'Unknown') {
+    contentParts.push(`Channel: ${videoInfo.channelTitle}`);
+  }
+  if (videoInfo.description) {
+    contentParts.push(`Description: ${videoInfo.description}`);
+  }
+  if (videoInfo.viewCount) {
+    contentParts.push(`Views: ${videoInfo.viewCount}`);
+  }
+  if (videoInfo.duration) {
+    contentParts.push(`Duration: ${videoInfo.duration}`);
+  }
 
-  if (!contentToSummarize || contentToSummarize.length < 50) {
-    // Return basic info without summary
+  const contentToSummarize = contentParts.join('\n');
+
+  if (!contentToSummarize || contentToSummarize.length < 20) {
+    // Return basic info without summary if we don't have enough content
     return {
       videoInfo,
-      summary: "Unable to generate summary - no transcript or description available.",
+      summary: "Unable to generate summary - limited video information available. The video may be private, age-restricted, or the API couldn't retrieve its details.",
       keyPoints: [],
       topics: [],
     };
   }
 
   // Generate summary using LLM
-  const response = await invokeLLM({
-    messages: [
-      {
-        role: "system",
-        content: `You are a video summarization assistant. Analyze the following video content and provide:
-1. A concise summary (2-3 paragraphs)
-2. Key points (bullet points)
+  try {
+    const response = await invokeLLM({
+      messages: [
+        {
+          role: "system",
+          content: `You are a video summarization assistant. Based on the available video information, provide:
+1. A concise summary describing what this video is likely about
+2. Key points that can be inferred from the title and description
 3. Main topics covered
 
-Video Title: ${videoInfo.title}
-Channel: ${videoInfo.channelTitle}
+Note: You only have the title and description, not the full transcript. Make reasonable inferences but acknowledge limitations.
 
 Respond in JSON format:
 {
@@ -221,55 +163,64 @@ Respond in JSON format:
   "keyPoints": ["point1", "point2", ...],
   "topics": ["topic1", "topic2", ...]
 }`
-      },
-      {
-        role: "user",
-        content: `Please summarize this video content:\n\n${contentToSummarize.slice(0, 15000)}`
-      }
-    ],
-    response_format: {
-      type: "json_schema",
-      json_schema: {
-        name: "video_summary",
-        strict: true,
-        schema: {
-          type: "object",
-          properties: {
-            summary: { type: "string" },
-            keyPoints: { type: "array", items: { type: "string" } },
-            topics: { type: "array", items: { type: "string" } },
+        },
+        {
+          role: "user",
+          content: `Please analyze this video information:\n\n${contentToSummarize}`
+        }
+      ],
+      response_format: {
+        type: "json_schema",
+        json_schema: {
+          name: "video_summary",
+          strict: true,
+          schema: {
+            type: "object",
+            properties: {
+              summary: { type: "string" },
+              keyPoints: { type: "array", items: { type: "string" } },
+              topics: { type: "array", items: { type: "string" } },
+            },
+            required: ["summary", "keyPoints", "topics"],
+            additionalProperties: false,
           },
-          required: ["summary", "keyPoints", "topics"],
-          additionalProperties: false,
         },
       },
-    },
-  });
+    });
 
-  const rawContent = response.choices[0]?.message?.content;
-  const content = typeof rawContent === 'string' ? rawContent : '';
-  
-  if (!content) {
-    return {
-      videoInfo,
-      summary: "Failed to generate summary.",
-      keyPoints: [],
-      topics: [],
-    };
-  }
+    const rawContent = response.choices[0]?.message?.content;
+    const content = typeof rawContent === 'string' ? rawContent : '';
+    
+    if (!content) {
+      return {
+        videoInfo,
+        summary: "Failed to generate summary.",
+        keyPoints: [],
+        topics: [],
+      };
+    }
 
-  try {
-    const parsed = JSON.parse(content);
+    try {
+      const parsed = JSON.parse(content);
+      return {
+        videoInfo,
+        summary: parsed.summary,
+        keyPoints: parsed.keyPoints,
+        topics: parsed.topics,
+      };
+    } catch {
+      return {
+        videoInfo,
+        summary: content,
+        keyPoints: [],
+        topics: [],
+      };
+    }
+  } catch (error) {
+    console.error("Failed to generate summary:", error);
     return {
       videoInfo,
-      summary: parsed.summary,
-      keyPoints: parsed.keyPoints,
-      topics: parsed.topics,
-    };
-  } catch {
-    return {
-      videoInfo,
-      summary: content,
+      summary: "Failed to generate summary due to an error.",
       keyPoints: [],
       topics: [],
     };
