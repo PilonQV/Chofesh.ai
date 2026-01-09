@@ -2350,3 +2350,14 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 ## Bug Fix: Document Chat "Document not found"
 
 - [x] Fix Document Chat showing "Document not found" error when document is uploaded and visible in sidebar (parameter order bug in getDocumentById call)
+
+
+---
+
+## Feature: Multi-Document Chat
+
+- [x] Add backend endpoint for multi-document chat (accepts array of document IDs)
+- [x] Update frontend to allow selecting multiple documents
+- [x] Show selected documents count in UI
+- [x] Combine context from multiple documents in chat
+- [x] Add "Select All" / "Deselect All" buttons
