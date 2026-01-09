@@ -48,6 +48,15 @@ export default function Privacy() {
         </div>
       </section>
 
+      {/* Trust Statement */}
+      <section className="py-8 px-4 bg-primary/10 border-y border-primary/20">
+        <div className="container mx-auto max-w-4xl text-center">
+          <p className="text-xl font-semibold text-primary">
+            Zero tracking. Zero data sharing. Zero AI training on your content. Only minimal legal compliance logs.
+          </p>
+        </div>
+      </section>
+
       {/* Quick Summary */}
       <section className="py-12 px-4 bg-card/50">
         <div className="container mx-auto max-w-4xl">
@@ -60,18 +69,18 @@ export default function Privacy() {
             />
             <SummaryCard
               icon={<Eye className="w-6 h-6" />}
-              title="We can't read your content"
-              description="Even if we wanted to, we literally cannot see what you create."
+              title="We don't track or monitor you"
+              description="No activity tracking, no behavior analysis, no surveillance."
             />
             <SummaryCard
               icon={<Server className="w-6 h-6" />}
-              title="Minimal data collection"
-              description="We only collect what's necessary to provide the service."
+              title="We never train AI on your data"
+              description="Your content is yours. We don't use it to improve any models."
             />
             <SummaryCard
               icon={<Trash2 className="w-6 h-6" />}
-              title="You control your data"
-              description="Delete your local data anytime. It's stored in your browser."
+              title="We never share your data"
+              description="No third-party sharing. No selling. No exceptions."
             />
           </div>
         </div>
@@ -117,9 +126,21 @@ export default function Privacy() {
               </p>
             </PolicySection>
 
-            <PolicySection title="3. Audit Logging">
+            <PolicySection title="3. What We Don't Do">
+              <p className="font-semibold text-primary mb-4">
+                Unlike most AI platforms, we commit to:
+              </p>
+              <ul>
+                <li><strong>No tracking:</strong> We don't monitor your activities or behavior</li>
+                <li><strong>No data sharing:</strong> We never share your information with third parties</li>
+                <li><strong>No AI training:</strong> We never use your content to train or improve AI models</li>
+                <li><strong>No selling:</strong> Your data is never sold, period</li>
+              </ul>
+            </PolicySection>
+
+            <PolicySection title="4. Minimal Legal Compliance Logs">
               <p>
-                To comply with legal requirements and prevent abuse, we maintain audit logs that include:
+                To comply with legal requirements only, we maintain minimal logs that include:
               </p>
               <ul>
                 <li>Timestamps of requests</li>
@@ -135,7 +156,7 @@ export default function Privacy() {
               </p>
             </PolicySection>
 
-            <PolicySection title="4. Your API Keys (BYOK)">
+            <PolicySection title="5. Your API Keys (BYOK)">
               <p>
                 If you choose to use your own API keys:
               </p>
@@ -147,7 +168,7 @@ export default function Privacy() {
               </ul>
             </PolicySection>
 
-            <PolicySection title="5. Data Retention">
+            <PolicySection title="6. Data Retention">
               <p>
                 <strong>Local data (conversations, images):</strong> Stored indefinitely until you delete them or clear your browser data.
               </p>
@@ -159,7 +180,7 @@ export default function Privacy() {
               </p>
             </PolicySection>
 
-            <PolicySection title="6. Third-Party Services">
+            <PolicySection title="7. Third-Party Services">
               <p>
                 When you use Chofesh, your requests may be processed by:
               </p>
@@ -172,7 +193,7 @@ export default function Privacy() {
               </p>
             </PolicySection>
 
-            <PolicySection title="7. Your Rights">
+            <PolicySection title="8. Your Rights">
               <p>
                 You have the right to:
               </p>
@@ -187,7 +208,7 @@ export default function Privacy() {
               </p>
             </PolicySection>
 
-            <PolicySection title="8. Security">
+            <PolicySection title="9. Security">
               <p>
                 We implement industry-standard security measures including:
               </p>
@@ -199,14 +220,14 @@ export default function Privacy() {
               </ul>
             </PolicySection>
 
-            <PolicySection title="9. Changes to This Policy">
+            <PolicySection title="10. Changes to This Policy">
               <p>
                 We may update this privacy policy from time to time. We will notify you of any significant changes 
                 by posting a notice on our website or sending you an email.
               </p>
             </PolicySection>
 
-            <PolicySection title="10. Contact Us">
+            <PolicySection title="11. Contact Us">
               <p>
                 If you have questions about this privacy policy or our practices, contact us at:
               </p>
