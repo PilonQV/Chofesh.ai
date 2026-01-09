@@ -126,6 +126,7 @@ import { transcribeAudio } from "./_core/voiceTranscription";
 import { callDataApi } from "./_core/dataApi";
 import { searchDuckDuckGo } from "./_core/duckduckgo";
 import { notifyOwner } from "./_core/notification";
+import { getAgentTools, detectIntent, extractParams, type ToolResult } from "./_core/agentTools";
 import {
   isGitHubOAuthConfigured,
   getGitHubAuthUrl,
@@ -873,6 +874,7 @@ export const appRouter = router({
         imageUrls: z.array(z.string().url()).optional(), // For vision - images to analyze
         responseFormat: z.enum(["detailed", "concise", "bullet", "table", "auto"]).optional(), // Response formatting mode
         deepResearch: z.boolean().optional(), // Enable deep research mode
+        agentMode: z.boolean().optional(), // Enable agent mode with tool calling
       }))
       .mutation(async ({ ctx, input }) => {
         const startTime = Date.now();
@@ -905,6 +907,91 @@ export const appRouter = router({
         // Get the last user message for content analysis
         const lastUserMessage = input.messages.filter(m => m.role === "user").pop();
         const promptContent = lastUserMessage?.content || "";
+        
+        // Agent Mode: Detect intent and execute tools if enabled
+        if (input.agentMode && promptContent) {
+          const intent = detectIntent(promptContent);
+          
+          if (intent) {
+            console.log(`[Agent Mode] Detected intent: ${intent}`);
+            const params = extractParams(promptContent, intent);
+            const agentTools = getAgentTools(String(ctx.user.id));
+            
+            try {
+              let toolResult: ToolResult | null = null;
+              let toolBadge = '';
+              
+              switch (intent) {
+                case 'image': {
+                  console.log('[Agent Mode] Executing image generation tool');
+                  toolResult = await agentTools.generateImage(params as { prompt: string });
+                  toolBadge = 'agent-image-gen';
+                  break;
+                }
+                case 'search': {
+                  console.log('[Agent Mode] Executing web search tool');
+                  toolResult = await agentTools.searchWeb(params as { query: string });
+                  toolBadge = 'agent-web-search';
+                  break;
+                }
+                case 'document': {
+                  console.log('[Agent Mode] Executing document creation tool');
+                  toolResult = await agentTools.createDocument(params as { title: string; content: string });
+                  toolBadge = 'agent-document';
+                  break;
+                }
+                case 'code': {
+                  console.log('[Agent Mode] Executing code tool');
+                  toolResult = await agentTools.executeCode(params as { code: string });
+                  toolBadge = 'agent-code';
+                  break;
+                }
+              }
+              
+              if (toolResult) {
+                // Format the response based on tool type
+                let content = '';
+                
+                switch (toolResult.type) {
+                  case 'image':
+                    content = `I've created this image for you:\n\n![${toolResult.prompt}](${toolResult.url})\n\n*Generated with ${toolResult.model}*`;
+                    break;
+                  case 'search':
+                    content = `Here's what I found for "${toolResult.query}":\n\n`;
+                    if (toolResult.summary) {
+                      content += `**Summary:** ${toolResult.summary}\n\n`;
+                    }
+                    content += toolResult.results.map((r, i) => 
+                      `${i + 1}. **[${r.title}](${r.url})**\n   ${r.snippet}`
+                    ).join('\n\n');
+                    break;
+                  case 'document':
+                    content = `I've created a document titled "${toolResult.title}":\n\n---\n\n${toolResult.content}\n\n---\n\n*Format: ${toolResult.format}*`;
+                    break;
+                  case 'code':
+                    if (toolResult.error) {
+                      content = `Error executing code: ${toolResult.error}`;
+                    } else {
+                      content = `**Result:** ${toolResult.output}\n\n\`\`\`${toolResult.language}\n${toolResult.code}\n\`\`\``;
+                    }
+                    break;
+                }
+                
+                return {
+                  content,
+                  model: 'agent-tools',
+                  cached: false,
+                  complexity: 'simple' as const,
+                  cost: 0,
+                  toolResults: [{ type: toolResult.type, badge: toolBadge }],
+                };
+              }
+            } catch (error: any) {
+              console.error('[Agent Mode] Tool execution failed:', error);
+              // Fall through to regular chat if tool fails
+            }
+          }
+        }
         
         // Check if user is age-verified for uncensored content
         const userAgeVerified = ctx.user.ageVerified === true;
