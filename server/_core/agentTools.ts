@@ -57,10 +57,12 @@ export class AgentTools {
   }
   
   /**
-   * Generate 4 images from a text prompt (10 credits for 4 images)
+   * Generate images from a text prompt
+   * Default: 1 image for 3 credits
+   * Batch: 4 images for 10 credits
    */
   async generateImage(params: { prompt: string; style?: string; count?: number }): Promise<ImageToolResult> {
-    const imageCount = params.count || 4; // Default to 4 images
+    const imageCount = params.count || 1; // Default to 1 image (3 credits)
     console.log(`[AgentTools] Generating ${imageCount} images:`, params.prompt);
     
     try {
@@ -252,6 +254,12 @@ export const INTENT_PATTERNS = {
     /\bpicture\s+of\b/i,
     /\bgenerate\s+(an?\s+)?image/i,
   ],
+  imageBatch: [
+    /\bgenerate\s+(4|four)\s+variations?/i,
+    /\b(4|four)\s+variations?/i,
+    /\bmore\s+(options|variations|images)/i,
+    /\bbatch\s+(of\s+)?images/i,
+  ],
   search: [
     /^(please\s+)?(search|look up|find|google)\s+(for\s+)?/i,
     /\bwhat('s| is| are)\s+the\s+(latest|current|recent)\b/i,
@@ -274,11 +282,19 @@ export const INTENT_PATTERNS = {
 /**
  * Detect intent from user message
  */
-export function detectIntent(message: string): 'image' | 'search' | 'document' | 'code' | null {
+export function detectIntent(message: string): 'image' | 'imageBatch' | 'search' | 'document' | 'code' | null {
   const lowerMessage = message.toLowerCase();
+  
+  // Check imageBatch first (higher priority than single image)
+  for (const pattern of INTENT_PATTERNS.imageBatch) {
+    if (pattern.test(lowerMessage)) {
+      return 'imageBatch';
+    }
+  }
   
   // Check each intent type
   for (const [intent, patterns] of Object.entries(INTENT_PATTERNS)) {
+    if (intent === 'imageBatch') continue; // Already checked
     for (const pattern of patterns) {
       if (pattern.test(lowerMessage)) {
         return intent as 'image' | 'search' | 'document' | 'code';
@@ -306,7 +322,25 @@ export function extractParams(message: string, intent: string): Record<string, a
         prompt = message;
       }
       
-      return { prompt };
+      return { prompt, count: 1 };
+    }
+    
+    case 'imageBatch': {
+      // Extract the image description for batch generation (4 images)
+      let prompt = message
+        .replace(/^(please\s+)?/i, '')
+        .replace(/\bgenerate\s+(4|four)\s+variations?\s+(of\s+)?/i, '')
+        .replace(/\b(4|four)\s+variations?\s+(of\s+)?/i, '')
+        .replace(/\bmore\s+(options|variations|images)\s+(of\s+)?/i, '')
+        .replace(/\bbatch\s+(of\s+)?images\s+(of\s+)?/i, '')
+        .trim();
+      
+      if (!prompt || prompt.length < 3) {
+        // If no clear prompt, use a generic one
+        prompt = 'the previous image';
+      }
+      
+      return { prompt, count: 4 };
     }
     
     case 'search': {

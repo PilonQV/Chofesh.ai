@@ -923,9 +923,37 @@ export const appRouter = router({
               
               switch (intent) {
                 case 'image': {
-                  console.log('[Agent Mode] Executing image generation tool');
-                  toolResult = await agentTools.generateImage(params as { prompt: string });
+                  console.log('[Agent Mode] Executing image generation tool (1 image)');
+                  // Check credits before generating (3 credits for 1 image)
+                  const agentImageCost = 3;
+                  const userCreditsForImage = await getUserCredits(ctx.user.id);
+                  if (userCreditsForImage.totalCredits < agentImageCost) {
+                    throw new TRPCError({
+                      code: "PAYMENT_REQUIRED",
+                      message: `Insufficient credits for image generation. Need ${agentImageCost} credits, have ${userCreditsForImage.totalCredits}.`,
+                    });
+                  }
+                  // Deduct credits
+                  await deductCredits(ctx.user.id, agentImageCost, "agent_image", "hidream", "Agent mode image generation (1 image)");
+                  toolResult = await agentTools.generateImage(params as { prompt: string; count?: number });
                   toolBadge = 'agent-image-gen';
+                  break;
+                }
+                case 'imageBatch': {
+                  console.log('[Agent Mode] Executing batch image generation tool (4 images)');
+                  // Check credits before generating (10 credits for 4 images)
+                  const batchImageCost = 10;
+                  const userCreditsForBatch = await getUserCredits(ctx.user.id);
+                  if (userCreditsForBatch.totalCredits < batchImageCost) {
+                    throw new TRPCError({
+                      code: "PAYMENT_REQUIRED",
+                      message: `Insufficient credits for batch image generation. Need ${batchImageCost} credits, have ${userCreditsForBatch.totalCredits}.`,
+                    });
+                  }
+                  // Deduct credits
+                  await deductCredits(ctx.user.id, batchImageCost, "agent_image_batch", "hidream", "Agent mode image generation (4 images)");
+                  toolResult = await agentTools.generateImage(params as { prompt: string; count?: number });
+                  toolBadge = 'agent-image-batch';
                   break;
                 }
                 case 'search': {
@@ -954,13 +982,19 @@ export const appRouter = router({
                 
                 switch (toolResult.type) {
                   case 'image':
-                    // Handle multiple images (4 images for 10 credits)
+                    // Handle images (1 image = 3 credits, 4 images = 10 credits)
                     const imageUrls = toolResult.urls;
+                    const creditsCost = imageUrls.length === 1 ? 3 : 10;
                     content = `I've created ${imageUrls.length} image${imageUrls.length > 1 ? 's' : ''} for you:\n\n`;
                     content += imageUrls.map((url: string, i: number) => 
-                      `![${toolResult.prompt} - ${i + 1}](${url})`
+                      imageUrls.length === 1 
+                        ? `![${toolResult.prompt}](${url})`
+                        : `![${toolResult.prompt} - ${i + 1}](${url})`
                     ).join('\n\n');
-                    content += `\n\n*Generated with ${toolResult.model}*`;
+                    content += `\n\n*Generated with ${toolResult.model} (${creditsCost} credits)*`;
+                    if (imageUrls.length === 1) {
+                      content += `\n\n💡 *Want more options? Ask me to "generate 4 variations" for 10 credits*`;
+                    }
                     break;
                   case 'search':
                     content = `Here's what I found for "${toolResult.query}":\n\n`;
@@ -3809,9 +3843,9 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
       }
       // Credits-based system - check if user has enough credits (10 per image)
       const creditsService = await import("./_core/credits");
-      const hasCredits = await creditsService.hasEnoughCredits(ctx.user.id, 10);
+      const hasCredits = await creditsService.hasEnoughCredits(ctx.user.id, 3);
       if (!hasCredits) {
-        return { canGenerate: false, reason: "Insufficient credits (10 credits for 4 images)" };
+        return { canGenerate: false, reason: "Insufficient credits (3 credits per image)" };
       }
       const balance = await creditsService.getUserCredits(ctx.user.id);
       return { 
@@ -3863,13 +3897,13 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
           }
           
           // Credits-based system - deduct credits for uncensored images (8-10 credits)
-          const creditCost = 10; // 10 credits for 4 uncensored images
+          const creditCost = 3; // 3 credits per image
           const creditsService = await import("./_core/credits");
           const hasCredits = await creditsService.hasEnoughCredits(ctx.user.id, creditCost);
           if (!hasCredits) {
             throw new TRPCError({
               code: "FORBIDDEN",
-              message: "Insufficient credits. Uncensored images cost 10 credits for 4 images. Purchase more credits to continue.",
+              message: "Insufficient credits. Images cost 3 credits each. Purchase more credits to continue.",
             });
           }
           

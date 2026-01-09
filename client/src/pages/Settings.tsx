@@ -445,7 +445,7 @@ export default function Settings() {
                               </div>
                             </div>
                             <p className="text-xs text-muted-foreground">
-                              Images use credits: 10 credits for 4 images
+                              Images: 3 credits each (or 10 for 4 variations)
                             </p>
                           </div>
                         )}
