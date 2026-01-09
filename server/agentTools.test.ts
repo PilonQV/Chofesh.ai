@@ -25,6 +25,21 @@ describe('Agent Tools', () => {
       expect(detectIntent('paint me a beautiful landscape')).toBe('image');
       expect(detectIntent('please draw a robot')).toBe('image');
     });
+    
+    it('should detect "create an image about" as image intent', () => {
+      expect(detectIntent('create an image about this story')).toBe('image');
+    });
+    
+    it('should detect "create a picture for" as image intent', () => {
+      expect(detectIntent('create a picture for this story')).toBe('image');
+    });
+    
+    it('should detect various image generation phrases', () => {
+      expect(detectIntent('make an image showing a cat')).toBe('image');
+      expect(detectIntent('generate a picture depicting sunset')).toBe('image');
+      expect(detectIntent('image of a beautiful garden')).toBe('image');
+      expect(detectIntent('picture about my vacation')).toBe('image');
+    });
 
     it('should detect search intent', () => {
       expect(detectIntent('search for the latest news')).toBe('search');
