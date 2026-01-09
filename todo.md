@@ -2251,3 +2251,16 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
   - useCommandCenter hook now uses context instead of local state
 - [x] Test Command Center opens on button click - WORKING
 - [x] Test keyboard shortcut ⌘K still works - WORKING
+
+## Phase 81: Settings Page Redesign - Consolidated & Organized
+- [x] Analyzed current Settings page structure
+- [x] Redesigned Settings with sidebar navigation:
+  - General (Theme, Language)
+  - AI Settings (Response Format, Deep Research, Uncensored Mode)
+  - Privacy & Data (API Keys, Data info)
+  - Account (User info, Credits, Usage, Logout)
+- [x] Consolidated uncensored mode - ONE verification unlocks BOTH chat AND images
+- [x] Removed duplicate "Uncensored Image Generation" section at bottom
+- [x] Merged image settings into the main uncensored toggle
+- [x] Shows all features unlocked: Uncensored chat, Adult image generation, Premium models, Private generation
+- [x] Test all settings work correctly
