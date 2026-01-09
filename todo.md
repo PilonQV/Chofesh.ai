@@ -2430,3 +2430,8 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Add email notification to owner on new tickets
 - [x] Add Support link to admin navigation header
 - [x] Add backend endpoints (listAll, updateTicket, getOpenCount)
+
+
+## Phase 25: Privacy Messaging Update
+
+- [x] Update Terms of Service with trust-focused privacy language
