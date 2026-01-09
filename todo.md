@@ -2210,3 +2210,18 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Added Agent Mode badge to active settings indicators
 - [x] Test agent mode with tool calling - 407 tests passing
 - [x] Test uncensored mode configuration
+
+## Phase 78: Homepage Update - Features Without Platform References
+- [x] Review current homepage for any platform references
+- [x] Update features section with Chofesh-specific content
+- [x] Remove comparison table that referenced ChatGPT and others
+- [x] Replace with "Why Chofesh?" section highlighting 6 key capabilities:
+  - True Privacy (local storage, encryption, no data collection)
+  - Creative Freedom (uncensored chat, adult content 18+)
+  - Powerful Tools (20+ productivity tools)
+  - Smart Model Selection (auto routing, BYOK)
+  - Agent Mode (image gen, web search, docs)
+  - Fair Pricing (30 free credits/day, pay-as-you-go)
+- [x] Updated Smart Routing description to not mention specific model names
+- [x] Updated privacy section text to not reference "other platforms"
+- [x] Test homepage changes

@@ -397,7 +397,7 @@ export default function Home() {
             <FeatureCard
               icon={<Sparkles className="w-6 h-6" />}
               title="Smart Routing"
-              description="Auto-selects the best AI model for your task. GPT-4, Claude, Llama, and more working together."
+              description="Auto-selects the best AI model for your task. Multiple premium and free models working together."
             />
             <FeatureCard
               icon={<Code2 className="w-6 h-6" />}
@@ -424,42 +424,100 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Comparison Section */}
+      {/* Why Chofesh Section */}
       <section className="py-12 md:py-20 px-4 bg-card/50">
         <div className="container mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
             Why <span className="gradient-text">Chofesh</span>?
           </h2>
           <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-8 md:mb-12">
-            See how we compare to other AI platforms.
+            Built from the ground up for privacy, freedom, and powerful AI capabilities.
           </p>
           
-          <div className="max-w-4xl mx-auto overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left py-4 px-4 font-semibold">Feature</th>
-                  <th className="text-center py-4 px-4 font-semibold gradient-text">Chofesh</th>
-                  <th className="text-center py-4 px-4 font-semibold text-muted-foreground">ChatGPT</th>
-                  <th className="text-center py-4 px-4 font-semibold text-muted-foreground">Others</th>
-                </tr>
-              </thead>
-              <tbody>
-                <ComparisonRow feature="Local conversation storage" chofesh={true} chatgpt={false} others={false} />
-                <ComparisonRow feature="Fewer content restrictions" chofesh={true} chatgpt={false} others="Varies" />
-                <ComparisonRow feature="Bring your own API keys" chofesh={true} chatgpt={false} others="Varies" />
-                <ComparisonRow feature="Document chat with vector search" chofesh={true} chatgpt={true} others="Varies" />
-                <ComparisonRow feature="Smart Tools (YouTube, Calculator)" chofesh={true} chatgpt={false} others="Varies" />
-                <ComparisonRow feature="Developer Tools (JSON, Regex, API)" chofesh={true} chatgpt={false} others="Varies" />
-                <ComparisonRow feature="Conversation folders" chofesh={true} chatgpt={false} others={false} />
-                <ComparisonRow feature="GitHub OAuth integration" chofesh={true} chatgpt={false} others="Varies" />
-                <ComparisonRow feature="Multiple AI models" chofesh={true} chatgpt={false} others="Varies" />
-                <ComparisonRow feature="25+ AI personas" chofesh={true} chatgpt={true} others="Varies" />
-                <ComparisonRow feature="Image generation" chofesh={true} chatgpt={true} others="Varies" />
-                <ComparisonRow feature="Usage tracking dashboard" chofesh={true} chatgpt={false} others="Varies" />
-                <ComparisonRow feature="Free tier available" chofesh={true} chatgpt={true} others="Varies" />
-              </tbody>
-            </table>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {/* Privacy First */}
+            <div className="p-6 rounded-xl bg-gradient-to-br from-green-500/10 to-green-500/5 border border-green-500/20">
+              <div className="w-12 h-12 rounded-lg bg-green-500/20 flex items-center justify-center mb-4">
+                <Lock className="w-6 h-6 text-green-500" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">True Privacy</h3>
+              <p className="text-sm text-muted-foreground mb-4">Your conversations stay on your device, encrypted with AES-256. We can't read them even if we wanted to.</p>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" /> Local storage only</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" /> End-to-end encryption</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" /> No data collection</li>
+              </ul>
+            </div>
+
+            {/* Creative Freedom */}
+            <div className="p-6 rounded-xl bg-gradient-to-br from-purple-500/10 to-purple-500/5 border border-purple-500/20">
+              <div className="w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center mb-4">
+                <Sparkles className="w-6 h-6 text-purple-500" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Creative Freedom</h3>
+              <p className="text-sm text-muted-foreground mb-4">Express yourself without arbitrary restrictions. Uncensored AI for adults who want genuine conversations.</p>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-purple-500" /> Uncensored chat mode</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-purple-500" /> Adult content (18+)</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-purple-500" /> No topic restrictions</li>
+              </ul>
+            </div>
+
+            {/* Powerful Tools */}
+            <div className="p-6 rounded-xl bg-gradient-to-br from-blue-500/10 to-blue-500/5 border border-blue-500/20">
+              <div className="w-12 h-12 rounded-lg bg-blue-500/20 flex items-center justify-center mb-4">
+                <Wrench className="w-6 h-6 text-blue-500" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Powerful Tools</h3>
+              <p className="text-sm text-muted-foreground mb-4">Everything you need in one place. From YouTube summarizer to code workspace, we've got you covered.</p>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-blue-500" /> 20+ productivity tools</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-blue-500" /> Developer utilities</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-blue-500" /> Document analysis</li>
+              </ul>
+            </div>
+
+            {/* Multiple Models */}
+            <div className="p-6 rounded-xl bg-gradient-to-br from-orange-500/10 to-orange-500/5 border border-orange-500/20">
+              <div className="w-12 h-12 rounded-lg bg-orange-500/20 flex items-center justify-center mb-4">
+                <Zap className="w-6 h-6 text-orange-500" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Smart Model Selection</h3>
+              <p className="text-sm text-muted-foreground mb-4">Access multiple AI models and let our smart routing pick the best one for each task automatically.</p>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-orange-500" /> Auto model selection</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-orange-500" /> Free & premium tiers</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-orange-500" /> BYOK supported</li>
+              </ul>
+            </div>
+
+            {/* Agent Mode */}
+            <div className="p-6 rounded-xl bg-gradient-to-br from-cyan-500/10 to-cyan-500/5 border border-cyan-500/20">
+              <div className="w-12 h-12 rounded-lg bg-cyan-500/20 flex items-center justify-center mb-4">
+                <Brain className="w-6 h-6 text-cyan-500" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Agent Mode</h3>
+              <p className="text-sm text-muted-foreground mb-4">AI that takes action. Generate images, search the web, create documents - all from natural conversation.</p>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-cyan-500" /> Auto image generation</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-cyan-500" /> Web search integration</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-cyan-500" /> Document creation</li>
+              </ul>
+            </div>
+
+            {/* Fair Pricing */}
+            <div className="p-6 rounded-xl bg-gradient-to-br from-pink-500/10 to-pink-500/5 border border-pink-500/20">
+              <div className="w-12 h-12 rounded-lg bg-pink-500/20 flex items-center justify-center mb-4">
+                <CreditCard className="w-6 h-6 text-pink-500" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Fair Pricing</h3>
+              <p className="text-sm text-muted-foreground mb-4">No subscriptions required. Get 30 free credits daily, buy more when you need them. Credits never expire.</p>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-pink-500" /> 30 free credits/day</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-pink-500" /> Pay-as-you-go</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-pink-500" /> No expiration</li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
@@ -474,7 +532,7 @@ export default function Home() {
               </h2>
               <p className="text-muted-foreground mb-6">
                 We built Chofesh with a simple principle: your conversations belong to you.
-                Unlike other platforms, we can't read your chats because they never leave your browser.
+                We can't read your chats because they never leave your browser - that's how it should be.
               </p>
               <div className="space-y-4">
                 <PrivacyItem
