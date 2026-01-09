@@ -147,12 +147,16 @@ export default function Terms() {
 
             <TermsSection title="8. Privacy and Data">
               <p>
-                Your use of the Service is also governed by our Privacy Policy. Key points:
+                Your use of the Service is also governed by our Privacy Policy. Our commitment to you:
               </p>
-              <ul>
-                <li>Conversations are stored locally on your device</li>
-                <li>We maintain audit logs for legal compliance</li>
-                <li>We do not sell your data to third parties</li>
+              <p className="font-semibold text-primary mt-4">
+                Zero tracking. Zero data sharing. Zero AI training on your content. Only minimal legal compliance logs.
+              </p>
+              <ul className="mt-4">
+                <li>Conversations are stored locally on your device - we never see them</li>
+                <li>We don't monitor, track, or analyze your activities</li>
+                <li>We never share your data with third parties</li>
+                <li>We don't use your content to train AI models</li>
               </ul>
             </TermsSection>
 
