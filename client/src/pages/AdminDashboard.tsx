@@ -61,8 +61,24 @@ import {
   ImageIcon,
   X,
   ScrollText,
+  Headphones,
 } from "lucide-react";
 import { toast } from "sonner";
+
+// Support ticket badge component
+function SupportBadge() {
+  const { data: openCount } = trpc.support.getOpenCount.useQuery(undefined, {
+    refetchInterval: 30000,
+  });
+  
+  if (!openCount?.count || openCount.count === 0) return null;
+  
+  return (
+    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
+      {openCount.count > 9 ? "9+" : openCount.count}
+    </span>
+  );
+}
 
 const ACTION_ICONS: Record<string, React.ReactNode> = {
   chat: <MessageSquare className="w-4 h-4" />,
@@ -399,6 +415,13 @@ export default function AdminDashboard() {
               <Button variant="ghost" size="sm">
                 <ScrollText className="w-4 h-4 mr-2" />
                 Audit Logs
+              </Button>
+            </Link>
+            <Link href="/admin/support">
+              <Button variant="ghost" size="sm" className="relative">
+                <Headphones className="w-4 h-4 mr-2" />
+                Support
+                <SupportBadge />
               </Button>
             </Link>
           </div>
