@@ -2343,3 +2343,10 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Low - General inquiry
 - [x] Normal - Need help soon
 - [x] High - Urgent issue
+
+
+---
+
+## Bug Fix: Document Chat "Document not found"
+
+- [x] Fix Document Chat showing "Document not found" error when document is uploaded and visible in sidebar (parameter order bug in getDocumentById call)
