@@ -2387,3 +2387,19 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [ ] Test JSON tool
 - [ ] Test Diff tool
 - [ ] Test API tool
+
+
+---
+
+## Pre-Deployment Testing
+
+- [x] Test Knowledge Base feature (UI working, backend tests pass)
+- [x] Test Code Review feature (requires auth, tests pass)
+- [x] Comprehensive test: Chat with different models - Working
+- [x] Comprehensive test: Image generation - Working
+- [x] Comprehensive test: Documents upload and chat - Working
+- [x] Comprehensive test: Memory system - Working
+- [x] Comprehensive test: Artifacts - Working
+- [x] Comprehensive test: AI Personas - Working (route is /characters)
+- [x] Comprehensive test: User settings - Working
+- [x] Run all unit tests - 428 tests pass

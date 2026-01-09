@@ -3577,9 +3577,27 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
             },
           });
 
-          const rawContent = response.choices[0]?.message?.content;
+          if (!response?.choices?.length || !response.choices[0]?.message?.content) {
+            console.error("Code review: Invalid LLM response", response);
+            throw new Error("Invalid response from AI model");
+          }
+          
+          const rawContent = response.choices[0].message.content;
           const content = typeof rawContent === "string" ? rawContent : JSON.stringify(rawContent) || "{}";
-          const result = JSON.parse(content);
+          
+          let result;
+          try {
+            result = JSON.parse(content);
+          } catch (parseError) {
+            console.error("Code review: Failed to parse JSON", content);
+            // Return a fallback response
+            result = {
+              summary: "Unable to parse AI response",
+              score: 50,
+              issues: [],
+              recommendations: ["Please try again"]
+            };
+          }
           
           // Log usage
           await createUsageRecord({
