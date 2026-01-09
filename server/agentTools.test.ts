@@ -2,6 +2,21 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { detectIntent, extractParams, INTENT_PATTERNS } from './_core/agentTools';
 
 describe('Agent Tools', () => {
+  describe('ImageToolResult structure', () => {
+    it('should define urls array for multiple images (4 images for 10 credits)', () => {
+      // The ImageToolResult now returns an array of URLs
+      const mockResult = {
+        type: 'image' as const,
+        urls: ['url1', 'url2', 'url3', 'url4'],
+        prompt: 'test prompt',
+        model: 'hidream',
+      };
+      expect(mockResult.urls).toHaveLength(4);
+      expect(mockResult.type).toBe('image');
+      expect(mockResult.model).toBe('hidream');
+    });
+  });
+
   describe('detectIntent', () => {
     it('should detect image generation intent', () => {
       expect(detectIntent('draw me a sunset')).toBe('image');

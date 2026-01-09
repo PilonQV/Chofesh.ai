@@ -13,7 +13,7 @@ import { generateVeniceImage } from './veniceImage';
 // Tool result types
 export interface ImageToolResult {
   type: 'image';
-  url: string;
+  urls: string[];  // Array of image URLs (4 images)
   prompt: string;
   model: string;
 }
@@ -57,28 +57,37 @@ export class AgentTools {
   }
   
   /**
-   * Generate an image from a text prompt
+   * Generate 4 images from a text prompt (10 credits for 4 images)
    */
-  async generateImage(params: { prompt: string; style?: string }): Promise<ImageToolResult> {
-    console.log('[AgentTools] Generating image:', params.prompt);
+  async generateImage(params: { prompt: string; style?: string; count?: number }): Promise<ImageToolResult> {
+    const imageCount = params.count || 4; // Default to 4 images
+    console.log(`[AgentTools] Generating ${imageCount} images:`, params.prompt);
     
     try {
-      const result = await generateVeniceImage({
-        prompt: params.prompt,
-        model: 'hidream', // Use high-quality model
-        nsfw: false,
-        size: '1024x1024',
-      });
+      // Generate multiple images in parallel
+      const imagePromises = Array.from({ length: imageCount }, () =>
+        generateVeniceImage({
+          prompt: params.prompt,
+          model: 'hidream', // Use high-quality model
+          nsfw: false,
+          size: '1024x1024',
+        })
+      );
+      
+      const results = await Promise.all(imagePromises);
+      const urls = results.map(r => r.url);
+      
+      console.log(`[AgentTools] Generated ${urls.length} images successfully`);
       
       return {
         type: 'image',
-        url: result.url,
+        urls,
         prompt: params.prompt,
         model: 'hidream',
       };
     } catch (error: any) {
       console.error('[AgentTools] Image generation failed:', error);
-      throw new Error(`Failed to generate image: ${error.message}`);
+      throw new Error(`Failed to generate images: ${error.message}`);
     }
   }
   

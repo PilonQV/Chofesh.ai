@@ -954,7 +954,13 @@ export const appRouter = router({
                 
                 switch (toolResult.type) {
                   case 'image':
-                    content = `I've created this image for you:\n\n![${toolResult.prompt}](${toolResult.url})\n\n*Generated with ${toolResult.model}*`;
+                    // Handle multiple images (4 images for 10 credits)
+                    const imageUrls = toolResult.urls;
+                    content = `I've created ${imageUrls.length} image${imageUrls.length > 1 ? 's' : ''} for you:\n\n`;
+                    content += imageUrls.map((url: string, i: number) => 
+                      `![${toolResult.prompt} - ${i + 1}](${url})`
+                    ).join('\n\n');
+                    content += `\n\n*Generated with ${toolResult.model}*`;
                     break;
                   case 'search':
                     content = `Here's what I found for "${toolResult.query}":\n\n`;
