@@ -130,7 +130,7 @@ function NsfwSubscriptionSection() {
   }
   
   return (
-    <Card className="mb-6 border-pink-500/20">
+    <Card id="nsfw-section" className="mb-6 border-pink-500/20">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <ImageIcon className="w-5 h-5 text-pink-500" />
@@ -140,7 +140,7 @@ function NsfwSubscriptionSection() {
           </span>
         </CardTitle>
         <CardDescription>
-          Generate uncensored images with premium AI. Requires age verification (18+).
+          Generate uncensored images with premium AI. Quick age check required.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -181,22 +181,21 @@ function NsfwSubscriptionSection() {
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-2">
                     <ShieldAlert className="w-5 h-5 text-yellow-500" />
-                    Age Verification Required
+                    Quick Age Check
                   </DialogTitle>
                   <DialogDescription>
-                    You must be 18 years or older to access uncensored content.
+                    Just a quick confirmation before you access adult content.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="py-4 space-y-4">
                   <div className="p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
-                    <p className="text-sm text-yellow-500">
-                      By verifying your age, you confirm that:
+                    <p className="text-sm text-yellow-500 font-medium">
+                      Just confirm you're an adult:
                     </p>
                     <ul className="mt-2 text-sm text-muted-foreground space-y-1">
-                      <li>• You are at least 18 years old</li>
-                      <li>• You understand this content is for adults only</li>
-                      <li>• You accept responsibility for accessing adult content</li>
-                      <li>• You comply with your local laws regarding adult content</li>
+                      <li>• I'm 18 or older</li>
+                      <li>• I understand this is adult content</li>
+                      <li>• I'm cool with accessing mature material</li>
                     </ul>
                   </div>
                   <div className="flex items-center gap-2">
@@ -208,13 +207,13 @@ function NsfwSubscriptionSection() {
                       className="w-4 h-4 rounded border-gray-300"
                     />
                     <label htmlFor="confirm-age" className="text-sm">
-                      I confirm I am 18 years or older
+                      Yep, I'm 18 or older
                     </label>
                   </div>
                 </div>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setAgeVerifyOpen(false)}>
-                    Cancel
+                    Not Now
                   </Button>
                   <Button
                     onClick={() => verifyAgeMutation.mutate()}
@@ -226,7 +225,7 @@ function NsfwSubscriptionSection() {
                     ) : (
                       <CheckCircle2 className="w-4 h-4 mr-2" />
                     )}
-                    Verify I'm 18+
+                    I'm 18+, Let's Go!
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -251,7 +250,7 @@ function NsfwSubscriptionSection() {
               <p className="text-sm text-muted-foreground">
                 {nsfwStatus?.ageVerified 
                   ? "10 credits for 4 images • Uses your credit balance" 
-                  : "Complete age verification to access"}
+                  : "Quick age check needed to unlock"}
               </p>
             </div>
           </div>
@@ -731,14 +730,21 @@ export default function Settings() {
                     Uncensored Mode
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    Access uncensored AI responses (requires age verification)
+                    Access uncensored AI responses (quick age check required)
                   </p>
                 </div>
-                <Link href="#nsfw-section">
-                  <Button variant="outline" className="gap-2 border-rose-500/50 text-rose-500 hover:bg-rose-500/10">
-                    Configure
-                  </Button>
-                </Link>
+                <Button 
+                  variant="outline" 
+                  className="gap-2 border-rose-500/50 text-rose-500 hover:bg-rose-500/10"
+                  onClick={() => {
+                    const element = document.getElementById('nsfw-section');
+                    if (element) {
+                      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                  }}
+                >
+                  Configure
+                </Button>
               </div>
             </CardContent>
           </Card>

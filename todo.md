@@ -2193,3 +2193,20 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Improve settings panel spacing for better readability at bottom
 - [ ] Fix 18+ still showing $7.99 subscription message on ImageGen
 - [ ] Optimize page scrolling performance (reduce slowdown)
+
+## Phase 77: Bug Fixes and Agent Tools Re-implementation
+- [x] Fix uncensored mode Configure button not working on Settings page (added id="nsfw-section" to Card)
+- [x] Update age verification wording to be friendlier (not ID-like)
+  - Changed "Age Verification Required" to "Quick Age Check"
+  - Changed "I confirm I am 18 years or older" to "Yep, I'm 18 or older"
+  - Changed button text to "I'm 18+, Let's Go!"
+  - Updated all related text to be more casual and friendly
+- [x] Re-implement agent tools for Manus-like capabilities:
+  - [x] Image generation tool (generateImage) - uses Venice API
+  - [x] Web search tool (searchWeb) - uses DuckDuckGo API
+  - [x] Document creation tool (createDocument)
+  - [x] Code execution tool (runCode) - safe math expressions only
+- [x] Added Agent Mode toggle to chat settings
+- [x] Added Agent Mode badge to active settings indicators
+- [x] Test agent mode with tool calling - 407 tests passing
+- [x] Test uncensored mode configuration

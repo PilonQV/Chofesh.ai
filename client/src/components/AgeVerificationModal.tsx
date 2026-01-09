@@ -7,7 +7,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Shield, AlertTriangle } from "lucide-react";
+import { Shield, Sparkles } from "lucide-react";
 
 interface AgeVerificationModalProps {
   open: boolean;
@@ -25,24 +25,22 @@ export function AgeVerificationModal({ open, onConfirm, onCancel }: AgeVerificat
               <Shield className="w-8 h-8 text-amber-500" />
             </div>
           </div>
-          <DialogTitle className="text-center text-xl">Age Verification Required</DialogTitle>
+          <DialogTitle className="text-center text-xl">Quick Age Check</DialogTitle>
           <DialogDescription className="text-center space-y-3 pt-2">
             <p>
-              You are about to access <strong>uncensored AI content</strong> that may include adult themes, 
-              explicit language, or mature subject matter.
+              You're about to unlock <strong>uncensored AI mode</strong> with no content filters.
             </p>
             <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 text-sm">
               <div className="flex items-start gap-2">
-                <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                <Sparkles className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
                 <p className="text-left text-amber-200">
-                  By clicking "I Confirm", you certify that you are <strong>18 years of age or older</strong> and 
-                  legally permitted to access adult content in your jurisdiction.
+                  Just confirm you're <strong>18 or older</strong> and you're good to go!
+                  No ID needed - just a quick tap.
                 </p>
               </div>
             </div>
             <p className="text-xs text-muted-foreground">
-              This verification will be saved to your account. You can access uncensored features 
-              without re-verifying in the future.
+              We'll remember this so you won't have to confirm again.
             </p>
           </DialogDescription>
         </DialogHeader>
@@ -52,18 +50,18 @@ export function AgeVerificationModal({ open, onConfirm, onCancel }: AgeVerificat
             onClick={onCancel}
             className="flex-1"
           >
-            Cancel
+            Maybe Later
           </Button>
           <Button
             onClick={onConfirm}
             className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
           >
-            I Confirm I'm 18+
+            I'm 18+, Let's Go!
           </Button>
         </DialogFooter>
         <p className="text-xs text-center text-muted-foreground mt-2">
-          All content remains within legal parameters. See our{" "}
-          <a href="/privacy" className="underline hover:text-primary">Terms of Service</a> for details.
+          Everything stays legal and within our{" "}
+          <a href="/privacy" className="underline hover:text-primary">Terms of Service</a>.
         </p>
       </DialogContent>
     </Dialog>
