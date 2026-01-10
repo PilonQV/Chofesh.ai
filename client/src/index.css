@@ -150,10 +150,15 @@
   * {
     @apply border-border outline-ring/50;
   }
-  html, body {
+  html {
     height: 100%;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
   }
   body {
+    height: 100%;
+    overflow-x: hidden;
+    transform: translateZ(0);
     @apply bg-background text-foreground font-sans antialiased;
   }
   
@@ -162,15 +167,14 @@
     font-family: var(--font-heading);
   }
   
-  /* Aurora background for dark mode */
+  /* Aurora background for dark mode - static for better scroll performance */
   .dark body {
     background: 
       radial-gradient(ellipse 80% 50% at 20% 40%, oklch(0.35 0.15 280 / 0.15), transparent),
       radial-gradient(ellipse 60% 40% at 80% 60%, oklch(0.30 0.12 200 / 0.12), transparent),
       radial-gradient(ellipse 50% 30% at 50% 80%, oklch(0.25 0.10 320 / 0.10), transparent),
       oklch(0.12 0.015 280);
-    background-size: 200% 200%, 200% 200%, 200% 200%, 100% 100%;
-    animation: aurora 20s ease-in-out infinite;
+    background-attachment: fixed;
   }
   #root {
     height: 100%;
@@ -337,15 +341,17 @@
     border: 1px solid oklch(0.85 0.03 265);
   }
   
-  /* Aurora orb decorations */
+  /* Aurora orb decorations - optimized for scroll performance */
   .aurora-orb {
     position: fixed;
     border-radius: 50%;
     filter: blur(80px);
-    opacity: 0.4;
+    opacity: 0.35;
     pointer-events: none;
     z-index: -1;
-    animation: aurora-pulse 8s ease-in-out infinite;
+    will-change: opacity;
+    transform: translateZ(0);
+    animation: aurora-pulse 12s ease-in-out infinite;
   }
   
   .aurora-orb-1 {

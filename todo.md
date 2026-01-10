@@ -2442,3 +2442,8 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Update Privacy Policy page with trust-focused language
 - [x] Research OpenRouter models for potential additions
 - [x] Evaluate GPT-5, new reasoning models, and other options
+
+
+## Bug Fix: Scroll Performance
+
+- [x] Fix page scrolling stuttering/pausing issue (removed aurora animation, added GPU acceleration)
