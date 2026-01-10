@@ -2466,3 +2466,14 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Add regenerate button to individual images in batch results
 - [x] Add backend endpoint for single image regeneration (1 credit)
 - [x] Update chat UI to show regenerate option on hover
+
+
+## Testing: Usage-Billing System
+
+- [x] Test credit balance display - Working (shows free + purchased with refresh timer)
+- [x] Test usage tracking for chat messages - Working (logged in transaction history)
+- [x] Test credit deduction for image generation - Working (8 credits per image)
+- [x] Test credit deduction for uncensored content - Working (3 credits per chat)
+- [x] Test low credit warning display - Handled via error messages when insufficient
+- [x] Test credit purchase flow (Stripe integration) - Working (redirects to Stripe checkout)
+- [x] Test usage history display - Working (full transaction history with timestamps)
