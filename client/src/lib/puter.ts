@@ -19,19 +19,44 @@ export interface PuterStreamPart {
   text?: string;
 }
 
-// Puter models available for free
+// Puter models available for free - organized by provider
 export const PUTER_TEXT_MODELS = [
-  { id: "gpt-5-nano", name: "GPT-5 Nano", description: "Fast, efficient model" },
-  { id: "gpt-5-mini", name: "GPT-5 Mini", description: "Balanced performance" },
-  { id: "gpt-5", name: "GPT-5", description: "Full GPT-5 capabilities" },
-  { id: "gpt-5.1", name: "GPT-5.1", description: "Latest GPT-5.1" },
-  { id: "gpt-5.2", name: "GPT-5.2", description: "Newest GPT-5.2" },
-  { id: "gpt-4o", name: "GPT-4o", description: "Multimodal GPT-4" },
-  { id: "gpt-4o-mini", name: "GPT-4o Mini", description: "Efficient GPT-4o" },
-  { id: "o1", name: "o1", description: "Advanced reasoning" },
-  { id: "o1-mini", name: "o1 Mini", description: "Efficient reasoning" },
-  { id: "o3", name: "o3", description: "Latest reasoning model" },
-  { id: "o3-mini", name: "o3 Mini", description: "Efficient o3" },
+  // OpenAI Models
+  { id: "gpt-4.1-nano", name: "GPT-4.1 Nano", description: "Fast, efficient model", provider: "OpenAI" },
+  { id: "gpt-4.1-mini", name: "GPT-4.1 Mini", description: "Balanced performance", provider: "OpenAI" },
+  { id: "gpt-4.1", name: "GPT-4.1", description: "Full GPT-4.1 capabilities", provider: "OpenAI" },
+  { id: "gpt-4o", name: "GPT-4o", description: "Multimodal GPT-4", provider: "OpenAI" },
+  { id: "gpt-4o-mini", name: "GPT-4o Mini", description: "Efficient GPT-4o", provider: "OpenAI" },
+  { id: "o1", name: "o1", description: "Advanced reasoning", provider: "OpenAI" },
+  { id: "o1-mini", name: "o1 Mini", description: "Efficient reasoning", provider: "OpenAI" },
+  { id: "o3", name: "o3", description: "Latest reasoning model", provider: "OpenAI" },
+  { id: "o3-mini", name: "o3 Mini", description: "Efficient o3", provider: "OpenAI" },
+  
+  // Anthropic Models
+  { id: "claude-sonnet-4", name: "Claude Sonnet 4", description: "Latest Claude model", provider: "Anthropic" },
+  { id: "claude-3-5-sonnet-20241022", name: "Claude 3.5 Sonnet", description: "Powerful Claude model", provider: "Anthropic" },
+  { id: "claude-3-haiku-20240307", name: "Claude 3 Haiku", description: "Fast Claude model", provider: "Anthropic" },
+  
+  // Google Models
+  { id: "google/gemini-2.5-flash", name: "Gemini 2.5 Flash", description: "Latest Gemini model", provider: "Google" },
+  { id: "google/gemini-2.0-flash", name: "Gemini 2.0 Flash", description: "Fast Gemini model", provider: "Google" },
+  { id: "google/gemini-1.5-pro", name: "Gemini 1.5 Pro", description: "Powerful Gemini", provider: "Google" },
+  
+  // Meta Models
+  { id: "meta-llama/llama-3.3-70b-instruct", name: "Llama 3.3 70B", description: "Latest Llama model", provider: "Meta" },
+  { id: "meta-llama/llama-3.1-405b-instruct", name: "Llama 3.1 405B", description: "Most powerful Llama", provider: "Meta" },
+  
+  // DeepSeek Models
+  { id: "deepseek/deepseek-chat", name: "DeepSeek Chat", description: "DeepSeek conversational", provider: "DeepSeek" },
+  { id: "deepseek/deepseek-r1", name: "DeepSeek R1", description: "DeepSeek reasoning", provider: "DeepSeek" },
+  
+  // Mistral Models
+  { id: "mistralai/mistral-large-latest", name: "Mistral Large", description: "Most capable Mistral", provider: "Mistral" },
+  { id: "mistralai/mistral-small-latest", name: "Mistral Small", description: "Fast Mistral model", provider: "Mistral" },
+  
+  // Qwen Models
+  { id: "qwen/qwen-2.5-72b-instruct", name: "Qwen 2.5 72B", description: "Powerful Qwen model", provider: "Alibaba" },
+  { id: "qwen/qwen-2.5-coder-32b-instruct", name: "Qwen 2.5 Coder", description: "Coding specialist", provider: "Alibaba" },
 ] as const;
 
 export const PUTER_IMAGE_MODELS = [
