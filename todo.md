@@ -2572,3 +2572,12 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Add admin dashboard endpoints for provider analytics
 - [x] Show cost savings from free tier usage
 - [x] Display popular models via API endpoint
+
+## Phase 27: Home Page Updates for New Features
+
+### Home Page Enhancements
+- [x] Add Cerebras integration highlight to features section
+- [x] Add "Search with AI" feature showcase
+- [x] Update model count and provider list (20+ free models badge)
+- [x] Add free tier benefits section (Provider Analytics card)
+- [x] Update Smart Routing description with new providers
