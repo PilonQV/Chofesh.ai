@@ -56,6 +56,7 @@ export type VeniceImageOptions = {
   nsfw?: boolean; // If true, uses low moderation
   outputFormat?: "png" | "jpeg" | "webp";
   negativePrompt?: string;
+  seed?: number; // Random seed for variation generation
 };
 
 export type VeniceImageResponse = {
@@ -92,6 +93,7 @@ export async function generateVeniceImage(
     nsfw = false,
     outputFormat = "png",
     negativePrompt,
+    seed,
   } = options;
 
   // Validate prompt
@@ -110,8 +112,8 @@ export async function generateVeniceImage(
     fullPrompt = `${prompt}. Avoid: ${negativePrompt}`;
   }
 
-  // Build request body
-  const requestBody = {
+  // Build request body with optional seed for variations
+  const requestBody: Record<string, any> = {
     prompt: fullPrompt,
     model,
     moderation: nsfw ? "low" : "auto", // "low" disables content filtering
@@ -120,6 +122,11 @@ export async function generateVeniceImage(
     output_format: outputFormat,
     n: 1,
   };
+  
+  // Add seed if provided (for generating variations)
+  if (seed !== undefined) {
+    requestBody.seed = seed;
+  }
 
   console.log(`[Venice] Generating image with model: ${model}, nsfw: ${nsfw}`);
 

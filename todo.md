@@ -2447,3 +2447,15 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 ## Bug Fix: Scroll Performance
 
 - [x] Fix page scrolling stuttering/pausing issue (removed aurora animation, added GPU acceleration)
+
+
+## Feature: Add GPT-5 Models
+
+- [ ] Review current model costs
+- [ ] Add GPT-5 Nano model ($0.05/M input, $0.40/M output)
+- [ ] Add GPT-5 Mini model ($0.25/M input, $2/M output)
+
+
+## Bug Fix: Image Generation Variations
+
+- [x] Fix "4 for 10 credits" generating same image 4 times instead of 4 different variations (added unique seeds)
