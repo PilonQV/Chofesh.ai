@@ -1,16 +1,19 @@
 import { useState, useCallback, useMemo } from "react";
 import { Streamdown } from "streamdown";
 import { Button } from "@/components/ui/button";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, RefreshCw, Download, Loader2 } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
 
 interface AskDiaLinksProps {
   content: string;
   onAskFollowUp: (question: string) => void;
+  onImageRegenerated?: (oldUrl: string, newUrl: string) => void;
 }
 
 // Keywords and concepts that should be clickable
@@ -75,8 +78,151 @@ function containsMarkdownImages(content: string): boolean {
   return /!\[.*?\]\(.*?\)/.test(content);
 }
 
-// Render content with inline images
-function renderWithImages(content: string): React.ReactNode[] {
+// Image component with hover actions
+function ChatImage({ 
+  imageUrl, 
+  altText, 
+  onRegenerate,
+  isRegenerating 
+}: { 
+  imageUrl: string; 
+  altText: string;
+  onRegenerate?: (prompt: string) => void;
+  isRegenerating?: boolean;
+}) {
+  const [isHovered, setIsHovered] = useState(false);
+  
+  // Extract prompt from alt text (format: "prompt - 1" or just "prompt")
+  const prompt = altText.replace(/\s*-\s*\d+$/, '').trim();
+  
+  const handleDownload = async () => {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `image-${Date.now()}.png`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      toast.success('Image downloaded');
+    } catch (error) {
+      toast.error('Failed to download image');
+    }
+  };
+  
+  return (
+    <div 
+      className="my-4 relative group"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <img
+        src={imageUrl}
+        alt={altText}
+        className={`max-w-full h-auto rounded-lg shadow-lg transition-opacity ${isRegenerating ? 'opacity-50' : ''}`}
+        loading="lazy"
+        onError={(e) => {
+          const target = e.target as HTMLImageElement;
+          target.style.display = 'none';
+          const fallback = document.createElement('a');
+          fallback.href = imageUrl;
+          fallback.target = '_blank';
+          fallback.rel = 'noopener noreferrer';
+          fallback.textContent = `View image: ${altText}`;
+          fallback.className = 'text-primary underline';
+          target.parentNode?.appendChild(fallback);
+        }}
+      />
+      
+      {/* Regenerating overlay */}
+      {isRegenerating && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-lg">
+          <div className="flex items-center gap-2 bg-background/90 px-3 py-2 rounded-lg">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span className="text-sm">Regenerating...</span>
+          </div>
+        </div>
+      )}
+      
+      {/* Hover actions */}
+      {isHovered && !isRegenerating && (
+        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          {onRegenerate && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="h-8 w-8 p-0 bg-background/90 hover:bg-background"
+                  onClick={() => onRegenerate(prompt)}
+                >
+                  <RefreshCw className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                <p className="text-xs">Regenerate (1 credit)</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="sm"
+                variant="secondary"
+                className="h-8 w-8 p-0 bg-background/90 hover:bg-background"
+                onClick={handleDownload}
+              >
+                <Download className="w-4 h-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p className="text-xs">Download</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      )}
+      
+      {altText && <p className="text-sm text-muted-foreground mt-2 italic">{altText}</p>}
+    </div>
+  );
+}
+
+// Render content with inline images that have regenerate capability
+function RenderWithImages({ 
+  content, 
+  onImageRegenerated 
+}: { 
+  content: string;
+  onImageRegenerated?: (oldUrl: string, newUrl: string) => void;
+}) {
+  const [regeneratingUrls, setRegeneratingUrls] = useState<Set<string>>(new Set());
+  
+  const regenerateMutation = trpc.images.regenerateSingle.useMutation({
+    onSuccess: (data, variables) => {
+      setRegeneratingUrls(prev => {
+        const next = new Set(prev);
+        next.delete(variables.originalUrl);
+        return next;
+      });
+      if (onImageRegenerated) {
+        onImageRegenerated(variables.originalUrl, data.url);
+      }
+      toast.success('Image regenerated! (1 credit used)');
+    },
+    onError: (error) => {
+      setRegeneratingUrls(new Set());
+      toast.error(error.message || 'Failed to regenerate image');
+    },
+  });
+  
+  const handleRegenerate = (imageUrl: string, prompt: string) => {
+    setRegeneratingUrls(prev => new Set(prev).add(imageUrl));
+    regenerateMutation.mutate({ prompt, originalUrl: imageUrl });
+  };
+  
   const parts: React.ReactNode[] = [];
   const imageRegex = /!\[(.*?)\]\((.*?)\)/g;
   let lastIndex = 0;
@@ -90,31 +236,17 @@ function renderWithImages(content: string): React.ReactNode[] {
       parts.push(<Streamdown key={`text-${key++}`}>{textBefore}</Streamdown>);
     }
 
-    // Add the image
+    // Add the image with regenerate capability
     const altText = match[1];
     const imageUrl = match[2];
     parts.push(
-      <div key={`img-${key++}`} className="my-4">
-        <img
-          src={imageUrl}
-          alt={altText}
-          className="max-w-full h-auto rounded-lg shadow-lg"
-          loading="lazy"
-          onError={(e) => {
-            // If image fails to load, show the URL as a link
-            const target = e.target as HTMLImageElement;
-            target.style.display = 'none';
-            const fallback = document.createElement('a');
-            fallback.href = imageUrl;
-            fallback.target = '_blank';
-            fallback.rel = 'noopener noreferrer';
-            fallback.textContent = `View image: ${altText}`;
-            fallback.className = 'text-primary underline';
-            target.parentNode?.appendChild(fallback);
-          }}
-        />
-        {altText && <p className="text-sm text-muted-foreground mt-2 italic">{altText}</p>}
-      </div>
+      <ChatImage
+        key={`img-${key++}`}
+        imageUrl={imageUrl}
+        altText={altText}
+        onRegenerate={(prompt) => handleRegenerate(imageUrl, prompt)}
+        isRegenerating={regeneratingUrls.has(imageUrl)}
+      />
     );
 
     lastIndex = match.index + match[0].length;
@@ -126,15 +258,19 @@ function renderWithImages(content: string): React.ReactNode[] {
     parts.push(<Streamdown key={`text-${key++}`}>{remainingText}</Streamdown>);
   }
 
-  return parts;
+  return <>{parts}</>;
 }
 
-export function AskDiaLinks({ content, onAskFollowUp }: AskDiaLinksProps) {
+export function AskDiaLinks({ content, onAskFollowUp, onImageRegenerated }: AskDiaLinksProps) {
   const [hoveredTerm, setHoveredTerm] = useState<string | null>(null);
   
-  // If content contains markdown images, render them specially
+  // If content contains markdown images, render them specially with regenerate capability
   if (containsMarkdownImages(content)) {
-    return <div className="ask-dia-links">{renderWithImages(content)}</div>;
+    return (
+      <div className="ask-dia-links">
+        <RenderWithImages content={content} onImageRegenerated={onImageRegenerated} />
+      </div>
+    );
   }
   
   const clickableTerms = useMemo(() => extractClickableTerms(content), [content]);

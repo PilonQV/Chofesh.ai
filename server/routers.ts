@@ -1783,6 +1783,101 @@ Provide a comprehensive, well-researched response.`;
       }),
   }),
 
+  // Images router for batch operations
+  images: router({
+    regenerateSingle: protectedProcedure
+      .input(z.object({
+        prompt: z.string().min(1).max(2000),
+        originalUrl: z.string().url(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const startTime = Date.now();
+        
+        // Cost: 1 credit for single image regeneration
+        const creditCost = 1;
+        const userCreditsBalance = await getUserCredits(ctx.user.id);
+        
+        if (userCreditsBalance.totalCredits < creditCost) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: `Insufficient credits. Need ${creditCost}, have ${userCreditsBalance.totalCredits}. Please purchase more credits.`,
+          });
+        }
+        
+        // Deduct credits upfront
+        const creditDeduction = await deductCredits(
+          ctx.user.id,
+          creditCost,
+          "image_regeneration",
+          "hidream",
+          `Single image regeneration`
+        );
+        
+        if (!creditDeduction.success) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: creditDeduction.error || "Failed to deduct credits",
+          });
+        }
+        
+        try {
+          // Generate new image with a random seed for variation
+          const result = await generateVeniceImage({
+            prompt: input.prompt,
+            model: 'hidream',
+            nsfw: false,
+            size: '1024x1024',
+            seed: Math.floor(Math.random() * 1000000000),
+          });
+          
+          // Save generated image to database
+          await createGeneratedImage({
+            userId: ctx.user.id,
+            imageUrl: result.url,
+            prompt: input.prompt,
+            negativePrompt: null,
+            model: 'hidream',
+            aspectRatio: '1024x1024',
+            seed: null,
+            steps: null,
+            cfgScale: null,
+            isEdit: false,
+            status: "completed",
+            metadata: JSON.stringify({
+              duration: Date.now() - startTime,
+              type: 'regeneration',
+              originalUrl: input.originalUrl,
+            }),
+          });
+          
+          // Create audit log
+          await createAuditLog({
+            userId: ctx.user.id,
+            userOpenId: ctx.user.openId,
+            actionType: "image_generation",
+            ipAddress: getClientIp(ctx.req),
+            userAgent: ctx.req.headers["user-agent"] || null,
+            contentHash: hashContent(input.prompt),
+            modelUsed: 'hidream',
+            promptLength: input.prompt.length,
+            timestamp: new Date(),
+          });
+          
+          return {
+            url: result.url,
+            prompt: input.prompt,
+            creditCost,
+          };
+        } catch (error: any) {
+          console.error('[Image Regeneration] Error:', error);
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: error.message || "Failed to regenerate image",
+          });
+        }
+      }),
+  }),
+
   // User settings
   settings: router({
     get: protectedProcedure.query(async ({ ctx }) => {

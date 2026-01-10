@@ -2459,3 +2459,10 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 ## Bug Fix: Image Generation Variations
 
 - [x] Fix "4 for 10 credits" generating same image 4 times instead of 4 different variations (added unique seeds)
+
+
+## Feature: Regenerate Single Image
+
+- [x] Add regenerate button to individual images in batch results
+- [x] Add backend endpoint for single image regeneration (1 credit)
+- [x] Update chat UI to show regenerate option on hover
