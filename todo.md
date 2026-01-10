@@ -2547,3 +2547,28 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [ ] Create provider selection UI in settings (future)
 - [ ] Track usage per provider for analytics (future)
 
+
+## Phase 26: Additional AI Provider Features
+
+### 1. Cerebras API Integration
+- [x] Create Cerebras API service in server/_core/cerebras.ts
+- [x] Add Cerebras models to AVAILABLE_MODELS (Llama 3.3 70B, Llama 3.1 8B, Qwen 3 32B)
+- [x] Implement model routing for Cerebras provider
+- [x] Request CEREBRAS_API_KEY from user
+- [x] Add Cerebras models to chat UI dropdown
+- [x] All 3 Cerebras API tests passing
+
+### 2. Search with AI Button
+- [x] Add "Search with AI" toggle/button in chat input area
+- [x] Create SearchWithAI component with citations display
+- [x] Integrate searchWithCitations tRPC endpoint
+- [x] Display sources with clickable links
+- [x] Show inline citations in AI response
+
+### 3. Provider Usage Analytics
+- [x] Create provider_usage table in database schema
+- [x] Create provider_usage_daily table for aggregates
+- [x] Track model/provider usage per request
+- [x] Add admin dashboard endpoints for provider analytics
+- [x] Show cost savings from free tier usage
+- [x] Display popular models via API endpoint

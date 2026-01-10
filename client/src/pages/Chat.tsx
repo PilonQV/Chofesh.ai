@@ -56,6 +56,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Streamdown } from "streamdown";
 import { AskDiaLinks } from "@/components/AskDiaLinks";
 import { AgeVerificationModal } from "@/components/AgeVerificationModal";
+import { SearchWithAI } from "@/components/SearchWithAI";
 import { useCommandCenter } from "@/components/CommandCenter";
 import {
   Send,
@@ -2122,6 +2123,11 @@ export default function Chat() {
                       {isListening ? "Stop listening (continuous mode)" : "Voice input (continuous)"}
                     </TooltipContent>
                   </Tooltip>
+                  
+                  {/* Search with AI Button */}
+                  <SearchWithAI 
+                    onInsertResult={(result) => setInput(prev => prev + (prev ? "\n\n" : "") + result)}
+                  />
                 </div>
                 
                 {/* Textarea */}

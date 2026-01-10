@@ -594,3 +594,49 @@ export const supportRequests = mysqlTable("support_requests", {
 });
 export type SupportRequest = typeof supportRequests.$inferSelect;
 export type InsertSupportRequest = typeof supportRequests.$inferInsert;
+
+
+/**
+ * Provider usage analytics table.
+ * Tracks which AI providers and models are being used.
+ */
+export const providerUsage = mysqlTable("provider_usage", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").references(() => users.id, { onDelete: "cascade" }),
+  provider: varchar("provider", { length: 32 }).notNull(), // groq, openrouter, cerebras, puter, etc.
+  model: varchar("model", { length: 128 }).notNull(),
+  modelTier: mysqlEnum("modelTier", ["free", "standard", "premium"]).default("free").notNull(),
+  actionType: mysqlEnum("actionType", ["chat", "image", "search", "code", "document"]).default("chat").notNull(),
+  inputTokens: int("inputTokens").default(0),
+  outputTokens: int("outputTokens").default(0),
+  totalTokens: int("totalTokens").default(0),
+  latencyMs: int("latencyMs"), // Response time in milliseconds
+  success: boolean("success").default(true).notNull(),
+  errorMessage: text("errorMessage"),
+  costSaved: varchar("costSaved", { length: 20 }), // Estimated cost saved by using free tier
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+});
+
+export type ProviderUsage = typeof providerUsage.$inferSelect;
+export type InsertProviderUsage = typeof providerUsage.$inferInsert;
+
+/**
+ * Provider usage daily aggregates for dashboard.
+ * Pre-computed daily stats for faster analytics queries.
+ */
+export const providerUsageDaily = mysqlTable("provider_usage_daily", {
+  id: int("id").autoincrement().primaryKey(),
+  date: timestamp("date").notNull(),
+  provider: varchar("provider", { length: 32 }).notNull(),
+  model: varchar("model", { length: 128 }).notNull(),
+  totalRequests: int("totalRequests").default(0).notNull(),
+  successfulRequests: int("successfulRequests").default(0).notNull(),
+  failedRequests: int("failedRequests").default(0).notNull(),
+  totalTokens: bigint("totalTokens", { mode: "number" }).default(0).notNull(),
+  avgLatencyMs: int("avgLatencyMs"),
+  totalCostSaved: varchar("totalCostSaved", { length: 20 }),
+  uniqueUsers: int("uniqueUsers").default(0).notNull(),
+});
+
+export type ProviderUsageDaily = typeof providerUsageDaily.$inferSelect;
+export type InsertProviderUsageDaily = typeof providerUsageDaily.$inferInsert;
