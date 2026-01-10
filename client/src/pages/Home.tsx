@@ -254,6 +254,10 @@ export default function Home() {
               <Key className="w-4 h-4" />
               <span>BYOK supported</span>
             </div>
+            <div className="flex items-center gap-2">
+              <Zap className="w-4 h-4 text-primary" />
+              <span>20+ free AI models</span>
+            </div>
           </div>
         </div>
       </section>
@@ -277,16 +281,37 @@ export default function Home() {
             </div>
             <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
               <FeatureCard
-                icon={<Wrench className="w-6 h-6" />}
-                title="Smart Tools"
-                description="YouTube summarizer, URL analyzer, math calculator, unit converter, regex tester, and more productivity tools."
+                icon={<Zap className="w-6 h-6" />}
+                title="Cerebras AI"
+                description="Ultra-fast inference with Cerebras. Llama 3.3 70B responses in under 500ms. The fastest AI on the planet."
                 badge="New"
                 highlighted
               />
               <FeatureCard
-                icon={<Braces className="w-6 h-6" />}
-                title="Developer Tools"
-                description="JSON formatter, API tester, diff viewer, regex builder. Essential tools for developers in one place."
+                icon={<Globe className="w-6 h-6" />}
+                title="Search with AI"
+                description="Perplexity-style web search with AI summaries and inline citations. Get answers with sources."
+                badge="New"
+                highlighted
+              />
+              <FeatureCard
+                icon={<Server className="w-6 h-6" />}
+                title="20+ Free Models"
+                description="DeepSeek R1, Llama 405B, Kimi K2, Gemma 3, Mistral - all free. No API keys needed for most models."
+                badge="Free"
+                highlighted
+              />
+              <FeatureCard
+                icon={<BarChart3 className="w-6 h-6" />}
+                title="Provider Analytics"
+                description="Track AI usage by provider, see cost savings from free tiers, and monitor popular models."
+                badge="New"
+                highlighted
+              />
+              <FeatureCard
+                icon={<Wrench className="w-6 h-6" />}
+                title="Smart Tools"
+                description="YouTube summarizer, URL analyzer, math calculator, unit converter, regex tester, and more."
                 badge="New"
                 highlighted
               />
@@ -294,27 +319,6 @@ export default function Home() {
                 icon={<FolderTree className="w-6 h-6" />}
                 title="Conversation Folders"
                 description="Organize your chats by project or topic. Keep your AI conversations structured and easy to find."
-                badge="New"
-                highlighted
-              />
-              <FeatureCard
-                icon={<Github className="w-6 h-6" />}
-                title="GitHub OAuth"
-                description="Connect GitHub with one click. OAuth authentication for seamless repo access and code review."
-                badge="New"
-                highlighted
-              />
-              <FeatureCard
-                icon={<Layers className="w-6 h-6" />}
-                title="Vector Search"
-                description="Semantic search powered by AI embeddings. Find content by meaning, not just keywords."
-                badge="New"
-                highlighted
-              />
-              <FeatureCard
-                icon={<Users className="w-6 h-6" />}
-                title="New AI Personas"
-                description="Documentation Writer, Database Expert, API Designer - 3 new specialized personas for developers."
                 badge="New"
                 highlighted
               />
@@ -346,7 +350,8 @@ export default function Home() {
             <FeatureCard
               icon={<Search className="w-6 h-6" />}
               title="Deep Research"
-              description="Multi-step research with citations from multiple sources. Get comprehensive answers with references."
+              description="Perplexity-style search with AI summaries and inline citations. Multi-step research from multiple sources."
+              badge="Enhanced"
             />
             <FeatureCard
               icon={<Shield className="w-6 h-6" />}
@@ -397,7 +402,8 @@ export default function Home() {
             <FeatureCard
               icon={<Sparkles className="w-6 h-6" />}
               title="Smart Routing"
-              description="Auto-selects the best AI model for your task. Multiple premium and free models working together."
+              description="Auto-selects from Groq, Cerebras, OpenRouter, and more. 20+ free models including DeepSeek R1, Llama 405B, Kimi K2."
+              badge="Enhanced"
             />
             <FeatureCard
               icon={<Code2 className="w-6 h-6" />}
