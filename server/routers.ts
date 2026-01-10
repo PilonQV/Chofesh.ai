@@ -126,6 +126,9 @@ import { generateVeniceImage, isNsfwModel, VENICE_IMAGE_MODELS, VENICE_IMAGE_SIZ
 import { transcribeAudio } from "./_core/voiceTranscription";
 import { callDataApi } from "./_core/dataApi";
 import { searchDuckDuckGo } from "./_core/duckduckgo";
+import { enhancedWebSearch } from "./_core/webSearchEnhanced";
+import { getRealtimeAnswer } from "./_core/perplexitySonar";
+import { needsRealtimeSearch, extractSearchQuery, getRealtimeQueryType } from "./_core/liveSearchDetector";
 import { notifyOwner } from "./_core/notification";
 import { getAgentTools, detectIntent, extractParams, type ToolResult } from "./_core/agentTools";
 import {
@@ -1170,17 +1173,25 @@ Be helpful, accurate, and respect user privacy. When users ask "what can you do"
           }
         }
 
-        // Web search integration (basic or deep research)
+        // Web search integration (basic, deep research, or automatic real-time detection)
         let webSearchResults: { title: string; url: string; description: string }[] = [];
         let messagesWithSearch = [...messagesWithContext];
         let researchSummary = '';
+        let autoSearchTriggered = false;
         
-        if ((input.webSearch || input.deepResearch) && promptContent) {
+        // Auto-detect if query needs real-time information (prices, news, weather, etc.)
+        const needsLiveSearch = promptContent && needsRealtimeSearch(promptContent);
+        if (needsLiveSearch && !input.webSearch && !input.deepResearch) {
+          console.log('[Auto Search] Detected real-time query, triggering automatic web search');
+          autoSearchTriggered = true;
+        }
+        
+        if ((input.webSearch || input.deepResearch || autoSearchTriggered) && promptContent) {
           try {
             if (input.deepResearch) {
               // Deep Research Mode: Multi-step search with follow-up queries
               // Step 1: Initial broad search
-              const initialResults = await searchDuckDuckGo(promptContent);
+              const initialResults = await enhancedWebSearch(promptContent);
               webSearchResults = initialResults.map(r => ({
                 title: r.title || '',
                 url: r.url || '',
@@ -1198,7 +1209,7 @@ Be helpful, accurate, and respect user privacy. When users ask "what can you do"
               // Step 3: Execute follow-up searches
               for (const query of followUpQueries.slice(0, 2)) {
                 try {
-                  const additionalResults = await searchDuckDuckGo(query);
+                  const additionalResults = await enhancedWebSearch(query);
                   const newResults = additionalResults.map(r => ({
                     title: r.title || '',
                     url: r.url || '',
@@ -1245,8 +1256,32 @@ Provide a comprehensive, well-researched response.`;
                 }
               }
             } else {
-              // Basic web search
-              const ddgResults = await searchDuckDuckGo(promptContent);
+              // Basic web search (or auto-triggered real-time search)
+              // Use optimized search query for auto-search
+              const searchQuery = autoSearchTriggered 
+                ? extractSearchQuery(promptContent) 
+                : promptContent;
+              const queryType = autoSearchTriggered 
+                ? getRealtimeQueryType(promptContent) 
+                : 'general';
+              
+              console.log(`[Web Search] Query: "${searchQuery}" (type: ${queryType}, auto: ${autoSearchTriggered})`);
+              
+              // For auto-triggered real-time queries, use Perplexity Sonar for direct answers
+              let sonarDirectAnswer = '';
+              if (autoSearchTriggered && (queryType === 'price' || queryType === 'weather' || queryType === 'news')) {
+                try {
+                  console.log('[Web Search] Using Perplexity Sonar for real-time answer...');
+                  sonarDirectAnswer = await getRealtimeAnswer(searchQuery);
+                  if (sonarDirectAnswer) {
+                    console.log('[Web Search] Got direct answer from Sonar');
+                  }
+                } catch (sonarError) {
+                  console.error('[Web Search] Sonar direct answer failed:', sonarError);
+                }
+              }
+              
+              const ddgResults = await enhancedWebSearch(searchQuery);
               
               webSearchResults = ddgResults.map(r => ({
                 title: r.title || '',
@@ -1254,12 +1289,30 @@ Provide a comprehensive, well-researched response.`;
                 description: r.description || '',
               }));
               
-              if (webSearchResults.length > 0) {
-                const searchContext = webSearchResults.map((r, i) => 
+              if (webSearchResults.length > 0 || sonarDirectAnswer) {
+                // Build search context with Sonar answer if available
+                let searchContext = '';
+                if (sonarDirectAnswer) {
+                  searchContext = `REAL-TIME SEARCH ANSWER (from Perplexity Sonar):\n${sonarDirectAnswer}\n\n---\n\nAdditional Sources:\n`;
+                }
+                searchContext += webSearchResults.map((r, i) => 
                   `[${i + 1}] ${r.title}\n${r.description}\nSource: ${r.url}`
                 ).join('\n\n');
                 
-                const searchSystemPrompt = `You have access to recent web search results. Use them to provide accurate, up-to-date information when relevant.\n\nWeb Search Results:\n${searchContext}\n\nWhen citing information from search results, mention the source.`;
+                // Enhanced system prompt for auto-search with query type context
+                let searchSystemPrompt = '';
+                if (autoSearchTriggered) {
+                  const typeInstructions: Record<string, string> = {
+                    price: 'The user is asking about current prices or financial data. Use the search results to provide the most up-to-date price information. Always cite the source and mention when the data was retrieved.',
+                    news: 'The user is asking about current news or events. Summarize the key information from the search results and cite sources.',
+                    weather: 'The user is asking about weather. Provide the current weather information from the search results.',
+                    sports: 'The user is asking about sports scores or results. Provide the latest information from the search results.',
+                    general: 'The user is asking about current/real-time information. Use the search results to provide accurate, up-to-date information.',
+                  };
+                  searchSystemPrompt = `IMPORTANT: This query requires REAL-TIME information. ${typeInstructions[queryType] || typeInstructions.general}\n\nWeb Search Results (retrieved just now):\n${searchContext}\n\nYou MUST use these search results to answer the user's question. Do not say you cannot access real-time data - you have the search results above. Cite sources with [1], [2], etc.`;
+                } else {
+                  searchSystemPrompt = `You have access to recent web search results. Use them to provide accurate, up-to-date information when relevant.\n\nWeb Search Results:\n${searchContext}\n\nWhen citing information from search results, mention the source.`;
+                }
                 
                 const existingSystemIdx = messagesWithSearch.findIndex(m => m.role === 'system');
                 if (existingSystemIdx >= 0) {
@@ -1546,6 +1599,7 @@ Provide a comprehensive, well-researched response.`;
             cost,
             webSearchUsed: webSearchResults.length > 0,
             webSearchResultsCount: webSearchResults.length,
+            autoSearchTriggered,
             deepResearchUsed: input.deepResearch && webSearchResults.length > 0,
             sources: input.deepResearch ? webSearchResults.map(r => ({ title: r.title, url: r.url })) : undefined,
             tokens: {

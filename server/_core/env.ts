@@ -16,4 +16,7 @@ export const ENV = {
   stripeSecretKey: process.env.Secretkey_live_stripe || (process.env.STRIPE_SECRET_KEY ?? ""),
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET_LIVE || process.env.STRIPE_WEBHOOK_SECRET || "",
   stripeUncensoredPriceId: process.env.STRIPE_UNCENSORED_PRICE_ID ?? "",
+  // Web Search APIs
+  BRAVE_SEARCH_API_KEY: process.env.BRAVE_SEARCH_API_KEY ?? "",
+  SERPER_API_KEY: process.env.SERPER_API_KEY ?? "",
 };
