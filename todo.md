@@ -2477,3 +2477,71 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Test low credit warning display - Handled via error messages when insufficient
 - [x] Test credit purchase flow (Stripe integration) - Working (redirects to Stripe checkout)
 - [x] Test usage history display - Working (full transaction history with timestamps)
+
+
+---
+
+## Phase 25: High Priority Free AI Provider Integration
+
+### P0 - Critical Priority
+
+#### Puter.js Integration (400+ Models, No API Keys)
+- [x] Add Puter.js script to client
+- [x] Create PuterAI service wrapper
+- [x] Support GPT-4.1, Claude Sonnet 4, Gemini 2.5, DeepSeek
+- [x] Implement streaming responses via Puter.js
+- [x] Add Puter.js model selector in chat UI
+
+#### Groq API Enhancement (Already Integrated)
+- [x] Groq API integration (existing)
+- [x] Add Llama 3.3 70B model via Groq
+- [x] Add Gemma 2 9B model via Groq
+- [x] Add direct Groq API invocation in chat router
+- [ ] Add Whisper transcription via Groq (future)
+
+#### Perplexity-Style Search with Citations
+- [x] Implement web search with source citations
+- [x] Create searchWithCitations tRPC endpoint
+- [x] Add web search service with AI summarization
+- [x] Display inline citations in AI responses
+
+### P1 - High Priority
+
+#### Cerebras API Integration (Fast Inference)
+- [ ] Add Cerebras API service
+- [ ] Support GPT-OSS-120B model
+- [ ] Support Qwen 3 235B model
+- [ ] Support Llama 3.3 70B via Cerebras
+- [ ] Add to model selector
+
+#### Cloudflare Workers AI Integration
+- [ ] Add Cloudflare AI service using existing token
+- [ ] Support Llama models via Cloudflare
+- [ ] Support Gemma models via Cloudflare
+- [ ] Support DeepSeek R1 Distill via Cloudflare
+- [ ] Add image generation via Cloudflare (Stable Diffusion)
+
+#### Google AI Studio / Gemini Integration
+- [ ] Add Google AI Studio service
+- [ ] Support Gemini 3 Flash model
+- [ ] Support Gemini 2.5 Flash model
+- [ ] Support Gemma 3 models
+- [ ] Handle rate limits (20 req/day Gemini, 14,400 req/day Gemma)
+
+#### OpenRouter Enhancement (Already Integrated)
+- [x] OpenRouter API integration (existing)
+- [x] Add more free models (Llama 3.1 405B, Hermes 3)
+- [x] Add Qwen 2.5 VL 7B (vision model)
+- [x] Add Mistral Small 3.1 24B
+- [x] Add Kimi K2 model
+- [x] Add Gemma 3 27B model
+- [x] Implement smart model fallback
+
+### Multi-Provider Features
+- [x] Create unified AI provider abstraction layer (aiProviders.ts)
+- [x] Implement automatic provider fallback on errors
+- [x] Add provider health status monitoring
+- [x] Show provider/model info in chat responses
+- [ ] Create provider selection UI in settings (future)
+- [ ] Track usage per provider for analytics (future)
+

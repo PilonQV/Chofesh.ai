@@ -119,7 +119,7 @@ import { users, supportRequests } from "../drizzle/schema";
 import { eq, desc, sql } from "drizzle-orm";
 import { invokeLLM } from "./_core/llm";
 import { invokeGrok, isGrokAvailable } from "./_core/grok";
-import { invokeDeepSeekR1, invokeVeniceUncensored, isComplexReasoningQuery, isRefusalResponse, isNsfwContentRequest, OPENROUTER_MODELS } from "./_core/openrouter";
+import { invokeDeepSeekR1, invokeVeniceUncensored, invokeOpenRouter, isComplexReasoningQuery, isRefusalResponse, isNsfwContentRequest, OPENROUTER_MODELS } from "./_core/openrouter";
 import { generateImage } from "./_core/imageGeneration";
 import { generateVeniceImage, isNsfwModel, VENICE_IMAGE_MODELS, VENICE_IMAGE_SIZES } from "./_core/veniceImage";
 import { transcribeAudio } from "./_core/voiceTranscription";
@@ -1321,7 +1321,68 @@ Provide a comprehensive, well-researched response.`;
               })),
               temperature: input.temperature,
             });
-          } else if (selectedModel.provider === "openrouter" && selectedModel.id === "deepseek-r1-free") {
+          } else if (selectedModel.provider === "openrouter") {
+            // Use any OpenRouter model (FREE tier models)
+            const openRouterModelMap: Record<string, string> = {
+              "deepseek-r1-free": "deepseek/deepseek-r1-0528:free",
+              "llama-3.1-405b-free": "meta-llama/llama-3.1-405b-instruct:free",
+              "hermes-3-405b-free": "nousresearch/hermes-3-llama-3.1-405b:free",
+              "kimi-k2-free": "moonshotai/kimi-k2:free",
+              "mistral-small-free": "mistralai/mistral-small-3.1-24b-instruct:free",
+              "qwen-vl-free": "qwen/qwen-2.5-vl-7b-instruct:free",
+              "gemma-3-27b-free": "google/gemma-3-27b-it:free",
+            };
+            const openRouterModelId = openRouterModelMap[selectedModel.id] || "deepseek/deepseek-r1-0528:free";
+            
+            response = await invokeOpenRouter({
+              messages: messagesWithSearch.map(m => ({
+                role: m.role as "system" | "user" | "assistant",
+                content: m.content,
+              })),
+              model: openRouterModelId,
+              temperature: input.temperature,
+            });
+          } else if (selectedModel.provider === "groq") {
+            // Use Groq API for ultra-fast inference (FREE)
+            const groqModelMap: Record<string, string> = {
+              "llama-3.1-8b": "llama-3.1-8b-instant",
+              "llama-3.1-70b": "llama-3.3-70b-versatile",
+              "mixtral-8x7b": "mixtral-8x7b-32768",
+              "llama-3.3-70b-groq": "llama-3.3-70b-versatile",
+              "gemma2-9b-groq": "gemma2-9b-it",
+            };
+            const groqModelId = groqModelMap[selectedModel.id] || "llama-3.3-70b-versatile";
+            
+            // Check if Groq API key is available
+            if (process.env.GROQ_API_KEY) {
+              const groqResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+                },
+                body: JSON.stringify({
+                  model: groqModelId,
+                  messages: messagesWithSearch.map(m => ({
+                    role: m.role,
+                    content: m.content,
+                  })),
+                  temperature: input.temperature ?? 0.7,
+                  max_tokens: 4096,
+                }),
+              });
+              
+              if (!groqResponse.ok) {
+                const errorText = await groqResponse.text();
+                throw new Error(`Groq API error: ${groqResponse.status} - ${errorText}`);
+              }
+              
+              response = await groqResponse.json();
+            } else {
+              // Fallback to default LLM if Groq not configured
+              response = await invokeLLM({ messages: finalMessages });
+            }
+          } else if (selectedModel.id === "deepseek-r1-free") {
             // Use DeepSeek R1 via OpenRouter (FREE for complex reasoning)
             // Note: DeepSeek R1 doesn't support vision, fall back to text-only
             response = await invokeDeepSeekR1({
@@ -2687,6 +2748,102 @@ Provide a comprehensive, well-researched response.`;
             query: input.query,
             error: "Search temporarily unavailable",
           };
+        }
+      }),
+    
+    // Perplexity-style search with AI-generated summary and citations
+    searchWithCitations: protectedProcedure
+      .input(z.object({
+        query: z.string().min(1).max(500),
+        maxSources: z.number().min(1).max(10).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        try {
+          // Step 1: Search the web using DuckDuckGo
+          const ddgResults = await searchDuckDuckGo(input.query);
+          const maxSources = input.maxSources || 5;
+          
+          // Extract top sources
+          const sources = ddgResults.slice(0, maxSources).map((result, index) => ({
+            title: result.title || `Source ${index + 1}`,
+            url: result.url || '',
+            snippet: result.description || '',
+            position: index + 1,
+          }));
+          
+          if (sources.length === 0) {
+            return {
+              query: input.query,
+              summary: "No search results found for this query.",
+              sources: [],
+              citations: [],
+            };
+          }
+          
+          // Step 2: Build context from search results
+          const searchContext = sources.map((source, i) => 
+            `[${i + 1}] ${source.title}\nURL: ${source.url}\n${source.snippet}`
+          ).join('\n\n');
+          
+          // Step 3: Generate AI summary with citations
+          const systemPrompt = `You are a helpful research assistant. Your task is to answer the user's question based on the provided search results.
+
+IMPORTANT RULES:
+1. Use ONLY information from the provided search results
+2. Include inline citations like [1], [2], etc. to reference your sources
+3. Be concise but comprehensive
+4. If the search results don't contain enough information, say so
+5. Format your response in clear paragraphs
+6. Do NOT make up information not in the sources`;
+
+          const userPrompt = `Question: ${input.query}\n\nSearch Results:\n${searchContext}\n\nPlease provide a comprehensive answer with inline citations [1], [2], etc.`;
+          
+          const response = await invokeLLM({
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt },
+            ],
+            maxTokens: 1024,
+          });
+          
+          const messageContent = response.choices[0]?.message?.content;
+          const summary = typeof messageContent === 'string' 
+            ? messageContent 
+            : Array.isArray(messageContent) 
+              ? messageContent.map((c: any) => 'text' in c ? c.text : '').join('')
+              : 'Unable to generate summary.';
+          
+          // Extract citations used in the response
+          const citationMatches = summary.match(/\[\d+\]/g) || [];
+          const citations = Array.from(new Set(citationMatches));
+          
+          // Create audit log
+          await createAuditLog({
+            userId: ctx.user.id,
+            userOpenId: ctx.user.openId,
+            actionType: 'chat',
+            ipAddress: getClientIp(ctx.req),
+            userAgent: ctx.req.headers['user-agent'] || null,
+            metadata: JSON.stringify({
+              type: 'search_with_citations',
+              query: input.query,
+              sourcesCount: sources.length,
+            }),
+            timestamp: new Date(),
+          });
+          
+          return {
+            query: input.query,
+            summary,
+            sources,
+            citations,
+          };
+        } catch (error) {
+          console.error('Search with citations error:', error);
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Failed to perform search with citations',
+          });
         }
       }),
   }),
