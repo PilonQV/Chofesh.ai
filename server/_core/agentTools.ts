@@ -9,6 +9,7 @@
  */
 
 import { generateVeniceImage } from './veniceImage';
+import { searchWithSonar } from './perplexitySonar';
 
 // Tool result types
 export interface ImageToolResult {
@@ -99,12 +100,41 @@ export class AgentTools {
    * Search the web for information
    */
   async searchWeb(params: { query: string; maxResults?: number }): Promise<SearchToolResult> {
-    console.log('[AgentTools] Searching web:', params.query);
+    console.log('[AgentTools] Searching web with Perplexity Sonar:', params.query);
     
     const maxResults = params.maxResults || 5;
     
     try {
-      // Use DuckDuckGo instant answer API (free, no API key needed)
+      // Use Perplexity Sonar via OpenRouter for real-time web search
+      const sonarResponse = await searchWithSonar(params.query);
+      
+      if (sonarResponse.answer) {
+        // Parse citations from the Sonar response
+        const results: SearchToolResult['results'] = sonarResponse.citations.slice(0, maxResults).map(c => ({
+          title: c.title || 'Source',
+          url: c.url,
+          snippet: c.snippet || 'Web search result',
+        }));
+        
+        // If no citations were extracted, add a generic one
+        if (results.length === 0) {
+          results.push({
+            title: 'AI Search Summary',
+            url: `https://duckduckgo.com/?q=${encodeURIComponent(params.query)}`,
+            snippet: 'Real-time information from Perplexity Sonar',
+          });
+        }
+        
+        return {
+          type: 'search',
+          query: params.query,
+          results,
+          summary: sonarResponse.answer,
+        };
+      }
+      
+      // Fallback to DuckDuckGo if Sonar fails
+      console.log('[AgentTools] Sonar returned no answer, falling back to DuckDuckGo');
       const searchUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(params.query)}&format=json&no_html=1&skip_disambig=1`;
       
       const response = await fetch(searchUrl);

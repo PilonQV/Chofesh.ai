@@ -2581,3 +2581,24 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Update model count and provider list (20+ free models badge)
 - [x] Add free tier benefits section (Provider Analytics card)
 - [x] Update Smart Routing description with new providers
+
+
+## Phase 28: Live Web Search Integration
+
+### Bug Fix: AI not using live search for real-time queries
+- [x] Detect queries that need real-time information (prices, news, weather, etc.)
+- [x] Automatically trigger web search for time-sensitive queries
+- [x] Include search results in AI context before generating response
+- [x] Show search sources in the response
+- [x] Created liveSearchDetector.ts for query detection
+- [x] Integrated Perplexity Sonar via OpenRouter for real-time answers
+- [x] Updated agentTools.ts to use Sonar for web search
+- [x] Tested successfully - Bitcoin price returned as $90,500
+
+
+## Phase 29: SearXNG Free Web Search Integration
+- [x] Research SearXNG API and deployment options (public instances rate-limited)
+- [x] Created SearXNG service integration (searxng.ts)
+- [x] Pivoted to Perplexity Sonar via OpenRouter (more reliable)
+- [x] Test live search with price/news queries - SUCCESS
+- [x] Verify auto-search triggers correctly - SUCCESS
