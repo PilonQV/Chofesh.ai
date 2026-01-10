@@ -66,13 +66,15 @@ export class AgentTools {
     console.log(`[AgentTools] Generating ${imageCount} images:`, params.prompt);
     
     try {
-      // Generate multiple images in parallel
-      const imagePromises = Array.from({ length: imageCount }, () =>
+      // Generate multiple images in parallel with unique seeds for variations
+      const baseSeed = Math.floor(Math.random() * 1000000000);
+      const imagePromises = Array.from({ length: imageCount }, (_, index) =>
         generateVeniceImage({
           prompt: params.prompt,
           model: 'hidream', // Use high-quality model
           nsfw: false,
           size: '1024x1024',
+          seed: baseSeed + index * 12345, // Different seed for each image to ensure variations
         })
       );
       
