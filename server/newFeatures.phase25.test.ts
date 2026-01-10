@@ -231,3 +231,168 @@ describe("Combined Features", () => {
     expect(chatInput.showThinking).toBe(true);
   });
 });
+
+
+// ============================================================================
+// Phase 25 Part 2: Free AI Provider Integration Tests
+// ============================================================================
+
+import { 
+  AVAILABLE_MODELS, 
+  analyzeQueryComplexity, 
+  selectModel, 
+  getModelsByTier,
+  estimateCost,
+  getCacheKey,
+  getCachedResponse,
+  setCachedResponse,
+  clearUserCache,
+} from "./modelRouter";
+
+describe("Phase 25 Part 2: Free AI Provider Integration", () => {
+  
+  describe("Puter.js Models", () => {
+    it("should have Puter.js models in AVAILABLE_MODELS", () => {
+      const puterModels = AVAILABLE_MODELS.filter(m => m.provider === "puter");
+      expect(puterModels.length).toBeGreaterThan(0);
+    });
+
+    it("should have all Puter.js models marked as free tier", () => {
+      const puterModels = AVAILABLE_MODELS.filter(m => m.provider === "puter");
+      puterModels.forEach(model => {
+        expect(model.tier).toBe("free");
+        expect(model.costPer1kInput).toBe(0);
+        expect(model.costPer1kOutput).toBe(0);
+      });
+    });
+  });
+
+  describe("Groq Models", () => {
+    it("should have Groq models configured", () => {
+      const groqModels = AVAILABLE_MODELS.filter(m => m.provider === "groq");
+      expect(groqModels.length).toBeGreaterThanOrEqual(3);
+    });
+
+    it("should have Llama 3.3 70B via Groq", () => {
+      const llama33 = AVAILABLE_MODELS.find(m => m.id === "llama-3.3-70b-groq");
+      expect(llama33).toBeDefined();
+      expect(llama33?.provider).toBe("groq");
+      expect(llama33?.tier).toBe("free");
+    });
+
+    it("should have Gemma 2 9B via Groq", () => {
+      const gemma2 = AVAILABLE_MODELS.find(m => m.id === "gemma2-9b-groq");
+      expect(gemma2).toBeDefined();
+      expect(gemma2?.provider).toBe("groq");
+      expect(gemma2?.tier).toBe("free");
+    });
+  });
+
+  describe("OpenRouter Free Models", () => {
+    it("should have OpenRouter models configured", () => {
+      const openRouterModels = AVAILABLE_MODELS.filter(m => m.provider === "openrouter");
+      expect(openRouterModels.length).toBeGreaterThanOrEqual(5);
+    });
+
+    it("should have DeepSeek R1 free model", () => {
+      const deepseekR1 = AVAILABLE_MODELS.find(m => m.id === "deepseek-r1-free");
+      expect(deepseekR1).toBeDefined();
+      expect(deepseekR1?.provider).toBe("openrouter");
+      expect(deepseekR1?.isReasoningModel).toBe(true);
+    });
+
+    it("should have Llama 3.1 405B free model", () => {
+      const llama405b = AVAILABLE_MODELS.find(m => m.id === "llama-3.1-405b-free");
+      expect(llama405b).toBeDefined();
+      expect(llama405b?.provider).toBe("openrouter");
+    });
+
+    it("should have Kimi K2 free model", () => {
+      const kimi = AVAILABLE_MODELS.find(m => m.id === "kimi-k2-free");
+      expect(kimi).toBeDefined();
+      expect(kimi?.provider).toBe("openrouter");
+    });
+
+    it("should have Qwen VL 7B vision model", () => {
+      const qwen = AVAILABLE_MODELS.find(m => m.id === "qwen-vl-free");
+      expect(qwen).toBeDefined();
+      expect(qwen?.supportsVision).toBe(true);
+    });
+
+    it("should have Venice Uncensored model", () => {
+      const venice = AVAILABLE_MODELS.find(m => m.id === "venice-uncensored");
+      expect(venice).toBeDefined();
+      expect(venice?.isUncensored).toBe(true);
+    });
+  });
+
+  describe("Smart Model Routing", () => {
+    it("should route simple queries to fast free models", () => {
+      const messages = [{ role: "user", content: "What is 2+2?" }];
+      const complexity = analyzeQueryComplexity(messages);
+      expect(complexity).toBe("simple");
+      
+      const model = selectModel(complexity, "free");
+      expect(model.tier).toBe("free");
+    });
+
+    it("should route complex reasoning to DeepSeek R1", () => {
+      const model = selectModel("complex", "free");
+      expect(model.id).toBe("deepseek-r1-free");
+      expect(model.isReasoningModel).toBe(true);
+    });
+
+    it("should respect manual mode selection", () => {
+      const model = selectModel("simple", "manual", "llama-3.1-405b-free");
+      expect(model.id).toBe("llama-3.1-405b-free");
+    });
+  });
+
+  describe("Cost Estimation", () => {
+    it("should return zero cost for free tier models", () => {
+      const freeModel = AVAILABLE_MODELS.find(m => m.tier === "free")!;
+      const cost = estimateCost(freeModel, 1000, 500);
+      expect(cost).toBe(0);
+    });
+
+    it("should calculate cost for paid models", () => {
+      const paidModel = AVAILABLE_MODELS.find(m => m.tier === "premium")!;
+      const cost = estimateCost(paidModel, 1000, 500);
+      expect(cost).toBeGreaterThan(0);
+    });
+  });
+
+  describe("Model Tiers", () => {
+    it("should have models in all tiers", () => {
+      const freeModels = getModelsByTier("free");
+      const standardModels = getModelsByTier("standard");
+      const premiumModels = getModelsByTier("premium");
+
+      expect(freeModels.length).toBeGreaterThan(0);
+      expect(standardModels.length).toBeGreaterThan(0);
+      expect(premiumModels.length).toBeGreaterThan(0);
+    });
+
+    it("should have more free models than paid models", () => {
+      const freeModels = getModelsByTier("free");
+      const paidModels = [...getModelsByTier("standard"), ...getModelsByTier("premium")];
+      
+      expect(freeModels.length).toBeGreaterThan(paidModels.length);
+    });
+  });
+
+  describe("Provider Distribution", () => {
+    it("should have models from multiple providers", () => {
+      const providers = new Set(AVAILABLE_MODELS.map(m => m.provider));
+      expect(providers.size).toBeGreaterThanOrEqual(4);
+    });
+
+    it("should have the expected providers", () => {
+      const providers = new Set(AVAILABLE_MODELS.map(m => m.provider));
+      expect(providers.has("groq")).toBe(true);
+      expect(providers.has("openrouter")).toBe(true);
+      expect(providers.has("puter")).toBe(true);
+      expect(providers.has("platform")).toBe(true);
+    });
+  });
+});
