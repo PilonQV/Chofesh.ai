@@ -119,6 +119,7 @@ import { users, supportRequests } from "../drizzle/schema";
 import { eq, desc, sql } from "drizzle-orm";
 import { invokeLLM } from "./_core/llm";
 import { invokeGrok, isGrokAvailable } from "./_core/grok";
+import { trackProviderUsage, estimateCostSaved } from "./_core/providerAnalytics";
 import { invokeDeepSeekR1, invokeVeniceUncensored, invokeOpenRouter, isComplexReasoningQuery, isRefusalResponse, isNsfwContentRequest, OPENROUTER_MODELS } from "./_core/openrouter";
 import { generateImage } from "./_core/imageGeneration";
 import { generateVeniceImage, isNsfwModel, VENICE_IMAGE_MODELS, VENICE_IMAGE_SIZES } from "./_core/veniceImage";
@@ -1519,6 +1520,21 @@ Provide a comprehensive, well-researched response.`;
             status: "success",
             isUncensored: actualModelUsed.isUncensored === true || autoSwitchedToUncensored,
           });
+          
+          // Track provider usage analytics
+          trackProviderUsage({
+            userId: ctx.user.id,
+            provider: actualModelUsed.provider,
+            model: actualModelUsed.id,
+            modelTier: actualModelUsed.tier as "free" | "standard" | "premium",
+            actionType: "chat",
+            inputTokens,
+            outputTokens,
+            totalTokens,
+            latencyMs: Date.now() - startTime,
+            success: true,
+            costSaved: actualModelUsed.tier === "free" ? estimateCostSaved(actualModelUsed.id, inputTokens, outputTokens) : undefined,
+          });
 
           return {
             content: usedFallback ? `${fallbackMessage}\n\n${assistantContent}` : assistantContent,
@@ -2715,6 +2731,51 @@ Provide a comprehensive, well-researched response.`;
           images,
           recentActivity: auditData.logs,
         };
+      }),
+    
+    // Provider Analytics endpoints
+    providerStats: adminProcedure
+      .input(z.object({
+        startDate: z.date().optional(),
+        endDate: z.date().optional(),
+      }).optional())
+      .query(async ({ input }) => {
+        const { getProviderStats } = await import("./_core/providerAnalytics");
+        const now = new Date();
+        const startDate = input?.startDate || new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        const endDate = input?.endDate || now;
+        return await getProviderStats(startDate, endDate);
+      }),
+    
+    popularModels: adminProcedure
+      .input(z.object({
+        days: z.number().min(1).max(90).optional(),
+      }).optional())
+      .query(async ({ input }) => {
+        const { getPopularModels } = await import("./_core/providerAnalytics");
+        return await getPopularModels(input?.days || 7);
+      }),
+    
+    costSavings: adminProcedure
+      .input(z.object({
+        startDate: z.date().optional(),
+        endDate: z.date().optional(),
+      }).optional())
+      .query(async ({ input }) => {
+        const { getCostSavings } = await import("./_core/providerAnalytics");
+        const now = new Date();
+        const startDate = input?.startDate || new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        const endDate = input?.endDate || now;
+        return await getCostSavings(startDate, endDate);
+      }),
+    
+    usageTrend: adminProcedure
+      .input(z.object({
+        days: z.number().min(1).max(90).optional(),
+      }).optional())
+      .query(async ({ input }) => {
+        const { getUsageTrend } = await import("./_core/providerAnalytics");
+        return await getUsageTrend(input?.days || 30);
       }),
   }),
 
