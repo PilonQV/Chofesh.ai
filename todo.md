@@ -2621,7 +2621,12 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 ## Phase 31: Enhanced RAG System (P1) 🆓
 
 ### Vector Database Options
-- [ ] Add ChromaDB integration for local RAG
+- [x] Add ChromaDB integration for local RAG
+- [x] Text chunking with overlap
+- [x] Semantic similarity search
+- [x] RAG context building
+- [x] documents.vectorSearch, indexInChroma, getRAGContext, getVectorStats, removeFromChroma endpoints
+- [x] All tests passing
 - [ ] Add Qdrant cloud option (1GB free)
 - [ ] Add pgvector support via Supabase
 - [ ] Create vector DB abstraction layer
@@ -2642,7 +2647,11 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [ ] Create STT provider abstraction
 
 ### Text-to-Speech
-- [ ] Add Edge TTS integration (FREE, good quality)
+- [x] Add Edge TTS integration (FREE, good quality)
+- [x] 100+ voices in 15+ languages
+- [x] Auto language detection
+- [x] voice.speak, voice.getVoices, voice.checkTTSAvailable endpoints
+- [x] All 22 tests passing
 - [ ] Add ElevenLabs option (10k chars free)
 - [ ] Add Coqui TTS for self-hosted option
 - [ ] Create TTS provider abstraction
