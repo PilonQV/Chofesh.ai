@@ -2602,3 +2602,125 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Pivoted to Perplexity Sonar via OpenRouter (more reliable)
 - [x] Test live search with price/news queries - SUCCESS
 - [x] Verify auto-search triggers correctly - SUCCESS
+
+
+---
+
+# GitHub Accelerator Inspired Features (OpenWebUI, LLMware, etc.)
+
+## Phase 30: Web Search Enhancement (P0) 🆓
+
+### Free Search Providers
+- [ ] Add Brave Search API integration (2,000 free/month)
+- [ ] Add Jina Reader for URL content extraction (1M tokens free)
+- [ ] Add Exa neural search (1,000 free/month)
+- [ ] Add Tavily search (1,000 free/month)
+- [ ] Create search provider fallback chain
+- [ ] Add user setting to choose preferred search provider
+
+## Phase 31: Enhanced RAG System (P1) 🆓
+
+### Vector Database Options
+- [ ] Add ChromaDB integration for local RAG
+- [ ] Add Qdrant cloud option (1GB free)
+- [ ] Add pgvector support via Supabase
+- [ ] Create vector DB abstraction layer
+- [ ] Add document chunking strategies (sentence, paragraph, semantic)
+
+### Document Processing
+- [ ] Add DOCX file support with mammoth
+- [ ] Add Excel/CSV parsing
+- [ ] Add Unstructured.io for complex documents (1,000 pages free)
+- [ ] Add OCR for scanned PDFs (Tesseract - free)
+
+## Phase 32: Voice Features (P1) 🆓
+
+### Speech-to-Text
+- [ ] Add Groq Whisper transcription (FREE, fast)
+- [ ] Add Deepgram option (12,500 mins free)
+- [ ] Add local Whisper via transformers.js
+- [ ] Create STT provider abstraction
+
+### Text-to-Speech
+- [ ] Add Edge TTS integration (FREE, good quality)
+- [ ] Add ElevenLabs option (10k chars free)
+- [ ] Add Coqui TTS for self-hosted option
+- [ ] Create TTS provider abstraction
+
+## Phase 33: Plugin/Pipelines System (P2) 🆓
+
+### Custom Function Calling
+- [ ] Create plugin architecture for custom tools
+- [ ] Add built-in tools: Calculator, Weather, Translator
+- [ ] Add code execution sandbox (Pyodide for browser)
+- [ ] Allow users to define custom API integrations
+- [ ] Create plugin marketplace/library
+
+### Workflow Automation
+- [ ] Add multi-step workflow builder
+- [ ] Add conditional logic (if/then)
+- [ ] Add loop support for batch processing
+- [ ] Add scheduled workflow execution
+
+## Phase 34: Model Builder / AI Characters (P2) 🆓
+
+### Enhanced Character System
+- [ ] Add character avatar generation (FLUX - already have)
+- [ ] Add voice selection per character
+- [ ] Add character memory/context persistence
+- [ ] Add character sharing/import/export
+- [ ] Add character templates library
+
+### Fine-tuning Integration
+- [ ] Research unsloth integration for user fine-tuning
+- [ ] Add LoRA adapter support for custom models
+- [ ] Create fine-tuning wizard UI
+
+## Phase 35: Image Generation Enhancement (P2) 🆓-💰
+
+- [ ] Add Stability AI as backup provider
+- [ ] Add Fal.ai for faster FLUX generation
+- [ ] Add image-to-image editing
+- [ ] Add inpainting/outpainting support
+
+## Phase 36: Collaboration Features (P3) 🆓
+
+### Team/Workspace Features
+- [ ] Add team workspaces
+- [ ] Add shared conversations
+- [ ] Add shared document libraries
+- [ ] Add shared characters/prompts
+
+### Real-time Collaboration
+- [ ] Add real-time document co-editing
+- [ ] Add chat room feature for teams
+- [ ] Add @mentions and notifications
+
+## Phase 37: Enterprise Features (P3) 💵
+
+### Advanced Security
+- [ ] Add LDAP/Active Directory integration
+- [ ] Add SCIM 2.0 for user provisioning
+- [ ] Add audit log export
+- [ ] Add data retention policies
+
+### Advanced Analytics
+- [ ] Add usage analytics dashboard
+- [ ] Add cost tracking per user/team
+- [ ] Add model performance metrics
+- [ ] Add custom reporting
+
+---
+
+## Implementation Priority Queue (Next 4 Weeks)
+
+### Week 1-2 (Immediate - All FREE)
+- [ ] Brave Search integration
+- [ ] Jina Reader integration  
+- [ ] Groq Whisper transcription
+- [ ] Edge TTS integration
+
+### Week 3-4
+- [ ] ChromaDB for local RAG
+- [ ] Enhanced document processing (DOCX, Excel)
+- [ ] Tavily/Exa search options
