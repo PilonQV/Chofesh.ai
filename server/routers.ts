@@ -124,6 +124,8 @@ import { invokeDeepSeekR1, invokeVeniceUncensored, invokeOpenRouter, isComplexRe
 import { generateImage } from "./_core/imageGeneration";
 import { generateVeniceImage, isNsfwModel, VENICE_IMAGE_MODELS, VENICE_IMAGE_SIZES } from "./_core/veniceImage";
 import { transcribeAudio } from "./_core/voiceTranscription";
+import { generateSpeechBase64, getAllVoices, getVoicesForLanguage, isEdgeTTSAvailable } from "./_core/edgeTTS";
+import { addDocumentToChroma, searchSimilarChunks, deleteDocumentFromChroma, getCollectionStats, getRAGContext } from "./_core/chromaDB";
 import { callDataApi } from "./_core/dataApi";
 import { searchDuckDuckGo } from "./_core/duckduckgo";
 import { enhancedWebSearch } from "./_core/webSearchEnhanced";
@@ -2439,6 +2441,134 @@ Provide a comprehensive, well-researched response.`;
           });
         }
       }),
+    
+    // ChromaDB Vector Search Endpoints
+    vectorSearch: protectedProcedure
+      .input(z.object({
+        query: z.string().min(1),
+        documentId: z.number().optional(),
+        maxResults: z.number().min(1).max(20).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        try {
+          const results = await searchSimilarChunks(ctx.user.id.toString(), input.query, {
+            nResults: input.maxResults || 5,
+            documentId: input.documentId?.toString(),
+          });
+          
+          return {
+            results: results.map(r => ({
+              text: r.text,
+              score: r.score,
+              documentId: r.metadata.documentId,
+              filename: r.metadata.filename,
+            })),
+            count: results.length,
+          };
+        } catch (error) {
+          console.error('[ChromaDB] Search error:', error);
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Vector search failed',
+          });
+        }
+      }),
+    
+    // Index document in ChromaDB
+    indexInChroma: protectedProcedure
+      .input(z.object({
+        documentId: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const doc = await getDocumentById(ctx.user.id, input.documentId);
+        if (!doc) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Document not found' });
+        }
+        
+        // Get document chunks
+        const chunks = await getDocumentChunks(input.documentId);
+        const fullText = chunks.map(c => c.content).join('\n\n');
+        
+        try {
+          const result = await addDocumentToChroma(
+            ctx.user.id.toString(),
+            input.documentId.toString(),
+            fullText,
+            {
+              filename: doc.filename,
+              title: doc.originalName,
+            }
+          );
+          
+          return {
+            success: true,
+            chunksAdded: result.chunksAdded,
+            collectionName: result.collectionName,
+          };
+        } catch (error) {
+          console.error('[ChromaDB] Index error:', error);
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Failed to index document',
+          });
+        }
+      }),
+    
+    // Get RAG context for a query
+    getRAGContext: protectedProcedure
+      .input(z.object({
+        query: z.string().min(1),
+        documentId: z.number().optional(),
+        maxResults: z.number().min(1).max(10).optional(),
+        maxTokens: z.number().min(100).max(4000).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        try {
+          const result = await getRAGContext(ctx.user.id.toString(), input.query, {
+            maxResults: input.maxResults || 5,
+            maxTokens: input.maxTokens || 2000,
+            documentId: input.documentId?.toString(),
+          });
+          
+          return result;
+        } catch (error) {
+          console.error('[ChromaDB] RAG context error:', error);
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Failed to get RAG context',
+          });
+        }
+      }),
+    
+    // Get ChromaDB collection stats
+    getVectorStats: protectedProcedure
+      .query(async ({ ctx }) => {
+        try {
+          const stats = await getCollectionStats(ctx.user.id.toString());
+          return stats;
+        } catch (error) {
+          console.error('[ChromaDB] Stats error:', error);
+          return { name: '', count: 0, metadata: {} };
+        }
+      }),
+    
+    // Delete document from ChromaDB
+    removeFromChroma: protectedProcedure
+      .input(z.object({
+        documentId: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        try {
+          await deleteDocumentFromChroma(ctx.user.id.toString(), input.documentId.toString());
+          return { success: true };
+        } catch (error) {
+          console.error('[ChromaDB] Delete error:', error);
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Failed to remove document from vector store',
+          });
+        }
+      }),
   }),
 
   // AI Characters
@@ -3030,6 +3160,67 @@ IMPORTANT RULES:
         }
         
         return result;
+      }),
+    
+    // Edge TTS - Text-to-Speech (FREE)
+    speak: protectedProcedure
+      .input(z.object({
+        text: z.string().min(1).max(5000),
+        voice: z.string().optional(),
+        rate: z.string().optional(), // e.g., '+10%', '-20%'
+        pitch: z.string().optional(), // e.g., '+5Hz', '-10Hz'
+        volume: z.string().optional(), // e.g., '+10%', '-20%'
+      }))
+      .mutation(async ({ ctx, input }) => {
+        try {
+          const result = await generateSpeechBase64(input.text, {
+            voice: input.voice,
+            rate: input.rate,
+            pitch: input.pitch,
+            volume: input.volume,
+          });
+          
+          await createAuditLog({
+            userId: ctx.user.id,
+            userOpenId: ctx.user.openId,
+            actionType: "chat",
+            ipAddress: getClientIp(ctx.req),
+            userAgent: ctx.req.headers["user-agent"] || null,
+            metadata: JSON.stringify({
+              type: "text_to_speech",
+              voice: input.voice || 'auto',
+              textLength: input.text.length,
+            }),
+            timestamp: new Date(),
+          });
+          
+          return result;
+        } catch (error) {
+          console.error('[EdgeTTS] Error:', error);
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: error instanceof Error ? error.message : 'Failed to generate speech',
+          });
+        }
+      }),
+    
+    // Get available TTS voices
+    getVoices: publicProcedure
+      .input(z.object({
+        language: z.string().optional(),
+      }).optional())
+      .query(async ({ input }) => {
+        if (input?.language) {
+          return getVoicesForLanguage(input.language);
+        }
+        return getAllVoices();
+      }),
+    
+    // Check if Edge TTS is available
+    checkTTSAvailable: publicProcedure
+      .query(async () => {
+        const available = await isEdgeTTSAvailable();
+        return { available, provider: 'edge-tts' };
       }),
   }),
 
