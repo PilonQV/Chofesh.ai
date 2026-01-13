@@ -1,120 +1,139 @@
 /**
- * SEO Middleware for Express
- * Injects meta tags into HTML for marketing pages
+ * SEO Middleware
+ * 
+ * This middleware injects SEO-optimized content into the HTML response for marketing pages.
+ * It uses the "Visible Preface" pattern, injecting substantial HTML content (H1, paragraphs, FAQs)
+ * directly into the <main id="root"> element before React hydration.
+ * 
+ * This ensures that search engines see real, indexable content, not just an empty SPA shell.
  */
 
 import { type Request, type Response, type NextFunction } from 'express';
+import { seoPageContent } from './seo-content.js';
+import { getStructuredData } from './seo-structured-data.js';
 
-interface PageMeta {
+interface PageMetadata {
   title: string;
   description: string;
   canonical: string;
   ogType?: string;
 }
 
-const pageMetadata: Record<string, PageMeta> = {
+const pageMetadata: Record<string, PageMetadata> = {
   '/': {
     title: 'Chofesh — Private AI Chat (Encrypted, Local-First, Multi-Model, BYOK)',
-    description: 'Chofesh is a privacy-first AI chat platform that keeps your data on your device. With end-to-end encryption, local storage, BYOK support, and access to 20+ AI models, experience AI without compromising your privacy.',
+    description: 'Chofesh.ai - The AI platform that respects your creativity. Generate text and images freely. Your conversations stay on your device, always.',
     canonical: 'https://chofesh.ai/',
-    ogType: 'website',
   },
   '/features': {
-    title: 'Features - Privacy-First AI Chat Platform | Chofesh',
-    description: 'Explore Chofesh features: private AI chat, BYOK, local storage, smart model routing, and deep research. Built for privacy-conscious professionals and developers.',
+    title: 'Features - Privacy-First AI Platform | Chofesh',
+    description: 'Explore Chofesh\'s powerful features: private AI chat, BYOK support, local-first storage, smart model routing, and deep research capabilities.',
     canonical: 'https://chofesh.ai/features',
-    ogType: 'website',
   },
   '/features/private-ai-chat': {
     title: 'Private AI Chat - Encrypted & Local-First | Chofesh',
-    description: 'Learn how Chofesh\'s private AI chat keeps your conversations secure with end-to-end encryption and local storage. Your data stays on your device, always.',
+    description: 'Learn how Chofesh\'s private AI chat keeps your conversations secure with end-to-end encryption and on-device storage. No data retention, ever.',
     canonical: 'https://chofesh.ai/features/private-ai-chat',
+    ogType: 'article',
   },
   '/features/byok': {
-    title: 'Bring Your Own Key (BYOK) - AI Model Flexibility | Chofesh',
-    description: 'Discover the freedom of Chofesh\'s BYOK feature. Use your own API keys from OpenAI, Anthropic, Google, and more for ultimate control and flexibility.',
+    title: 'Bring Your Own Key (BYOK) - Control Your AI Usage | Chofesh',
+    description: 'Use your own API keys from OpenAI, Google, Anthropic, and more. Full control over billing, usage, and data with Chofesh\'s BYOK model.',
     canonical: 'https://chofesh.ai/features/byok',
+    ogType: 'article',
   },
   '/features/local-storage': {
-    title: 'Local Storage - Your Data Stays on Your Device | Chofesh',
-    description: 'Learn how Chofesh\'s local-first architecture and local storage feature ensure your data remains private and on your device, always.',
+    title: 'Local-First Storage - Your Data Stays on Your Device | Chofesh',
+    description: 'All your data is encrypted and stored locally on your device. No cloud storage, no server-side retention. Complete data sovereignty.',
     canonical: 'https://chofesh.ai/features/local-storage',
+    ogType: 'article',
   },
   '/features/model-routing': {
-    title: 'Smart Model Routing - The Best AI for Every Task | Chofesh',
-    description: 'Discover how Chofesh\'s Smart Model Routing automatically selects the best AI model for your task, optimizing for speed, cost, and performance.',
+    title: 'Smart Model Routing - Best AI for Every Task | Chofesh',
+    description: 'Our intelligent router automatically selects the optimal AI model for your task from 20+ options, optimizing for performance, cost, and capability.',
     canonical: 'https://chofesh.ai/features/model-routing',
+    ogType: 'article',
   },
   '/features/deep-research': {
-    title: 'Deep Research - AI-Powered Insights with Verifiable Sources | Chofesh',
-    description: 'Discover how Chofesh\'s Deep Research feature provides AI-powered summaries with inline citations, delivering in-depth insights and verifiable answers you can trust.',
+    title: 'Deep Research - AI with Verifiable Sources | Chofesh',
+    description: 'Get comprehensive answers with inline citations from multiple sources. Perfect for research, fact-checking, and in-depth analysis.',
     canonical: 'https://chofesh.ai/features/deep-research',
+    ogType: 'article',
   },
   '/pricing': {
-    title: 'Pricing - Simple, Transparent, and Fair | Chofesh',
-    description: 'Discover Chofesh\'s simple and transparent pay-as-you-go pricing. No subscriptions, no hidden fees, and your credits never expire.',
+    title: 'Pricing - Simple, Transparent, Fair | Chofesh',
+    description: 'Pay-as-you-go pricing with no subscriptions. Use your own API keys or purchase credits that never expire. Full transparency and control.',
     canonical: 'https://chofesh.ai/pricing',
   },
   '/compare/chofesh-vs-chatgpt': {
-    title: 'Chofesh vs. Hosted AI Chat - A Clear Choice for Privacy',
-    description: 'Compare Chofesh\'s local-first, privacy-focused approach to hosted AI chat platforms like ChatGPT. See why Chofesh is the clear choice for data privacy.',
+    title: 'Chofesh vs ChatGPT - Privacy-First AI Comparison',
+    description: 'Compare Chofesh\'s local-first, encrypted AI chat with hosted services like ChatGPT. See why privacy-conscious users choose Chofesh.',
     canonical: 'https://chofesh.ai/compare/chofesh-vs-chatgpt',
+    ogType: 'article',
   },
   '/privacy': {
     title: 'Privacy Policy | Chofesh',
-    description: 'Read Chofesh\'s privacy policy to understand how we protect your data with local-first storage and end-to-end encryption.',
+    description: 'Learn about Chofesh\'s commitment to privacy and how we protect your data with local-first architecture and zero data retention.',
     canonical: 'https://chofesh.ai/privacy',
   },
   '/terms': {
     title: 'Terms of Service | Chofesh',
-    description: 'Read Chofesh\'s terms of service to understand our platform policies and user agreements.',
+    description: 'Read Chofesh\'s terms of service and understand your rights and responsibilities when using our privacy-first AI platform.',
     canonical: 'https://chofesh.ai/terms',
   },
 };
 
-function generateMetaTags(meta: PageMeta): string {
+function generateMetaTags(path: string): string {
+  const metadata = pageMetadata[path];
+  if (!metadata) return '';
+
+  const ogType = metadata.ogType || 'website';
+
   return `
-    <title>${meta.title}</title>
-    <meta name="description" content="${meta.description}">
-    <link rel="canonical" href="${meta.canonical}">
+    <title>${metadata.title}</title>
+    <meta name="description" content="${metadata.description}" />
+    <link rel="canonical" href="${metadata.canonical}" />
     
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="${meta.ogType || 'article'}">
-    <meta property="og:url" content="${meta.canonical}">
-    <meta property="og:title" content="${meta.title}">
-    <meta property="og:description" content="${meta.description}">
-    <meta property="og:site_name" content="Chofesh">
+    <meta property="og:type" content="${ogType}" />
+    <meta property="og:url" content="${metadata.canonical}" />
+    <meta property="og:title" content="${metadata.title}" />
+    <meta property="og:description" content="${metadata.description}" />
     
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="${meta.canonical}">
-    <meta property="twitter:title" content="${meta.title}">
-    <meta property="twitter:description" content="${meta.description}">
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="${metadata.title}" />
+    <meta name="twitter:description" content="${metadata.description}" />
   `;
 }
 
-/**
- * SEO middleware that injects meta tags for marketing pages
- */
 export function seoMiddleware(req: Request, res: Response, next: NextFunction) {
   const originalSend = res.send;
-  
-  res.send = function(data: any): Response {
-    // Only process HTML responses for marketing pages
-    if (typeof data === 'string' && data.includes('<!DOCTYPE html>')) {
+
+  res.send = function (data: any): Response {
+    // Only process HTML responses
+    if (typeof data === 'string' && data.includes('<!doctype html>')) {
       const path = req.path;
-      const meta = pageMetadata[path];
-      
-      if (meta) {
-        // Inject meta tags into <head>
-        const metaTags = generateMetaTags(meta);
-        data = data.replace('</head>', `${metaTags}\n  </head>`);
+
+      // Check if this is a marketing page
+      if (pageMetadata[path]) {
+        // Inject meta tags and structured data into <head>
+        const metaTags = generateMetaTags(path);
+        const structuredDataScript = getStructuredData(path) || '';
+        data = data.replace('</head>', `${metaTags}\n${structuredDataScript}\n  </head>`);
+
+        // Inject visible HTML content into <main id="root">
+        const seoContent = seoPageContent[path];
+        if (seoContent) {
+          data = data.replace(
+            '<main id="root"></main>',
+            `<main id="root">${seoContent}</main>`
+          );
+        }
       }
     }
-    
+
     return originalSend.call(this, data);
   };
-  
+
   next();
 }
 
