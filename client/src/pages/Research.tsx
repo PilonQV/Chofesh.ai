@@ -8,7 +8,7 @@ interface Message {
   content: string;
   timestamp: Date;
   sources?: Array<{ title: string; url: string }>;
-  codeExecutions?: Array<{ code: string; output: string }>;
+  codeExecutions?: Array<{ code: string; output: string; language?: string }>;
 }
 
 export default function Research() {
@@ -86,7 +86,7 @@ export default function Research() {
                 🔬 AI Research
               </h1>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                Powered by Groq Compound - Web Search + Code Execution
+                Powered by Groq Compound + Judge0 - Web Search + Code Execution (100% Free)
               </p>
             </div>
 
