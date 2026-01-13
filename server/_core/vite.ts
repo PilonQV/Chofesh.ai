@@ -62,6 +62,9 @@ export function serveStatic(app: Express) {
 
   // fall through to index.html if the file doesn't exist
   app.use("*", (_req, res) => {
-    res.sendFile(path.resolve(distPath, "index.html"));
+    // Read the HTML file and use res.send() so SEO middleware can intercept it
+    const htmlPath = path.resolve(distPath, "index.html");
+    const html = fs.readFileSync(htmlPath, "utf-8");
+    res.status(200).set({ "Content-Type": "text/html" }).send(html);
   });
 }
