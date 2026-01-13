@@ -5,32 +5,9 @@ import fs from "node:fs";
 import path from "path";
 import { defineConfig } from "vite";
 import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
-import vitePrerender from "vite-plugin-prerender";
-import { getMarketingPaths } from "./client/src/routes";
 
 
-const plugins = [
-  react(),
-  tailwindcss(),
-  jsxLocPlugin(),
-  vitePluginManusRuntime(),
-  vitePrerender({
-    staticDir: path.resolve(import.meta.dirname, "dist/public"),
-    routes: getMarketingPaths(),
-    renderer: "@prerenderer/renderer-puppeteer",
-    rendererOptions: {
-      maxConcurrentRoutes: 4,
-      renderAfterTime: 500,
-    },
-    postProcess(renderedRoute) {
-      // Clean up the HTML
-      renderedRoute.html = renderedRoute.html
-        .replace(/data-reactroot=""/g, '')
-        .replace(/data-reactid="[^"]*"/g, '');
-      return renderedRoute;
-    },
-  }),
-];
+const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime()];
 
 export default defineConfig({
   plugins,
