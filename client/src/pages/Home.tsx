@@ -217,10 +217,10 @@ export default function Home() {
               Chofesh is a privacy-first AI chat platform designed for users who demand complete control over their data. Unlike traditional AI services that store your conversations on corporate servers, Chofesh keeps everything encrypted locally on your device using AES-256 encryption. Your chats, images, and documents never leave your browser—we can't read them, even if we wanted to.
             </p>
             <p className="text-base md:text-lg text-muted-foreground">
-              Built for privacy-conscious professionals, developers, and creators, Chofesh offers access to 20+ AI models including DeepSeek R1, Llama 405B, and Kimi K2—most available for free. With smart model routing, the platform automatically selects the best model for each task, or you can bring your own API keys (BYOK) for unlimited access at cost.
+              Built for privacy-conscious professionals, developers, and creators, Chofesh offers access to 25+ AI models including DeepSeek R1, Llama 405B, GPT-OSS 120B, and Kimi K2—most available for free. With smart model routing, the platform automatically selects the best model for each task, or you can bring your own API keys (BYOK) for unlimited access at cost.
             </p>
             <p className="text-base md:text-lg text-muted-foreground">
-              What makes Chofesh different is its local-first architecture combined with powerful features: uncensored chat (within legal parameters), image generation, web search with AI summaries, code workspace, and document analysis—all while maintaining zero data retention on our servers. Your conversations are encrypted end-to-end and stored only on your device, giving you true AI freedom without compromise.
+              What makes Chofesh different is its local-first architecture combined with powerful features: uncensored chat (within legal parameters), image generation, AI Research Mode with live code execution, web search with AI summaries, code workspace, and document analysis—all while maintaining zero data retention on our servers. Your conversations are encrypted end-to-end and stored only on your device, giving you true AI freedom without compromise.
             </p>
           </div>
           
@@ -263,7 +263,7 @@ export default function Home() {
             </div>
             <div className="flex items-center gap-2">
               <Zap className="w-4 h-4 text-primary" />
-              <span>20+ free AI models</span>
+              <span>25+ free AI models</span>
             </div>
           </div>
         </div>
@@ -288,6 +288,20 @@ export default function Home() {
             </div>
             <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
               <FeatureCard
+                icon={<Code2 className="w-6 h-6" />}
+                title="AI Research Mode"
+                description="Advanced AI agent with web search and live code execution. Run Python, JavaScript, and 60+ languages—100% free."
+                badge="New"
+                highlighted
+              />
+              <FeatureCard
+                icon={<ShieldCheck className="w-6 h-6" />}
+                title="Advanced Security"
+                description="Enterprise-grade prompt injection protection. Detects and blocks malicious prompts and jailbreak attempts."
+                badge="New"
+                highlighted
+              />
+              <FeatureCard
                 icon={<Zap className="w-6 h-6" />}
                 title="Cerebras AI"
                 description="Ultra-fast inference with Cerebras. Llama 3.3 70B responses in under 500ms. The fastest AI on the planet."
@@ -303,8 +317,8 @@ export default function Home() {
               />
               <FeatureCard
                 icon={<Server className="w-6 h-6" />}
-                title="20+ Free Models"
-                description="DeepSeek R1, Llama 405B, Kimi K2, Gemma 3, Mistral - all free. No API keys needed for most models."
+                title="25+ Free Models"
+                description="DeepSeek R1, Llama 405B, GPT-OSS 120B, Kimi K2, Gemma 3, Mistral - all free. No API keys needed."
                 badge="Free"
                 highlighted
               />
