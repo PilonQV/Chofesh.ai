@@ -83,14 +83,27 @@ export const PROVIDER_CONFIGS: Record<AIProvider, ProviderConfig> = {
     displayName: "Groq",
     apiUrl: "https://api.groq.com/openai/v1/chat/completions",
     models: [
-      { id: "llama-3.3-70b-versatile", name: "Llama 3.3 70B", provider: "groq", contextWindow: 128000, isFree: true, tier: "free" },
-      { id: "llama-3.1-8b-instant", name: "Llama 3.1 8B", provider: "groq", contextWindow: 128000, isFree: true, tier: "free" },
-      { id: "llama-guard-3-8b", name: "Llama Guard 3 8B", provider: "groq", contextWindow: 8192, isFree: true, tier: "free" },
-      { id: "llama3-70b-8192", name: "Llama 3 70B", provider: "groq", contextWindow: 8192, isFree: true, tier: "free" },
+      // Flagship Models
+      { id: "openai/gpt-oss-120b", name: "GPT-OSS 120B", provider: "groq", contextWindow: 131072, isFree: true, tier: "free" },
+      { id: "llama-3.3-70b-versatile", name: "Llama 3.3 70B", provider: "groq", contextWindow: 131072, isFree: true, tier: "free" },
+      
+      // Fast & Efficient Models
+      { id: "openai/gpt-oss-20b", name: "GPT-OSS 20B", provider: "groq", contextWindow: 131072, isFree: true, tier: "free" },
+      { id: "llama-3.1-8b-instant", name: "Llama 3.1 8B", provider: "groq", contextWindow: 131072, isFree: true, tier: "free" },
+      
+      // AI Agent Systems
+      { id: "groq/compound", name: "Groq Compound (Web Search + Code)", provider: "groq", contextWindow: 131072, isFree: true, tier: "free", isReasoning: true },
+      { id: "groq/compound-mini", name: "Groq Compound Mini", provider: "groq", contextWindow: 131072, isFree: true, tier: "free", isReasoning: true },
+      
+      // Safety & Moderation
+      { id: "meta-llama/llama-guard-4-12b", name: "Llama Guard 4 12B", provider: "groq", contextWindow: 131072, isFree: true, tier: "free" },
+      { id: "meta-llama/llama-prompt-guard-2-86m", name: "Prompt Guard 2 86M", provider: "groq", contextWindow: 512, isFree: true, tier: "free" },
+      
+      // Legacy Models (for compatibility)
       { id: "mixtral-8x7b-32768", name: "Mixtral 8x7B", provider: "groq", contextWindow: 32768, isFree: true, tier: "free" },
       { id: "gemma2-9b-it", name: "Gemma 2 9B", provider: "groq", contextWindow: 8192, isFree: true, tier: "free" },
     ],
-    rateLimit: { requestsPerMinute: 30, requestsPerDay: 14400, tokensPerMinute: 6000 },
+    rateLimit: { requestsPerMinute: 1000, requestsPerDay: 14400, tokensPerMinute: 250000 },
     requiresApiKey: true,
     isFree: true,
   },
