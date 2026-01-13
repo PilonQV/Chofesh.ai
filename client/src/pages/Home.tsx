@@ -209,13 +209,20 @@ export default function Home() {
           </div>
           
           <h1 id="hero-heading" className="text-3xl md:text-6xl lg:text-7xl font-bold mb-4 md:mb-6 leading-tight">
-            AI Without <span className="gradient-text">Limits</span>
+            Private AI Chat That Keeps Your Data <span className="gradient-text">on Your Device</span>
           </h1>
           
-          <p className="text-base md:text-xl text-muted-foreground max-w-2xl mx-auto mb-6 md:mb-8">
-            Experience creative freedom with uncensored AI (within legal parameters). Your conversations stay on your device,
-            encrypted and private. No corporate surveillance.
-          </p>
+          <div className="max-w-3xl mx-auto mb-6 md:mb-8 space-y-4">
+            <p className="text-base md:text-xl text-muted-foreground">
+              Chofesh is a privacy-first AI chat platform designed for users who demand complete control over their data. Unlike traditional AI services that store your conversations on corporate servers, Chofesh keeps everything encrypted locally on your device using AES-256 encryption. Your chats, images, and documents never leave your browser—we can't read them, even if we wanted to.
+            </p>
+            <p className="text-base md:text-lg text-muted-foreground">
+              Built for privacy-conscious professionals, developers, and creators, Chofesh offers access to 20+ AI models including DeepSeek R1, Llama 405B, and Kimi K2—most available for free. With smart model routing, the platform automatically selects the best model for each task, or you can bring your own API keys (BYOK) for unlimited access at cost.
+            </p>
+            <p className="text-base md:text-lg text-muted-foreground">
+              What makes Chofesh different is its local-first architecture combined with powerful features: uncensored chat (within legal parameters), image generation, web search with AI summaries, code workspace, and document analysis—all while maintaining zero data retention on our servers. Your conversations are encrypted end-to-end and stored only on your device, giving you true AI freedom without compromise.
+            </p>
+          </div>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             {isAuthenticated ? (
