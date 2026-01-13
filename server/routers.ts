@@ -914,6 +914,32 @@ export const appRouter = router({
         const lastUserMessage = input.messages.filter(m => m.role === "user").pop();
         const promptContent = lastUserMessage?.content || "";
         
+        // Security: Check for prompt injection attacks using Llama Prompt Guard 2
+        if (promptContent && process.env.ENABLE_PROMPT_GUARD !== "false") {
+          const { validatePromptSecurity } = await import("./_core/promptGuard");
+          const userApiKeys = await getUserApiKeys(ctx.user.id);
+          const groqKey = userApiKeys.find(k => k.provider === "groq" && k.isActive);
+          
+          try {
+            await validatePromptSecurity(promptContent, groqKey?.apiKey, true);
+          } catch (error) {
+            // Log the injection attempt
+            await createAuditLog({
+              userId: ctx.user.id,
+              userOpenId: ctx.user.openId,
+              actionType: "security_alert",
+              ipAddress: getClientIp(ctx.req),
+              userAgent: ctx.req.headers["user-agent"] || null,
+              metadata: JSON.stringify({
+                type: "prompt_injection_detected",
+                prompt: promptContent.substring(0, 200), // Log first 200 chars
+              }),
+              timestamp: new Date(),
+            });
+            throw error;
+          }
+        }
+        
         // Agent Mode: Detect intent and execute tools if enabled
         if (input.agentMode && promptContent) {
           const intent = detectIntent(promptContent);
@@ -3100,13 +3126,31 @@ IMPORTANT RULES:
         audioUrl: z.string().url(),
         language: z.string().optional(),
         prompt: z.string().optional(),
+        provider: z.enum(["default", "groq"]).optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        const result = await transcribeAudio({
-          audioUrl: input.audioUrl,
-          language: input.language,
-          prompt: input.prompt,
-        });
+        let result;
+        
+        // Use Groq Whisper V3 Turbo if specified
+        if (input.provider === "groq") {
+          const { transcribeWithGroq } = await import("./_core/groqWhisper");
+          const userApiKeys = await getUserApiKeys(ctx.user.id);
+          const groqKey = userApiKeys.find(k => k.provider === "groq" && k.isActive);
+          
+          result = await transcribeWithGroq({
+            audioUrl: input.audioUrl,
+            language: input.language,
+            prompt: input.prompt,
+            apiKey: groqKey?.apiKey,
+          });
+        } else {
+          // Use default transcription service
+          result = await transcribeAudio({
+            audioUrl: input.audioUrl,
+            language: input.language,
+            prompt: input.prompt,
+          });
+        }
         
         // Check if it's an error
         if ('error' in result) {
@@ -5077,5 +5121,39 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
         return { count: result[0]?.count || 0 };
       }),
   }),
+
+  // Research with Groq Compound (Web Search + Code Execution)
+  research: protectedProcedure
+    .input(z.object({
+      query: z.string(),
+      model: z.enum(["groq/compound", "groq/compound-mini"]),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const { callGroqCompound } = await import("./_core/groqCompound");
+      
+      // Get user's Groq API key if they have one
+      const userApiKeys = await getUserApiKeys(ctx.user.id);
+      const groqKey = userApiKeys.find(k => k.provider === "groq" && k.isActive);
+      
+      const response = await callGroqCompound({
+        query: input.query,
+        model: input.model,
+        apiKey: groqKey?.apiKey,
+      });
+      
+      // Record usage
+      await createUsageRecord({
+        userId: ctx.user.id,
+        provider: "groq",
+        model: input.model,
+        promptTokens: Math.ceil(input.query.length / 4),
+        completionTokens: Math.ceil(response.content.length / 4),
+        totalTokens: Math.ceil((input.query.length + response.content.length) / 4),
+        cost: 0, // Free for now
+        timestamp: new Date(),
+      });
+      
+      return response;
+    }),
 });
 export type AppRouter = typeof appRouter;

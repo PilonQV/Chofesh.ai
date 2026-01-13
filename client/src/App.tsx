@@ -16,6 +16,7 @@ import Login from "./pages/Login";
 
 // Lazy load heavy pages for better initial load performance
 const Chat = lazy(() => import("./pages/Chat"));
+const Research = lazy(() => import("./pages/Research"));
 const ImageGen = lazy(() => import("./pages/ImageGen"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const Privacy = lazy(() => import("./pages/Privacy"));
@@ -68,6 +69,7 @@ function Router() {
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/chat" component={Chat} />
+        <Route path="/research" component={Research} />
         <Route path="/image" component={ImageGen} />
         <Route path="/images" component={ImageGen} />
         <Route path="/admin" component={AdminDashboard} />
