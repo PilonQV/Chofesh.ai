@@ -9,18 +9,16 @@ Sitemap: https://chofesh.ai/sitemap.xml
 
 # Disallow API endpoints
 Disallow: /api/
+Disallow: /trpc/
 
 # Disallow auth pages
-Disallow: /api/auth/
-Disallow: /api/oauth/
+Disallow: /auth/
 
-# Allow search engines to crawl main pages
-Allow: /chat
-Allow: /image
-Allow: /gallery
-Allow: /settings
-Allow: /privacy
-Allow: /terms
+# Disallow app routes (authenticated areas)
+Disallow: /chat
+Disallow: /image
+Disallow: /gallery
+Disallow: /settings
 
 # Crawl-delay for polite crawling
 Crawl-delay: 1
