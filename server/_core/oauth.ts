@@ -61,7 +61,7 @@ export function registerOAuthRoutes(app: Express) {
         ipAddress: getClientIp(req),
         userAgent: req.headers["user-agent"] || null,
         metadata: JSON.stringify({
-          loginMethod: userInfo.loginMethod || userInfo.platform || 'manus',
+          loginMethod: userInfo.loginMethod || userInfo.platform || 'google',
           isNewUser,
           email: userInfo.email || null,
         }),

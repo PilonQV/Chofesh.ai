@@ -63,12 +63,8 @@ export default function Register() {
     registerMutation.mutate({ email, password, name });
   };
 
-  const handleOAuthLogin = (provider: "manus" | "google") => {
-    if (provider === "manus") {
-      window.location.href = getLoginUrl();
-    } else {
-      window.location.href = "/api/auth/google";
-    }
+  const handleOAuthLogin = (provider: "google") => {
+    window.location.href = "/api/auth/google";
   };
 
   const PasswordCheck = ({ passed, label }: { passed: boolean; label: string }) => (
@@ -128,14 +124,7 @@ export default function Register() {
                 Continue with Google
               </Button>
               
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => handleOAuthLogin("manus")}
-              >
-                <img src="/logo.webp" alt="Manus" className="mr-2 h-4 w-4" />
-                Continue with Manus
-              </Button>
+
             </div>
 
             <div className="relative">

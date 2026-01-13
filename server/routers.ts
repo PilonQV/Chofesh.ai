@@ -3422,7 +3422,7 @@ IMPORTANT RULES:
           });
         }
 
-        const origin = ctx.req.headers.origin || "https://chofesh.manus.space";
+        const origin = ctx.req.headers.origin || "https://chofesh.ai";
 
         const session = await stripe.checkout.sessions.create({
           mode: "subscription",
@@ -3481,7 +3481,7 @@ IMPORTANT RULES:
         apiVersion: "2025-12-15.clover",
       });
 
-      const origin = ctx.req.headers.origin || "https://chofesh.manus.space";
+      const origin = ctx.req.headers.origin || "https://chofesh.ai";
 
       const session = await stripe.billingPortal.sessions.create({
         customer: ctx.user.stripeCustomerId,
