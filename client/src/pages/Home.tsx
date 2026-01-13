@@ -212,30 +212,67 @@ export default function Home() {
             Private AI Chat That Keeps Your Data <span className="gradient-text">on Your Device</span>
           </h1>
           
-          <div className="max-w-3xl mx-auto mb-6 md:mb-8 space-y-4">
-            <p className="text-base md:text-xl text-muted-foreground">
-              Chofesh is a privacy-first AI chat platform designed for users who demand complete control over their data. Unlike traditional AI services that store your conversations on corporate servers, Chofesh keeps everything encrypted locally on your device using AES-256 encryption. Your chats, images, and documents never leave your browser—we can't read them, even if we wanted to.
-            </p>
-            <p className="text-base md:text-lg text-muted-foreground">
-              Built for privacy-conscious professionals, developers, and creators, Chofesh offers access to 25+ AI models including DeepSeek R1, Llama 405B, GPT-OSS 120B, and Kimi K2—most available for free. With smart model routing, the platform automatically selects the best model for each task, or you can bring your own API keys (BYOK) for unlimited access at cost.
-            </p>
-            <p className="text-base md:text-lg text-muted-foreground">
-              What makes Chofesh different is its local-first architecture combined with powerful features: uncensored chat (within legal parameters), image generation, AI Research Mode with live code execution, web search with AI summaries, code workspace, and document analysis—all while maintaining zero data retention on our servers. Your conversations are encrypted end-to-end and stored only on your device, giving you true AI freedom without compromise.
-            </p>
+          <div className="max-w-2xl mx-auto mb-6 md:mb-8 space-y-6 md:space-y-8">
+            {/* Private AI chat section */}
+            <div className="text-left">
+              <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3">Private AI chat that keeps your data on your device.</h3>
+              <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
+                Chofesh is a privacy-first AI chat platform built for people who want control. Your chats are stored locally and encrypted on your device (AES-256), so your conversation history isn't sitting on our servers by default.
+              </p>
+            </div>
+
+            {/* Powerful models section */}
+            <div className="text-left">
+              <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3">Use powerful models—without lock-in.</h3>
+              <p className="text-base md:text-lg text-muted-foreground leading-relaxed mb-3">
+                Access 25+ models (including DeepSeek R1, Llama 405B, GPT-OSS 120B, and Kimi K2). Use smart routing to automatically pick the best model per task, or bring your own API keys (BYOK) for maximum control.
+              </p>
+            </div>
+
+            {/* Built for real work section */}
+            <div className="text-left">
+              <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3">Built for real work, not just chatting.</h3>
+              <ul className="space-y-2 text-base md:text-lg text-muted-foreground leading-relaxed">
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  <span>AI Research Mode (with live code execution)</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  <span>Web search with summaries</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  <span>Image generation + vision analysis</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  <span>Code workspace + document analysis</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Privacy-first section */}
+            <div className="text-left">
+              <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3">Privacy-first by design.</h3>
+              <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
+                Zero server-side retention for your stored conversation history, and encrypted local storage so your data stays yours.
+              </p>
+            </div>
           </div>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             {isAuthenticated ? (
               <Link href="/chat">
                 <Button size="lg" className="gap-2">
-                  Start Chatting
+                  Start Chat
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
             ) : (
               <Link href="/login">
                 <Button size="lg" className="gap-2">
-                  Get Started Free
+                  Start Chat
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
