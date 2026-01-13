@@ -844,7 +844,10 @@ export default function ImageGen() {
                   className="bg-primary"
                 >
                   {editMutation.isPending ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <>
+                      <img src="/chofesh-logo-48.webp" alt="Editing" className="w-4 h-4 animate-pulse" />
+                      <span className="ml-2">Editing...</span>
+                    </>
                   ) : (
                     <>
                       <Edit className="w-4 h-4 mr-2" />
@@ -855,10 +858,13 @@ export default function ImageGen() {
               ) : (
                 <Button
                   onClick={handleGenerate}
-                  disabled={!prompt.trim() || generateMutation.isPending}
+                  disabled={!prompt.trim() || generateMutation.isPending || nsfwGenerateMutation.isPending}
                 >
-                  {generateMutation.isPending ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                  {(generateMutation.isPending || nsfwGenerateMutation.isPending) ? (
+                    <>
+                      <img src="/chofesh-logo-48.webp" alt="Generating" className="w-4 h-4 animate-pulse" />
+                      <span className="ml-2">Generating...</span>
+                    </>
                   ) : (
                     <>
                       <Wand2 className="w-4 h-4 mr-2" />
