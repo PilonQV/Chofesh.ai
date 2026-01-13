@@ -20,7 +20,7 @@ seoPageContent["/"] = `
         Private AI Chat That Keeps Your Data on Your Device
       </h1>
       <p class="mt-6 text-lg leading-8 text-gray-600 dark:text-gray-300">
-        Chofesh is a privacy-first AI chat platform designed for professionals, developers, and creators who demand data sovereignty. Unlike hosted services that retain your data, Chofesh operates on a local-first principle, ensuring your conversations and files remain encrypted and stored exclusively on your device. With support for over 20 large language models and a Bring-Your-Own-Key (BYOK) architecture, you get maximum flexibility without sacrificing confidentiality. Our commitment is to provide powerful AI tools without ever seeing, storing, or monetizing your personal information. Experience the freedom of AI without limits, and without compromise.
+        Chofesh is a privacy-first AI chat platform designed for professionals, developers, and creators who demand data sovereignty. Unlike hosted services that retain your data, Chofesh operates on a local-first principle, ensuring your conversations and files remain encrypted and stored exclusively on your device. With support for over 25 large language models including GPT-OSS 120B and advanced AI Research Mode with live code execution in 60+ languages, plus enterprise-grade security features, you get maximum flexibility without sacrificing confidentiality. Our Bring-Your-Own-Key (BYOK) architecture and commitment to zero data retention means we never see, store, or monetize your personal information. Experience the freedom of AI without limits, and without compromise.
       </p>
       <div class="mt-10 flex items-center justify-center gap-x-6">
         <a href="/features" class="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Explore Features</a>
@@ -69,8 +69,12 @@ seoPageContent["/features"] = `
           <p class="mt-4 text-gray-600 dark:text-gray-300">Our intelligent router automatically selects the best model for your specific task, optimizing for performance, cost, and capability. <a href="/features/model-routing" class="text-indigo-600 hover:underline">Learn more &rarr;</a></p>
         </div>
         <div class="rounded-lg bg-white dark:bg-gray-800 p-6 shadow-lg">
-          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Deep Research Mode</h2>
-          <p class="mt-4 text-gray-600 dark:text-gray-300">Get comprehensive, verifiable answers with inline citations from multiple sources, perfect for in-depth analysis and fact-checking. <a href="/features/deep-research" class="text-indigo-600 hover:underline">Learn more &rarr;</a></p>
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">AI Research Mode</h2>
+          <p class="mt-4 text-gray-600 dark:text-gray-300">Advanced AI agent with web search and live code execution in 60+ languages including Python, JavaScript, Java, and C++. Run code, analyze data, and get comprehensive answers—100% free. <a href="/features/research-mode" class="text-indigo-600 hover:underline">Learn more &rarr;</a></p>
+        </div>
+        <div class="rounded-lg bg-white dark:bg-gray-800 p-6 shadow-lg">
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Enterprise Security</h2>
+          <p class="mt-4 text-gray-600 dark:text-gray-300">Advanced prompt injection protection and content moderation. Detects and blocks malicious prompts, jailbreak attempts, and harmful content with enterprise-grade security. <a href="/features/security" class="text-indigo-600 hover:underline">Learn more &rarr;</a></p>
         </div>
       </div>
     </section>
