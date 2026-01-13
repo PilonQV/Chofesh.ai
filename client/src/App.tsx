@@ -44,6 +44,14 @@ const AdminSupport = lazy(() => import("./pages/AdminSupport"));
 const PrivacyVault = lazy(() => import("./pages/PrivacyVault"));
 const Credits = lazy(() => import("./pages/Credits"));
 const Support = lazy(() => import("./pages/Support"));
+const FeaturesHub = lazy(() => import("./pages/features/FeaturesHub"));
+const PrivateAiChat = lazy(() => import("./pages/features/PrivateAiChat"));
+const Byok = lazy(() => import("./pages/features/Byok"));
+const LocalStorage = lazy(() => import("./pages/features/LocalStorage"));
+const ModelRouting = lazy(() => import("./pages/features/ModelRouting"));
+const DeepResearch = lazy(() => import("./pages/features/DeepResearch"));
+const Pricing = lazy(() => import("./pages/Pricing"));
+const Compare = lazy(() => import("./pages/Compare"));
 
 // Loading fallback component
 function PageLoader() {
@@ -90,6 +98,14 @@ function Router() {
         <Route path="/reset-password" component={ResetPassword} />
         <Route path="/verify-email" component={VerifyEmail} />
         <Route path="/support" component={Support} />
+        <Route path="/features" component={FeaturesHub} />
+        <Route path="/features/private-ai-chat" component={PrivateAiChat} />
+        <Route path="/features/byok" component={Byok} />
+        <Route path="/features/local-storage" component={LocalStorage} />
+        <Route path="/features/model-routing" component={ModelRouting} />
+        <Route path="/features/deep-research" component={DeepResearch} />
+        <Route path="/pricing" component={Pricing} />
+        <Route path="/compare/chofesh-vs-chatgpt" component={Compare} />
         <Route path="/404" component={NotFound} />
         <Route component={NotFound} />
       </Switch>
