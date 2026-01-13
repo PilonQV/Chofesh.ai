@@ -58,6 +58,20 @@ export function serveStatic(app: Express) {
     );
   }
 
+  // Sitemap route with Cloudflare-optimized caching
+  app.get("/sitemap.xml", (req, res) => {
+    const sitemapPath = path.resolve(distPath, "sitemap.xml");
+    
+    // Set Cloudflare-optimized cache headers
+    res.setHeader("Content-Type", "application/xml; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=600"); // Cache for 10 minutes
+    res.setHeader("CDN-Cache-Control", "public, max-age=600"); // Cloudflare respects this
+    res.setHeader("Vary", "Accept-Encoding");
+    
+    // Send the sitemap file
+    res.sendFile(sitemapPath);
+  });
+
   app.use(express.static(distPath));
 
   // fall through to index.html if the file doesn't exist
