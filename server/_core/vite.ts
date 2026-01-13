@@ -61,10 +61,15 @@ export function serveStatic(app: Express) {
   app.use(express.static(distPath));
 
   // fall through to index.html if the file doesn't exist
-  app.use("*", (_req, res) => {
-    // Read the HTML file and use res.send() so SEO middleware can intercept it
+  app.use("*", (req, res) => {
+    // Read the HTML file
     const htmlPath = path.resolve(distPath, "index.html");
-    const html = fs.readFileSync(htmlPath, "utf-8");
+    let html = fs.readFileSync(htmlPath, "utf-8");
+    
+    // Apply SEO content inline
+    const { applySeoToHtml } = require('./seo.js');
+    html = applySeoToHtml(req.path, html);
+    
     res.status(200).set({ "Content-Type": "text/html" }).send(html);
   });
 }

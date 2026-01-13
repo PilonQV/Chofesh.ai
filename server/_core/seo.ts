@@ -105,32 +105,38 @@ function generateMetaTags(path: string): string {
   `;
 }
 
+// Function to apply SEO content to HTML
+export function applySeoToHtml(path: string, html: string): string {
+  // Only process HTML responses
+  if (typeof html === 'string' && html.includes('<!doctype html>')) {
+    // Check if this is a marketing page
+    if (pageMetadata[path]) {
+      // Inject meta tags and structured data into <head>
+      const metaTags = generateMetaTags(path);
+      const structuredDataScript = getStructuredData(path) || '';
+      html = html.replace('</head>', `${metaTags}\n${structuredDataScript}\n  </head>`);
+
+      // Inject visible HTML content into <main id="root">
+      const seoContent = seoPageContent[path];
+      if (seoContent) {
+        html = html.replace(
+          '<main id="root"></main>',
+          `<main id="root">${seoContent}</main>`
+        );
+      }
+    }
+  }
+  return html;
+}
+
+// Legacy middleware wrapper (kept for compatibility)
 export function seoMiddleware(req: Request, res: Response, next: NextFunction) {
   const originalSend = res.send;
 
   res.send = function (data: any): Response {
-    // Only process HTML responses
-    if (typeof data === 'string' && data.includes('<!doctype html>')) {
-      const path = req.path;
-
-      // Check if this is a marketing page
-      if (pageMetadata[path]) {
-        // Inject meta tags and structured data into <head>
-        const metaTags = generateMetaTags(path);
-        const structuredDataScript = getStructuredData(path) || '';
-        data = data.replace('</head>', `${metaTags}\n${structuredDataScript}\n  </head>`);
-
-        // Inject visible HTML content into <main id="root">
-        const seoContent = seoPageContent[path];
-        if (seoContent) {
-          data = data.replace(
-            '<main id="root"></main>',
-            `<main id="root">${seoContent}</main>`
-          );
-        }
-      }
+    if (typeof data === 'string') {
+      data = applySeoToHtml(req.path, data);
     }
-
     return originalSend.call(this, data);
   };
 
