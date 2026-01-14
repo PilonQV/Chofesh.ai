@@ -31,15 +31,14 @@ class LLM:
         self.api_key = api_key or os.getenv("CHOFESH_API_KEY")
         self.api_url = api_url or os.getenv("CHOFESH_API_URL", "https://chofesh.ai/api")
         self.timeout = timeout
-        
+    
+    def _get_headers(self) -> Dict[str, str]:
+        """Get request headers"""
         if not self.api_key:
             raise AuthenticationError(
                 "API key is required. Set CHOFESH_API_KEY environment variable "
                 "or pass api_key parameter."
             )
-    
-    def _get_headers(self) -> Dict[str, str]:
-        """Get request headers"""
         return {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
