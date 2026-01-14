@@ -1,0 +1,9 @@
+include README.md
+include LICENSE
+include CHANGELOG.md
+include pyproject.toml
+recursive-include chofesh *.py
+recursive-include examples *.py
+recursive-include docs *.md
+global-exclude __pycache__
+global-exclude *.py[co]
