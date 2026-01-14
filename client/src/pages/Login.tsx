@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { trpc } from "@/lib/trpc";
+import { useQueryClient } from "@tanstack/react-query";
 import { Mail, Lock, Eye, EyeOff, Loader2, Shield, ArrowLeft, AlertCircle, Info } from "lucide-react";
 
 import { toast } from "sonner";
@@ -15,6 +16,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 export default function Login() {
   const [, setLocation] = useLocation();
   const searchString = useSearch();
+  const utils = trpc.useUtils();
+  const queryClient = useQueryClient();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -41,12 +44,20 @@ export default function Login() {
   });
 
   const loginMutation = trpc.auth.login.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Login successful!");
       setNeedsVerification(false);
       setRateLimitMessage(null);
-      // Redirect to the original destination or chat
-      setLocation(redirectTo);
+      
+      // Invalidate and refetch auth.me query to update authentication state
+      await utils.auth.me.invalidate();
+      await queryClient.refetchQueries({ queryKey: [['auth', 'me']] });
+      
+      // Small delay to ensure cookie is set and auth state is updated
+      setTimeout(() => {
+        // Redirect to the original destination or chat
+        setLocation(redirectTo);
+      }, 100);
     },
     onError: (error) => {
       // Check for specific error types
