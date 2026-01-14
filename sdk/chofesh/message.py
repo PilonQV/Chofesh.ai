@@ -4,7 +4,7 @@ Message data models for Chofesh SDK
 from enum import Enum
 from typing import Optional, List, Dict, Any
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class MessageRole(str, Enum):
@@ -22,6 +22,27 @@ class ToolCall(BaseModel):
     parameters: Dict[str, Any]
     result: Optional[Dict[str, Any]] = None
     error: Optional[str] = None
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert tool call to dictionary"""
+        return {
+            "id": self.id,
+            "name": self.name,
+            "parameters": self.parameters,
+            "result": self.result,
+            "error": self.error,
+        }
+    
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "ToolCall":
+        """Create tool call from dictionary"""
+        return cls(
+            id=data["id"],
+            name=data["name"],
+            parameters=data["parameters"],
+            result=data.get("result"),
+            error=data.get("error"),
+        )
 
 
 class Message(BaseModel):
@@ -33,8 +54,7 @@ class Message(BaseModel):
     tool_calls: List[ToolCall] = Field(default_factory=list)
     metadata: Dict[str, Any] = Field(default_factory=dict)
     
-    class Config:
-        use_enum_values = True
+    model_config = ConfigDict(use_enum_values=True)
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert message to dictionary"""
