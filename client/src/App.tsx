@@ -53,6 +53,7 @@ const ModelRouting = lazy(() => import("./pages/features/ModelRouting"));
 const DeepResearch = lazy(() => import("./pages/features/DeepResearch"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Compare = lazy(() => import("./pages/Compare"));
+const DeveloperSDK = lazy(() => import("./pages/DeveloperSDK"));
 
 // Loading fallback component
 function PageLoader() {
@@ -108,6 +109,8 @@ function Router() {
         <Route path="/features/deep-research" component={DeepResearch} />
         <Route path="/pricing" component={Pricing} />
         <Route path="/compare/chofesh-vs-chatgpt" component={Compare} />
+        <Route path="/developers" component={DeveloperSDK} />
+        <Route path="/sdk" component={DeveloperSDK} />
         <Route path="/404" component={NotFound} />
         <Route component={NotFound} />
       </Switch>
