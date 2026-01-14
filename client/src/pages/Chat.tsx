@@ -448,7 +448,7 @@ export default function Chat() {
   // Redirect if not authenticated
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      setLocation("/");
+      setLocation("/login?redirect=/chat&message=signin_required");
     }
   }, [authLoading, isAuthenticated, setLocation]);
 

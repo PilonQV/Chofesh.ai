@@ -1,24 +1,35 @@
-import { useState } from "react";
-import { Link, useLocation } from "wouter";
+import { useState, useEffect } from "react";
+import { Link, useLocation, useSearch } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Checkbox } from "@/components/ui/checkbox";
 import { trpc } from "@/lib/trpc";
-import { Mail, Lock, Eye, EyeOff, Loader2, Shield, ArrowLeft, AlertCircle } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, Loader2, Shield, ArrowLeft, AlertCircle, Info } from "lucide-react";
 
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function Login() {
   const [, setLocation] = useLocation();
+  const searchString = useSearch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [needsVerification, setNeedsVerification] = useState(false);
   const [rateLimitMessage, setRateLimitMessage] = useState<string | null>(null);
+  const [rememberMe, setRememberMe] = useState(false);
+  
+  // Parse URL parameters for redirect and message
+  const params = new URLSearchParams(searchString);
+  const redirectTo = params.get("redirect") || "/chat";
+  const messageType = params.get("message");
+  
+  // Determine if this is a new user flow (coming from "Get Started" or similar)
+  const isNewUserFlow = params.get("new") === "true";
 
   const resendVerificationMutation = trpc.auth.resendVerification.useMutation({
     onSuccess: (data) => {
@@ -34,7 +45,8 @@ export default function Login() {
       toast.success("Login successful!");
       setNeedsVerification(false);
       setRateLimitMessage(null);
-      setLocation("/chat");
+      // Redirect to the original destination or chat
+      setLocation(redirectTo);
     },
     onError: (error) => {
       // Check for specific error types
@@ -66,8 +78,40 @@ export default function Login() {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "/api/auth/google";
+    // Include redirect parameter in OAuth flow
+    const redirectParam = redirectTo !== "/chat" ? `?redirect=${encodeURIComponent(redirectTo)}` : "";
+    window.location.href = `/api/auth/google${redirectParam}`;
   };
+  
+  // Get the appropriate title and description based on context
+  const getHeaderContent = () => {
+    if (isNewUserFlow) {
+      return {
+        title: "Create your account",
+        description: "Get started with Chofesh - your privacy-first AI assistant"
+      };
+    }
+    return {
+      title: "Welcome back",
+      description: "Sign in to your account to continue"
+    };
+  };
+  
+  const headerContent = getHeaderContent();
+  
+  // Get message based on message type
+  const getInfoMessage = () => {
+    switch (messageType) {
+      case "signin_required":
+        return "Please sign in to access this feature";
+      case "session_expired":
+        return "Your session has expired. Please sign in again";
+      default:
+        return null;
+    }
+  };
+  
+  const infoMessage = getInfoMessage();
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -84,13 +128,23 @@ export default function Login() {
                 <Shield className="h-8 w-8 text-primary" />
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
+            <CardTitle className="text-2xl font-bold">{headerContent.title}</CardTitle>
             <CardDescription>
-              Sign in to your account to continue
+              {headerContent.description}
             </CardDescription>
           </CardHeader>
           
           <CardContent className="space-y-4">
+            {/* Info Message from redirect */}
+            {infoMessage && (
+              <Alert variant="default" className="border-blue-500/50 bg-blue-500/10">
+                <Info className="h-4 w-4 text-blue-500" />
+                <AlertDescription className="text-blue-200">
+                  {infoMessage}
+                </AlertDescription>
+              </Alert>
+            )}
+            
             {/* Alert Messages */}
             {needsVerification && (
               <Alert variant="default" className="border-amber-500/50 bg-amber-500/10">
@@ -208,6 +262,21 @@ export default function Login() {
                   </button>
                 </div>
               </div>
+              
+              {/* Remember Me Checkbox */}
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="remember" 
+                  checked={rememberMe}
+                  onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                />
+                <Label 
+                  htmlFor="remember" 
+                  className="text-sm font-normal text-muted-foreground cursor-pointer"
+                >
+                  Remember me for 30 days
+                </Label>
+              </div>
 
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? (
@@ -225,7 +294,7 @@ export default function Login() {
           <CardFooter className="flex flex-col space-y-4">
             <div className="text-center text-sm text-muted-foreground">
               Don't have an account?{" "}
-              <Link href="/register" className="text-primary hover:underline font-medium">
+              <Link href={`/register${redirectTo !== "/chat" ? `?redirect=${encodeURIComponent(redirectTo)}` : ""}`} className="text-primary hover:underline font-medium">
                 Sign up
               </Link>
             </div>
@@ -234,6 +303,10 @@ export default function Login() {
         
         <p className="text-center text-xs text-muted-foreground mt-6">
           By signing in, you agree to our{" "}
+          <Link href="/terms" className="underline hover:text-foreground">
+            Terms of Service
+          </Link>
+          {" "}and{" "}
           <Link href="/privacy" className="underline hover:text-foreground">
             Privacy Policy
           </Link>

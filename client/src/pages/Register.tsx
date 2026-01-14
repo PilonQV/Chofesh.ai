@@ -1,28 +1,37 @@
-import { useState } from "react";
-import { Link, useLocation } from "wouter";
+import { useState, useMemo } from "react";
+import { Link, useLocation, useSearch } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Progress } from "@/components/ui/progress";
 import { trpc } from "@/lib/trpc";
-import { Mail, Lock, Eye, EyeOff, Loader2, UserPlus, ArrowLeft, User, Check, X } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, Loader2, UserPlus, ArrowLeft, User, Check, X, Info, CheckCircle2 } from "lucide-react";
 import { getLoginUrl } from "@/const";
 import { toast } from "sonner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function Register() {
   const [, setLocation] = useLocation();
+  const searchString = useSearch();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  
+  // Parse URL parameters for redirect
+  const params = new URLSearchParams(searchString);
+  const redirectTo = params.get("redirect") || "/chat";
 
   const registerMutation = trpc.auth.register.useMutation({
     onSuccess: () => {
-      toast.success("Account created successfully! You can now sign in.");
-      setLocation("/login");
+      setRegistrationSuccess(true);
     },
     onError: (error) => {
       toast.error(error.message || "Registration failed. Please try again.");
@@ -38,8 +47,28 @@ export default function Register() {
     uppercase: /[A-Z]/.test(password),
     lowercase: /[a-z]/.test(password),
     number: /[0-9]/.test(password),
+    special: /[!@#$%^&*(),.?":{}|<>]/.test(password),
   };
-  const isPasswordStrong = Object.values(passwordChecks).every(Boolean);
+  
+  // Calculate password strength score (0-100)
+  const passwordStrength = useMemo(() => {
+    const checks = Object.values(passwordChecks);
+    const passedChecks = checks.filter(Boolean).length;
+    return (passedChecks / checks.length) * 100;
+  }, [passwordChecks]);
+  
+  // Get strength label and color
+  const getStrengthInfo = () => {
+    if (passwordStrength === 0) return { label: "", color: "bg-muted" };
+    if (passwordStrength <= 40) return { label: "Weak", color: "bg-red-500" };
+    if (passwordStrength <= 60) return { label: "Fair", color: "bg-orange-500" };
+    if (passwordStrength <= 80) return { label: "Good", color: "bg-yellow-500" };
+    return { label: "Strong", color: "bg-green-500" };
+  };
+  
+  const strengthInfo = getStrengthInfo();
+  
+  const isPasswordStrong = passwordChecks.length && passwordChecks.uppercase && passwordChecks.lowercase && passwordChecks.number;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,12 +88,18 @@ export default function Register() {
       return;
     }
     
+    if (!agreedToTerms) {
+      toast.error("Please agree to the Terms of Service and Privacy Policy");
+      return;
+    }
+    
     setIsLoading(true);
     registerMutation.mutate({ email, password, name });
   };
 
   const handleOAuthLogin = (provider: "google") => {
-    window.location.href = "/api/auth/google";
+    const redirectParam = redirectTo !== "/chat" ? `?redirect=${encodeURIComponent(redirectTo)}` : "";
+    window.location.href = `/api/auth/google${redirectParam}`;
   };
 
   const PasswordCheck = ({ passed, label }: { passed: boolean; label: string }) => (
@@ -73,6 +108,54 @@ export default function Register() {
       {label}
     </div>
   );
+
+  // Show success message after registration
+  if (registrationSuccess) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <Card className="border-border/50 bg-card/50 backdrop-blur">
+            <CardHeader className="space-y-1 text-center">
+              <div className="flex justify-center mb-4">
+                <div className="p-3 rounded-full bg-green-500/10">
+                  <CheckCircle2 className="h-8 w-8 text-green-500" />
+                </div>
+              </div>
+              <CardTitle className="text-2xl font-bold">Check your email</CardTitle>
+              <CardDescription>
+                We've sent a verification link to <span className="font-medium text-foreground">{email}</span>
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent className="space-y-4">
+              <Alert variant="default" className="border-blue-500/50 bg-blue-500/10">
+                <Info className="h-4 w-4 text-blue-500" />
+                <AlertDescription className="text-blue-200">
+                  Please click the link in the email to verify your account before signing in. The link will expire in 24 hours.
+                </AlertDescription>
+              </Alert>
+              
+              <div className="text-sm text-muted-foreground text-center space-y-2">
+                <p>Didn't receive the email?</p>
+                <ul className="list-disc list-inside text-left">
+                  <li>Check your spam or junk folder</li>
+                  <li>Make sure you entered the correct email</li>
+                </ul>
+              </div>
+            </CardContent>
+            
+            <CardFooter className="flex flex-col space-y-4">
+              <Link href="/login" className="w-full">
+                <Button variant="outline" className="w-full">
+                  Go to Sign In
+                </Button>
+              </Link>
+            </CardFooter>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -123,8 +206,6 @@ export default function Register() {
                 </svg>
                 Continue with Google
               </Button>
-              
-
             </div>
 
             <div className="relative">
@@ -194,13 +275,30 @@ export default function Register() {
                   </button>
                 </div>
                 
-                {/* Password strength indicators */}
+                {/* Password strength bar */}
                 {password && (
-                  <div className="grid grid-cols-2 gap-2 mt-2 p-2 bg-muted/50 rounded-md">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Password strength</span>
+                      <span className={`text-xs font-medium ${
+                        passwordStrength <= 40 ? "text-red-500" :
+                        passwordStrength <= 60 ? "text-orange-500" :
+                        passwordStrength <= 80 ? "text-yellow-500" :
+                        "text-green-500"
+                      }`}>{strengthInfo.label}</span>
+                    </div>
+                    <Progress value={passwordStrength} className="h-1.5" />
+                  </div>
+                )}
+                
+                {/* Password requirements */}
+                {password && (
+                  <div className="grid grid-cols-2 gap-2 mt-2 p-3 bg-muted/50 rounded-lg">
                     <PasswordCheck passed={passwordChecks.length} label="8+ characters" />
                     <PasswordCheck passed={passwordChecks.uppercase} label="Uppercase letter" />
                     <PasswordCheck passed={passwordChecks.lowercase} label="Lowercase letter" />
                     <PasswordCheck passed={passwordChecks.number} label="Number" />
+                    <PasswordCheck passed={passwordChecks.special} label="Special character" />
                   </div>
                 )}
               </div>
@@ -220,11 +318,47 @@ export default function Register() {
                   />
                 </div>
                 {confirmPassword && password !== confirmPassword && (
-                  <p className="text-xs text-destructive">Passwords do not match</p>
+                  <p className="text-xs text-destructive flex items-center gap-1">
+                    <X className="h-3 w-3" />
+                    Passwords do not match
+                  </p>
+                )}
+                {confirmPassword && password === confirmPassword && confirmPassword.length > 0 && (
+                  <p className="text-xs text-green-500 flex items-center gap-1">
+                    <Check className="h-3 w-3" />
+                    Passwords match
+                  </p>
                 )}
               </div>
+              
+              {/* Terms of Service Checkbox */}
+              <div className="flex items-start space-x-2">
+                <Checkbox 
+                  id="terms" 
+                  checked={agreedToTerms}
+                  onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
+                  className="mt-1"
+                />
+                <Label 
+                  htmlFor="terms" 
+                  className="text-sm font-normal text-muted-foreground cursor-pointer leading-relaxed"
+                >
+                  I agree to the{" "}
+                  <Link href="/terms" className="text-primary hover:underline">
+                    Terms of Service
+                  </Link>
+                  {" "}and{" "}
+                  <Link href="/privacy" className="text-primary hover:underline">
+                    Privacy Policy
+                  </Link>
+                </Label>
+              </div>
 
-              <Button type="submit" className="w-full" disabled={isLoading || !isPasswordStrong}>
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={isLoading || !isPasswordStrong || !agreedToTerms}
+              >
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -240,19 +374,12 @@ export default function Register() {
           <CardFooter className="flex flex-col space-y-4">
             <div className="text-center text-sm text-muted-foreground">
               Already have an account?{" "}
-              <Link href="/login" className="text-primary hover:underline font-medium">
+              <Link href={`/login${redirectTo !== "/chat" ? `?redirect=${encodeURIComponent(redirectTo)}` : ""}`} className="text-primary hover:underline font-medium">
                 Sign in
               </Link>
             </div>
           </CardFooter>
         </Card>
-        
-        <p className="text-center text-xs text-muted-foreground mt-6">
-          By creating an account, you agree to our{" "}
-          <Link href="/privacy" className="underline hover:text-foreground">
-            Privacy Policy
-          </Link>
-        </p>
       </div>
     </div>
   );

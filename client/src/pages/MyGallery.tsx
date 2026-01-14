@@ -73,9 +73,9 @@ export default function MyGallery() {
   // Redirect to login if not authenticated
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      window.location.href = getLoginUrl();
+      setLocation("/login?redirect=/gallery&message=signin_required");
     }
-  }, [authLoading, isAuthenticated]);
+  }, [authLoading, isAuthenticated, setLocation]);
 
   const handleDownload = async (imageUrl: string, prompt: string) => {
     try {

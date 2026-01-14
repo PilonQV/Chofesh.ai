@@ -85,10 +85,17 @@ interface ApiKeyDisplay {
 type SettingsSection = "general" | "ai" | "privacy" | "account";
 
 export default function Settings() {
-  const { user, logout } = useAuth();
+  const { user, logout, loading: authLoading, isAuthenticated } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [, setLocation] = useLocation();
   const [activeSection, setActiveSection] = useState<SettingsSection>("general");
+  
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      setLocation("/login?redirect=/settings&message=signin_required");
+    }
+  }, [authLoading, isAuthenticated, setLocation]);
   
   // API Keys state
   const [showAddKey, setShowAddKey] = useState(false);
@@ -112,6 +119,11 @@ export default function Settings() {
   
   // API Keys query
   const { data: apiKeys, isLoading: keysLoading } = trpc.apiKeys.list.useQuery(undefined, {
+    enabled: !!user,
+  });
+  
+  // Credit balance query
+  const { data: creditBalance } = trpc.credits.balance.useQuery(undefined, {
     enabled: !!user,
   });
   
@@ -614,9 +626,17 @@ export default function Settings() {
                 <Card>
                   <CardContent className="pt-6">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                        <User className="h-6 w-6 text-primary" />
-                      </div>
+                      {user?.picture ? (
+                        <img 
+                          src={user.picture} 
+                          alt={user.name || "Profile"} 
+                          className="w-12 h-12 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                          <User className="h-6 w-6 text-primary" />
+                        </div>
+                      )}
                       <div>
                         <p className="font-medium">{user?.name || user?.email || "User"}</p>
                         <p className="text-sm text-muted-foreground">{user?.email}</p>
@@ -634,9 +654,11 @@ export default function Settings() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                       <span className="text-muted-foreground">Current Balance</span>
-                      <span className="font-semibold">View in Credits page</span>
+                      <span className="font-semibold text-lg">
+                        {creditBalance?.credits?.toLocaleString() ?? "--"} credits
+                      </span>
                     </div>
                     <Link href="/credits">
                       <Button className="w-full">
