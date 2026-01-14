@@ -130,27 +130,54 @@ export async function executeCode(
     };
   }
 
-  try {
-    // Get best provider for this language
-    const provider = await getBestProviderForLanguage(langInfo.id, {
-      timeout: options?.timeout,
-      memoryLimit: options?.memoryLimit,
-    });
+  // Provider priority: piston > local
+  const providerTypes: Array<"piston" | "local"> = ['piston', 'local'];
+  let lastError: Error | null = null;
 
-    await provider.connect();
-
+  for (const providerType of providerTypes) {
     try {
-      return await provider.executeCode(code, langInfo.id, options);
-    } finally {
-      await provider.disconnect();
+      const provider = getWorkspaceProvider(providerType);
+      
+      // Check if provider supports this language
+      if (provider.supportedLanguages && 
+          !provider.supportedLanguages.includes(langInfo.id) &&
+          !provider.supportedLanguages.includes('*')) {
+        continue;
+      }
+
+      // Check if provider supports executeCode
+      if (!('executeCode' in provider)) {
+        continue;
+      }
+
+      await provider.connect();
+
+      try {
+        const result = await (provider as any).executeCode(code, langInfo.id, options);
+        
+        // Check for OOM or other critical errors that should trigger fallback
+        if (result.exitCode !== 0 && result.stderr?.includes('OOM')) {
+          lastError = new Error('Provider OOM error');
+          await provider.disconnect();
+          continue; // Try next provider
+        }
+        
+        return result;
+      } finally {
+        await provider.disconnect();
+      }
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error('Unknown error');
+      // Try next provider
+      continue;
     }
-  } catch (error) {
-    return {
-      stdout: '',
-      stderr: error instanceof Error ? error.message : 'Unknown error',
-      exitCode: 1,
-    };
   }
+
+  return {
+    stdout: '',
+    stderr: lastError?.message || 'No available provider for this language',
+    exitCode: 1,
+  };
 }
 
 /**
