@@ -164,7 +164,7 @@ export default function ImageGen() {
   // Redirect if not authenticated
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      setLocation("/");
+      setLocation("/login?redirect=/image&message=signin_required");
     }
   }, [authLoading, isAuthenticated, setLocation]);
   

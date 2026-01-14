@@ -115,7 +115,12 @@ export default function DeveloperSDK() {
               <Rocket className="w-4 h-4" />
               Get Started
             </Button>
-            <Button variant="outline" size="lg" className="gap-2">
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="gap-2"
+              onClick={() => document.getElementById('api-reference')?.scrollIntoView({ behavior: 'smooth' })}
+            >
               <Book className="w-4 h-4" />
               View Docs
             </Button>

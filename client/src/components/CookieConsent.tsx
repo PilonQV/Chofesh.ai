@@ -75,8 +75,8 @@ export function CookieConsent() {
   // Compact banner (default state)
   if (!isExpanded && !showSettings) {
     return (
-      <div className="fixed bottom-4 left-4 z-50 animate-in slide-in-from-left-4 fade-in duration-300">
-        <div className="bg-card/95 backdrop-blur-sm border border-border rounded-xl shadow-lg p-3 max-w-xs">
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 md:left-6 md:translate-x-0 z-50 animate-in slide-in-from-bottom-4 fade-in duration-300 w-[calc(100%-3rem)] md:w-auto">
+        <div className="bg-card/95 backdrop-blur-sm border border-border rounded-xl shadow-lg p-4 max-w-sm mx-auto md:mx-0">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
               <Cookie className="w-4 h-4 text-primary" />
@@ -111,8 +111,8 @@ export function CookieConsent() {
 
   // Expanded banner
   return (
-    <div className="fixed bottom-4 left-4 z-50 animate-in slide-in-from-bottom-4 fade-in duration-300">
-      <div className="bg-card/95 backdrop-blur-sm border border-border rounded-xl shadow-xl overflow-hidden max-w-sm">
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 md:left-6 md:translate-x-0 z-50 animate-in slide-in-from-bottom-4 fade-in duration-300 w-[calc(100%-3rem)] md:w-auto">
+      <div className="bg-card/95 backdrop-blur-sm border border-border rounded-xl shadow-xl overflow-hidden max-w-sm mx-auto md:mx-0">
         {!showSettings ? (
           // Main consent banner (expanded)
           <div className="p-4">

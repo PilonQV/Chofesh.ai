@@ -46,7 +46,6 @@ import {
   Database,
   ShieldCheck,
   Link2,
-  Github,
   Layers,
   Wrench,
   Calculator,
@@ -90,10 +89,10 @@ export default function Home() {
           </Link>
           
           <div className="hidden md:flex items-center gap-6">
-            <a onClick={() => scrollTo("features")} className="cursor-pointer text-sm text-primary hover:text-primary/80 transition-colors font-semibold">Features</a>
-            <a onClick={() => scrollTo("pricing")} className="cursor-pointer text-sm text-primary hover:text-primary/80 transition-colors font-semibold">Pricing</a>
-            <Link href="/developers" className="text-sm text-primary hover:text-primary/80 transition-colors font-semibold">Developers</Link>
-            <a onClick={() => scrollTo("privacy")} className="cursor-pointer text-sm text-primary hover:text-primary/80 transition-colors font-semibold">Privacy</a>
+            <a onClick={() => scrollTo("features")} className="cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors">Features</a>
+            <a onClick={() => scrollTo("pricing")} className="cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors">Pricing</a>
+            <Link href="/developers" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Developers</Link>
+            <a onClick={() => scrollTo("privacy")} className="cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors">Privacy</a>
           </div>
           
           <div className="flex items-center gap-3">
@@ -141,7 +140,13 @@ export default function Home() {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            ) : null}
+            ) : (
+              <Link href="/login">
+                <Button variant="outline" className="gap-2">
+                  Sign In
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </nav>
@@ -164,7 +169,10 @@ export default function Home() {
                 </Button>
               </Link>
               <a onClick={() => scrollTo("features")} className="cursor-pointer">
-                <Button variant="outline" size="lg">Explore Features</Button>
+                <Button variant="secondary" size="lg" className="gap-2">
+                  Explore Features
+                  <ChevronDown className="w-4 h-4" />
+                </Button>
               </a>
             </div>
           </div>
@@ -329,9 +337,56 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="py-12 px-4 border-t border-border" role="contentinfo">
-        <div className="container mx-auto text-center">
-          <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} Chofesh. All rights reserved.</p>
+      <footer className="py-12 px-4 border-t border-border bg-card/30" role="contentinfo">
+        <div className="container mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+            {/* Product */}
+            <div>
+              <h4 className="font-semibold mb-4">Product</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a onClick={() => scrollTo("features")} className="cursor-pointer hover:text-foreground transition-colors">Features</a></li>
+                <li><a onClick={() => scrollTo("pricing")} className="cursor-pointer hover:text-foreground transition-colors">Pricing</a></li>
+                <li><Link href="/developers" className="hover:text-foreground transition-colors">Developers</Link></li>
+                <li><Link href="/compare/chofesh-vs-chatgpt" className="hover:text-foreground transition-colors">Compare</Link></li>
+              </ul>
+            </div>
+            
+            {/* Resources */}
+            <div>
+              <h4 className="font-semibold mb-4">Resources</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><Link href="/developers" className="hover:text-foreground transition-colors">Documentation</Link></li>
+                <li><Link href="/support" className="hover:text-foreground transition-colors">Support</Link></li>
+                <li><Link href="/features" className="hover:text-foreground transition-colors">Feature Guide</Link></li>
+              </ul>
+            </div>
+            
+            {/* Legal */}
+            <div>
+              <h4 className="font-semibold mb-4">Legal</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><Link href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link></li>
+                <li><Link href="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link></li>
+              </ul>
+            </div>
+            
+            {/* Company */}
+            <div>
+              <h4 className="font-semibold mb-4">Company</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><Link href="/support" className="hover:text-foreground transition-colors">Contact Us</Link></li>
+              </ul>
+            </div>
+          </div>
+          
+          {/* Bottom Bar */}
+          <div className="pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <img src="/chofesh-logo-48.webp" alt="Chofesh" className="w-6 h-6 object-contain" width="24" height="24" />
+              <span className="font-semibold gradient-text">Chofesh</span>
+            </div>
+            <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} Chofesh. All rights reserved.</p>
+          </div>
         </div>
       </footer>
     </div>
