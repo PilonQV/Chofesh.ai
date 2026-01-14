@@ -125,15 +125,22 @@ class LLM:
         # Parse tool calls if present
         tool_calls = []
         if "tool_calls" in message_data:
+            import json
             from .message import ToolCall
-            tool_calls = [
-                ToolCall(
+            for tc in message_data["tool_calls"]:
+                # Parse arguments if it's a string
+                args = tc["function"]["arguments"]
+                if isinstance(args, str):
+                    try:
+                        args = json.loads(args)
+                    except json.JSONDecodeError:
+                        args = {}  # Use empty dict if parsing fails
+                
+                tool_calls.append(ToolCall(
                     id=tc["id"],
                     name=tc["function"]["name"],
-                    parameters=tc["function"]["arguments"],
-                )
-                for tc in message_data["tool_calls"]
-            ]
+                    parameters=args,
+                ))
         
         return Message(
             role=MessageRole.ASSISTANT,
@@ -306,15 +313,22 @@ class LLM:
                 # Parse tool calls if present
                 tool_calls = []
                 if "tool_calls" in message_data:
+                    import json
                     from .message import ToolCall
-                    tool_calls = [
-                        ToolCall(
+                    for tc in message_data["tool_calls"]:
+                        # Parse arguments if it's a string
+                        args = tc["function"]["arguments"]
+                        if isinstance(args, str):
+                            try:
+                                args = json.loads(args)
+                            except json.JSONDecodeError:
+                                args = {}  # Use empty dict if parsing fails
+                        
+                        tool_calls.append(ToolCall(
                             id=tc["id"],
                             name=tc["function"]["name"],
-                            parameters=tc["function"]["arguments"],
-                        )
-                        for tc in message_data["tool_calls"]
-                    ]
+                            parameters=args,
+                        ))
                 
                 return Message(
                     role=MessageRole.ASSISTANT,
