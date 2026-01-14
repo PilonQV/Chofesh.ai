@@ -294,6 +294,12 @@ export const INTENT_PATTERNS = {
     /\bgenerate\s+(an?\s+)?image/i,
     // "create a picture for this story"
     /\b(create|make|generate)\s+a\s+(picture|image)\s+(for|about)/i,
+    // Creative requests: "create a model", "generate a woman", "make a person"
+    /^(please\s+)?(create|generate|make)\s+(me\s+)?(a|an)?\s*(model|woman|man|girl|boy|person|character|figure|lady|guy)\s/i,
+    // Descriptive scene requests: "create a beautiful sunset", "generate a landscape"
+    /^(please\s+)?(create|generate|make)\s+(me\s+)?(a|an)?\s*(beautiful|stunning|realistic|photorealistic|detailed|sexy|nude|naked)/i,
+    // "render a...", "design a..."
+    /^(please\s+)?(render|design)\s+(me\s+)?(a|an)?\s+/i,
   ],
   imageBatch: [
     /\bgenerate\s+(4|four)\s+variations?/i,

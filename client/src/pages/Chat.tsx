@@ -2104,6 +2104,23 @@ export default function Chat() {
                     </TooltipContent>
                   </Tooltip>
                   
+                  {/* Generate Image Button - Quick access to /image page */}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Link href="/image">
+                        <button
+                          type="button"
+                          className="p-1.5 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-primary"
+                        >
+                          <Sparkles className="w-4 h-4" />
+                        </button>
+                      </Link>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Generate AI Images (or type "create an image of...")
+                    </TooltipContent>
+                  </Tooltip>
+                  
                   {/* Voice Input Button */}
                   <Tooltip>
                     <TooltipTrigger asChild>
