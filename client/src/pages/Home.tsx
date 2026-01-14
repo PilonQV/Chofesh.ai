@@ -285,13 +285,12 @@ export default function Home() {
             <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-12">
               30 free credits daily. Buy more when you need them. Credits never expire.
             </p>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-5 max-w-7xl mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-5 max-w-6xl mx-auto">
               <CreditPackCard title="Free Daily" credits="30" price="$0" description="Refreshes every 24 hours" features={["30 credits/day", "All AI models", "Image generation"]} buttonText="Start Free" buttonVariant="outline" href="/chat" />
-              <CreditPackCard title="Starter" credits="1,000" price="$10" description="$0.01 per credit" features={["One-time purchase", "Credits never expire"]} buttonText="Buy Now" href="/credits" />
-              <CreditPackCard title="Pro" credits="5,500" price="$50" description="10% bonus credits" features={["One-time purchase", "Credits never expire"]} buttonText="Buy Now" highlighted href="/credits" />
-              <CreditPackCard title="Power" credits="12,000" price="$100" description="20% bonus credits" features={["One-time purchase", "Credits never expire"]} buttonText="Buy Now" href="/credits" />
-              <CreditPackCard title="Ultimate" credits="30,000" price="$250" description="20% bonus credits" features={["One-time purchase", "Credits never expire"]} buttonText="Buy Now" href="/credits" />
-              <CreditPackCard title="Enterprise" credits="Custom" price="Contact Us" description="Volume discounts available" features={["Dedicated support", "Custom integrations"]} buttonText="Contact Sales" href="/contact" />
+              <CreditPackCard title="Starter" credits="300" price="$5" description="$1.67 per 100 credits" features={["One-time purchase", "Credits never expire"]} buttonText="Buy Now" href="/credits" />
+              <CreditPackCard title="Standard" credits="1,000" price="$12" description="$1.20 per 100 credits" features={["One-time purchase", "Credits never expire"]} buttonText="Buy Now" highlighted href="/credits" />
+              <CreditPackCard title="Pro" credits="3,500" price="$35" description="$1.00 per 100 credits" features={["One-time purchase", "Credits never expire"]} buttonText="Buy Now" href="/credits" />
+              <CreditPackCard title="Power" credits="12,000" price="$99" description="$0.83 per 100 credits" features={["One-time purchase", "Credits never expire"]} buttonText="Buy Now" href="/credits" />
             </div>
             <div className="text-center mt-8">
               <Link href="/credits" className="inline-block mt-4 text-sm text-primary hover:underline">
