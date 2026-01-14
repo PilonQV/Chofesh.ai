@@ -640,3 +640,257 @@ export const providerUsageDaily = mysqlTable("provider_usage_daily", {
 
 export type ProviderUsageDaily = typeof providerUsageDaily.$inferSelect;
 export type InsertProviderUsageDaily = typeof providerUsageDaily.$inferInsert;
+
+
+// ============================================
+// Phase 4: Community & Ecosystem Tables
+// ============================================
+
+/**
+ * Skills Registry table.
+ * Public registry of reusable agent skills and prompts.
+ */
+export const skills = mysqlTable("skills", {
+  id: int("id").autoincrement().primaryKey(),
+  authorId: int("authorId").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  
+  // Basic info
+  name: varchar("name", { length: 100 }).notNull(),
+  slug: varchar("slug", { length: 100 }).notNull().unique(),
+  description: text("description").notNull(),
+  
+  // The actual skill content
+  prompt: text("prompt").notNull(),
+  systemPrompt: text("systemPrompt"),
+  parameters: text("parameters"), // JSON schema for input parameters
+  
+  // Classification
+  category: mysqlEnum("category", [
+    "coding", "writing", "analysis", "research", "creative", 
+    "business", "education", "productivity", "other"
+  ]).default("other").notNull(),
+  tags: text("tags"), // JSON array of tags
+  
+  // Visibility and status
+  isPublic: boolean("isPublic").default(false).notNull(),
+  isVerified: boolean("isVerified").default(false).notNull(),
+  status: mysqlEnum("status", ["draft", "published", "archived"]).default("draft").notNull(),
+  
+  // Stats
+  usageCount: int("usageCount").default(0).notNull(),
+  forkCount: int("forkCount").default(0).notNull(),
+  rating: int("rating").default(0).notNull(), // Average rating * 100 (e.g., 450 = 4.5 stars)
+  ratingCount: int("ratingCount").default(0).notNull(),
+  
+  // Versioning
+  version: varchar("version", { length: 20 }).default("1.0.0").notNull(),
+  forkedFromId: int("forkedFromId"),
+  
+  // Timestamps
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  publishedAt: timestamp("publishedAt"),
+});
+
+export type Skill = typeof skills.$inferSelect;
+export type InsertSkill = typeof skills.$inferInsert;
+
+/**
+ * Skill ratings table.
+ * User ratings and reviews for skills.
+ */
+export const skillRatings = mysqlTable("skill_ratings", {
+  id: int("id").autoincrement().primaryKey(),
+  skillId: int("skillId").references(() => skills.id, { onDelete: "cascade" }).notNull(),
+  userId: int("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  rating: int("rating").notNull(), // 1-5 stars
+  review: text("review"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SkillRating = typeof skillRatings.$inferSelect;
+export type InsertSkillRating = typeof skillRatings.$inferInsert;
+
+/**
+ * Shared conversations table.
+ * Extended sharing beyond simple links - supports team collaboration.
+ */
+export const sharedConversations = mysqlTable("shared_conversations", {
+  id: int("id").autoincrement().primaryKey(),
+  ownerId: int("ownerId").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  
+  // Conversation data
+  title: varchar("title", { length: 255 }).notNull(),
+  encryptedData: text("encryptedData").notNull(),
+  
+  // Sharing settings
+  shareType: mysqlEnum("shareType", ["private", "link", "team"]).default("private").notNull(),
+  accessToken: varchar("accessToken", { length: 64 }).unique(),
+  
+  // Permissions
+  allowComments: boolean("allowComments").default(true).notNull(),
+  allowFork: boolean("allowFork").default(true).notNull(),
+  
+  // Expiration
+  expiresAt: timestamp("expiresAt"),
+  
+  // Stats
+  viewCount: int("viewCount").default(0).notNull(),
+  forkCount: int("forkCount").default(0).notNull(),
+  
+  // Timestamps
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SharedConversation = typeof sharedConversations.$inferSelect;
+export type InsertSharedConversation = typeof sharedConversations.$inferInsert;
+
+/**
+ * Conversation collaborators table.
+ * Team members with access to shared conversations.
+ */
+export const conversationCollaborators = mysqlTable("conversation_collaborators", {
+  id: int("id").autoincrement().primaryKey(),
+  conversationId: int("conversationId").references(() => sharedConversations.id, { onDelete: "cascade" }).notNull(),
+  userId: int("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  
+  // Permission level
+  permission: mysqlEnum("permission", ["view", "comment", "edit"]).default("view").notNull(),
+  
+  // Invitation status
+  status: mysqlEnum("status", ["pending", "accepted", "declined"]).default("pending").notNull(),
+  invitedBy: int("invitedBy").references(() => users.id),
+  
+  // Timestamps
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  acceptedAt: timestamp("acceptedAt"),
+});
+
+export type ConversationCollaborator = typeof conversationCollaborators.$inferSelect;
+export type InsertConversationCollaborator = typeof conversationCollaborators.$inferInsert;
+
+/**
+ * Conversation comments table.
+ * Comments on shared conversations.
+ */
+export const conversationComments = mysqlTable("conversation_comments", {
+  id: int("id").autoincrement().primaryKey(),
+  conversationId: int("conversationId").references(() => sharedConversations.id, { onDelete: "cascade" }).notNull(),
+  userId: int("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  
+  // Comment content
+  content: text("content").notNull(),
+  
+  // Position in conversation (optional - for inline comments)
+  messageIndex: int("messageIndex"),
+  
+  // Threading
+  parentId: int("parentId"),
+  
+  // Timestamps
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ConversationComment = typeof conversationComments.$inferSelect;
+export type InsertConversationComment = typeof conversationComments.$inferInsert;
+
+/**
+ * Agent Marketplace items table.
+ * Pre-built agents and workflows available for installation.
+ */
+export const marketplaceItems = mysqlTable("marketplace_items", {
+  id: int("id").autoincrement().primaryKey(),
+  authorId: int("authorId").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  
+  // Basic info
+  name: varchar("name", { length: 100 }).notNull(),
+  slug: varchar("slug", { length: 100 }).notNull().unique(),
+  shortDescription: varchar("shortDescription", { length: 255 }).notNull(),
+  description: text("description").notNull(),
+  
+  // Type and category
+  itemType: mysqlEnum("itemType", ["agent", "workflow", "template", "integration"]).notNull(),
+  category: mysqlEnum("category", [
+    "productivity", "development", "marketing", "sales", "support",
+    "analytics", "automation", "content", "research", "other"
+  ]).default("other").notNull(),
+  tags: text("tags"), // JSON array of tags
+  
+  // Configuration
+  configuration: text("configuration").notNull(), // JSON config to install the item
+  requirements: text("requirements"), // JSON array of requirements/dependencies
+  
+  // Media
+  iconUrl: text("iconUrl"),
+  screenshotUrls: text("screenshotUrls"), // JSON array of screenshot URLs
+  demoUrl: text("demoUrl"),
+  
+  // Pricing
+  priceType: mysqlEnum("priceType", ["free", "paid", "freemium"]).default("free").notNull(),
+  priceCredits: int("priceCredits").default(0), // Price in credits (0 = free)
+  
+  // Status and verification
+  status: mysqlEnum("status", ["draft", "pending_review", "published", "rejected", "archived"]).default("draft").notNull(),
+  isVerified: boolean("isVerified").default(false).notNull(),
+  isFeatured: boolean("isFeatured").default(false).notNull(),
+  
+  // Stats
+  installCount: int("installCount").default(0).notNull(),
+  rating: int("rating").default(0).notNull(), // Average rating * 100
+  ratingCount: int("ratingCount").default(0).notNull(),
+  
+  // Versioning
+  version: varchar("version", { length: 20 }).default("1.0.0").notNull(),
+  
+  // Timestamps
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  publishedAt: timestamp("publishedAt"),
+});
+
+export type MarketplaceItem = typeof marketplaceItems.$inferSelect;
+export type InsertMarketplaceItem = typeof marketplaceItems.$inferInsert;
+
+/**
+ * Marketplace ratings table.
+ * User ratings and reviews for marketplace items.
+ */
+export const marketplaceRatings = mysqlTable("marketplace_ratings", {
+  id: int("id").autoincrement().primaryKey(),
+  itemId: int("itemId").references(() => marketplaceItems.id, { onDelete: "cascade" }).notNull(),
+  userId: int("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  rating: int("rating").notNull(), // 1-5 stars
+  review: text("review"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type MarketplaceRating = typeof marketplaceRatings.$inferSelect;
+export type InsertMarketplaceRating = typeof marketplaceRatings.$inferInsert;
+
+/**
+ * User installations table.
+ * Tracks which marketplace items users have installed.
+ */
+export const userInstallations = mysqlTable("user_installations", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  itemId: int("itemId").references(() => marketplaceItems.id, { onDelete: "cascade" }).notNull(),
+  
+  // Installation details
+  installedVersion: varchar("installedVersion", { length: 20 }).notNull(),
+  configuration: text("configuration"), // User's customized configuration
+  
+  // Status
+  isActive: boolean("isActive").default(true).notNull(),
+  
+  // Timestamps
+  installedAt: timestamp("installedAt").defaultNow().notNull(),
+  lastUsedAt: timestamp("lastUsedAt"),
+});
+
+export type UserInstallation = typeof userInstallations.$inferSelect;
+export type InsertUserInstallation = typeof userInstallations.$inferInsert;

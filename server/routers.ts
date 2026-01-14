@@ -1,6 +1,9 @@
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
+import { skillsRouter } from "./routers/skills";
+import { sharingRouter } from "./routers/sharing";
+import { marketplaceRouter } from "./routers/marketplace";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
@@ -213,6 +216,9 @@ function estimateTokens(text: string): number {
 }
 
 export const appRouter = router({
+  skills: skillsRouter,
+  sharing: sharingRouter,
+  marketplace: marketplaceRouter,
   system: systemRouter,
   
   auth: router({

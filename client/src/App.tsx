@@ -54,6 +54,9 @@ const DeepResearch = lazy(() => import("./pages/features/DeepResearch"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Compare = lazy(() => import("./pages/Compare"));
 const DeveloperSDK = lazy(() => import("./pages/DeveloperSDK"));
+const SkillsRegistry = lazy(() => import("./pages/SkillsRegistry"));
+const ConversationSharing = lazy(() => import("./pages/ConversationSharing"));
+const AgentMarketplace = lazy(() => import("./pages/AgentMarketplace"));
 
 // Loading fallback component
 function PageLoader() {
@@ -111,6 +114,9 @@ function Router() {
         <Route path="/compare/chofesh-vs-chatgpt" component={Compare} />
         <Route path="/developers" component={DeveloperSDK} />
         <Route path="/sdk" component={DeveloperSDK} />
+        <Route path="/skills" component={SkillsRegistry} />
+        <Route path="/sharing" component={ConversationSharing} />
+        <Route path="/marketplace" component={AgentMarketplace} />
         <Route path="/404" component={NotFound} />
         <Route component={NotFound} />
       </Switch>
