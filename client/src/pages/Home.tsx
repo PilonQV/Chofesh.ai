@@ -90,6 +90,13 @@ export default function Home() {
           </Link>
           
           <div className="hidden md:flex items-center gap-6">
+            {isAuthenticated && (
+              <>
+                <Link href="/chat" className="text-sm text-primary hover:text-primary/80 transition-colors font-semibold">Chat</Link>
+                <Link href="/image" className="text-sm text-primary hover:text-primary/80 transition-colors font-semibold">Images</Link>
+                <Link href="/gallery" className="text-sm text-primary hover:text-primary/80 transition-colors font-semibold">Gallery</Link>
+              </>
+            )}
             <a onClick={() => scrollTo("features")} className="cursor-pointer text-sm text-primary hover:text-primary/80 transition-colors font-semibold">Features</a>
             <a onClick={() => scrollTo("pricing")} className="cursor-pointer text-sm text-primary hover:text-primary/80 transition-colors font-semibold">Pricing</a>
             <Link href="/developers" className="text-sm text-primary hover:text-primary/80 transition-colors font-semibold">Developers</Link>
@@ -98,13 +105,44 @@ export default function Home() {
           
           <div className="flex items-center gap-4">
             {isAuthenticated ? (
-              <Link href="/chat">
-                <Button>Start Chat</Button>
-              </Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="gap-2">
+                    {user?.name || "Account"}
+                    <ChevronDown className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setLocation("/chat")}>
+                    <MessageSquare className="w-4 h-4 mr-2" />
+                    Chat
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setLocation("/gallery")}>
+                    <Image className="w-4 h-4 mr-2" />
+                    My Gallery
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setLocation("/settings")}>
+                    <Settings className="w-4 h-4 mr-2" />
+                    Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => logout()}>
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
-              <Link href="/login">
-                <Button>Get Started</Button>
-              </Link>
+              <div className="flex items-center gap-4">
+                <Link href="/login">
+                  <Button variant="ghost">Sign In</Button>
+                </Link>
+                <Link href="/register">
+                  <Button>Get Started</Button>
+                </Link>
+              </div>
             )}
           </div>
         </div>
@@ -121,9 +159,9 @@ export default function Home() {
               Chofesh is a privacy-first AI chat platform built for people who want control. Access 25+ models, bring your own API keys, and use powerful tools without compromising your data.
             </p>
             <div className="flex items-center justify-center gap-4">
-              <Link href="/chat">
+              <Link href={isAuthenticated ? "/chat" : "/login"}>
                 <Button size="lg" className="gap-2">
-                  Start Chatting Now
+                  {isAuthenticated ? "Start Chatting Now" : "Sign In to Chat"}
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
