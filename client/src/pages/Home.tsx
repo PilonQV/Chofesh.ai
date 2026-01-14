@@ -249,6 +249,10 @@ export default function Home() {
                   <span className="text-primary mt-1">•</span>
                   <span>Code workspace + document analysis</span>
                 </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  <span>Developer SDK with 98% test coverage</span>
+                </li>
               </ul>
             </div>
 
@@ -324,6 +328,13 @@ export default function Home() {
               <Badge variant="secondary" className="bg-primary/20 text-primary">Latest Features</Badge>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
+              <FeatureCard
+                icon={<Braces className="w-6 h-6" />}
+                title="Developer SDK"
+                description="Build autonomous agents with our Python SDK. 98% test coverage, 167+ tests, and full GitHub integration."
+                badge="New"
+                highlighted
+              />
               <FeatureCard
                 icon={<Code2 className="w-6 h-6" />}
                 title="AI Research Mode"
