@@ -159,7 +159,7 @@ export default function Home() {
               Private AI Chat That Keeps Your Data <span className="gradient-text">on Your Device</span>
             </h1>
             <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto mb-8">
-              Chofesh is a privacy-first AI chat platform built for people who want control. Access 25+ models, bring your own API keys, and use powerful tools without compromising your data.
+              Chofesh is a privacy-first AI chat platform built for people who want control. Access 25+ models, execute code in 60+ languages, bring your own API keys, and use powerful tools without compromising your data.
             </p>
             <div className="flex items-center justify-center gap-4">
               <Link href={isAuthenticated ? "/chat" : "/login"}>
@@ -211,6 +211,17 @@ export default function Home() {
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-3">
+                <AccordionTrigger>Code Execution & Workspaces</AccordionTrigger>
+                <AccordionContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FeatureCard title="60+ Languages" description="Execute Python, JavaScript, TypeScript, Java, C++, Go, Rust, Ruby, and 50+ more languages directly in chat." icon={<Code2 />} />
+                    <FeatureCard title="Workspace Abstraction" description="Flexible execution environments with automatic provider selection - Piston, Docker, or Local." icon={<Server />} />
+                    <FeatureCard title="Package Management" description="Install packages on-the-fly with pip, npm, yarn, cargo, go, gem, and composer support." icon={<FolderTree />} />
+                    <FeatureCard title="Smart Fallback" description="Automatic failover between providers ensures your code always runs, even under heavy load." icon={<GitCompare />} />
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="item-4">
                 <AccordionTrigger>Privacy & Security</AccordionTrigger>
                 <AccordionContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

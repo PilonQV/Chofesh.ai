@@ -3,6 +3,7 @@ import { WorkspaceProvider } from "./provider";
 
 export class DockerWorkspace implements WorkspaceProvider {
   type = "docker" as const;
+  name = "Docker Container";
   private docker: Docker;
   private container: Docker.Container | null = null;
 
