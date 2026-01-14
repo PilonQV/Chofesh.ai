@@ -79,7 +79,7 @@ interface GeneratedImage {
   model?: string;
 }
 
-const STORAGE_KEY = "chofesh-ai-generated-images";
+const STORAGE_KEY_PREFIX = "chofesh-ai-generated-images";
 
 const ASPECT_RATIOS = [
   { id: "1:1", name: "Square", icon: Square, width: 1024, height: 1024 },
@@ -124,22 +124,41 @@ export default function ImageGen() {
   const [editImageUrl, setEditImageUrl] = useState<string | null>(null);
   const editFileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load images from localStorage
+  // Get user-specific storage key
+  const getStorageKey = () => {
+    if (user?.id) {
+      return `${STORAGE_KEY_PREFIX}-${user.id}`;
+    }
+    return null; // Don't use localStorage if no user
+  };
+
+  // Load images from localStorage (user-specific)
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const storageKey = getStorageKey();
+    if (!storageKey) {
+      setImages([]);
+      return;
+    }
+    const stored = localStorage.getItem(storageKey);
     if (stored) {
       try {
         setImages(JSON.parse(stored));
       } catch {
         // Ignore parse errors
+        setImages([]);
       }
+    } else {
+      setImages([]);
     }
-  }, []);
+  }, [user?.id]);
 
-  // Save images to localStorage
+  // Save images to localStorage (user-specific)
   const saveImages = (newImages: GeneratedImage[]) => {
     setImages(newImages);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newImages));
+    const storageKey = getStorageKey();
+    if (storageKey) {
+      localStorage.setItem(storageKey, JSON.stringify(newImages));
+    }
   };
 
   // Redirect if not authenticated
