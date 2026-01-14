@@ -6,8 +6,8 @@ export const getLoginUrl = () => {
   return `${window.location.origin}/api/auth/google`;
 };
 
-// Legacy Manus OAuth URL (kept for reference)
-export const getLegacyManusLoginUrl = () => {
+// Legacy OAuth URL (kept for reference)
+export const getLegacyOAuthLoginUrl = () => {
   const oauthPortalUrl = import.meta.env.VITE_OAUTH_PORTAL_URL;
   const appId = import.meta.env.VITE_APP_ID;
   const redirectUri = `${window.location.origin}/api/oauth/callback`;

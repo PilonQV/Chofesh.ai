@@ -6,7 +6,7 @@
 - [x] Backend tRPC API endpoints
 
 ## Authentication & User Management
-- [x] User authentication with Manus OAuth
+- [x] User authentication with OAuth
 - [x] Role-based access control (admin/user)
 - [x] User profile management
 
@@ -217,7 +217,7 @@
 
 ---
 
-## Phase 8: Manus API Expansion
+## Phase 8: API Expansion
 
 ### PDF Document Chat
 - [x] Update document upload to accept PDF files
@@ -526,7 +526,7 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Password reset flow
 
 ## Phase 29: Email Enhancements
-- [x] Remove Manus OAuth option from login page (Google only now)
+- [x] Remove legacy OAuth option from login page (Google only now)
 - [x] Add email unsubscribe link helper
 - [x] Add login notification emails (sent on each email login)
 - [x] Add subscription confirmation emails (new, upgrade, downgrade, cancel)
@@ -555,7 +555,7 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 
 - [x] Add auto-refresh to dashboard (default 30 seconds)
 - [x] Add refresh interval toggle (Off, 15s, 30s, 60s) with countdown timer
-- [x] Add login audit logging to Manus OAuth callback
+- [x] Add login audit logging to OAuth callback
 - [x] Add login audit logging to Google OAuth callback
 - [x] Verify logout logging (already implemented)
 - [x] All auth events captured with IP, user agent, and metadata
@@ -598,7 +598,7 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 
 - [x] Add auto-refresh to dashboard (default 30 seconds)
 - [x] Add refresh interval toggle (Off, 15s, 30s, 60s) with countdown timer
-- [x] Add login audit logging to Manus OAuth callback
+- [x] Add login audit logging to OAuth callback
 - [x] Add login audit logging to Google OAuth callback
 - [x] Verify logout logging (already implemented)
 - [x] All auth events captured with IP, user agent, and metadata
@@ -661,7 +661,7 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 
 - [x] Add auto-refresh to dashboard (default 30 seconds)
 - [x] Add refresh interval toggle (Off, 15s, 30s, 60s) with countdown timer
-- [x] Add login audit logging to Manus OAuth callback
+- [x] Add login audit logging to OAuth callback
 - [x] Add login audit logging to Google OAuth callback
 - [x] Verify logout logging (already implemented)
 - [x] All auth events captured with IP, user agent, and metadata
@@ -706,7 +706,7 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 
 ## Phase 29: Email Enhancements & Login Cleanup
 
-- [ ] Remove "Continue with Manus" OAuth option from login page
+- [ ] Remove legacy OAuth option from login page
 - [ ] Add email unsubscribe link to marketing emails
 - [ ] Add login notification emails (new device/location alerts)
 - [ ] Add subscription confirmation emails (upgrade/downgrade receipts)
@@ -1120,7 +1120,7 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Verify production build succeeds (34.5s build time)
 
 
-## Phase 41: Quick Win Features (Manus API Integration)
+## Phase 41: Quick Win Features (API Integration)
 
 ### YouTube Video Summarizer
 - [ ] Create YouTube transcript fetcher using Data API
@@ -1927,7 +1927,7 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Rename all "NSFW" labels to "Uncensored" in UI (ImageGen, Settings)
 - [x] Add better error messages for uncensored image generation
 - [x] Venice API integration verified working ($8.08 balance)
-- [x] User checolin357@msn.com has active subscription and age verified
+- [x] User verified with active subscription and age verification
 
 
 ## CRITICAL: Gallery Privacy Bug
@@ -2213,7 +2213,7 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
   - Changed "I confirm I am 18 years or older" to "Yep, I'm 18 or older"
   - Changed button text to "I'm 18+, Let's Go!"
   - Updated all related text to be more casual and friendly
-- [x] Re-implement agent tools for Manus-like capabilities:
+- [x] Re-implement agent tools for advanced capabilities:
   - [x] Image generation tool (generateImage) - uses Venice API
   - [x] Web search tool (searchWeb) - uses DuckDuckGo API
   - [x] Document creation tool (createDocument)
