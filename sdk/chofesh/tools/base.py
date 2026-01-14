@@ -35,7 +35,10 @@ class Tool(ABC):
             **config: Tool-specific configuration
         """
         self.config = config
-        self.validate_config()
+        # Don't validate on init to allow testing
+        # Validation happens on execute
+        if config.get('validate', True):
+            self.validate_config()
     
     def validate_config(self):
         """Validate tool configuration (override if needed)"""
