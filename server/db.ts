@@ -1975,3 +1975,15 @@ export async function isUserAgeVerified(userId: number): Promise<boolean> {
 
   return result.length > 0 && result[0].ageVerified;
 }
+import { skills, skillRatings } from "../drizzle/schema";
+
+// Skills Registry DB Functions
+export * from "./db/skills";
+
+
+// Conversation Sharing DB Functions
+export * from "./db/sharing";
+
+
+// Agent Marketplace DB Functions
+export * from "./db/marketplace";
