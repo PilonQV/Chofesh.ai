@@ -814,6 +814,9 @@ export const appRouter = router({
             credits: pack.credits.toString(),
           },
           customer_email: ctx.user.email || undefined,
+          payment_intent_data: {
+            description: `Chofesh.ai - ${pack.displayName} Credit Pack (${pack.credits} credits)`,
+          },
         });
         
         return { sessionId: session.id, url: session.url };
