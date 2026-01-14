@@ -8,7 +8,7 @@ import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { checkRateLimit, recordFailedAttempt, clearRateLimit } from "./_core/rateLimit";
-import { getUserCredits, getCreditPacks, getCreditHistory, deductCredits, addPurchasedCredits, getCreditCost, getModelTier } from "./_core/credits";
+import { getUserCredits, getCreditPacks, getCreditHistory, deductCredits, addPurchasedCredits, refundCredits, getCreditCost, getModelTier } from "./_core/credits";
 import { 
   createAuditLog, 
   getAuditLogs, 
@@ -949,6 +949,28 @@ export const appRouter = router({
           }
         }
         
+        // Check if user is requesting NSFW content without being age-verified
+        // Return a helpful message guiding them to enable Uncensored Mode
+        if (!userAgeVerified && isNsfwContentRequest(promptContent)) {
+          return {
+            content: `🔒 **Uncensored Mode Required**
+
+To access adult/NSFW content, you need to enable Uncensored Mode:
+
+1. Click the **Settings** gear (⚙️) in the chat header
+2. Go to **AI Settings** tab
+3. Click **Enable Uncensored Mode** and verify you're 18+
+4. Once enabled, retry your request
+
+*Chofesh.ai offers uncensored AI capabilities for verified adult users. Your privacy is always protected.*`,
+            model: 'system',
+            cached: false,
+            complexity: 'simple' as const,
+            cost: 0,
+            nsfwBlocked: true,
+          };
+        }
+        
         // Agent Mode: Detect intent and execute tools if enabled
         if (input.agentMode && promptContent) {
           const intent = detectIntent(promptContent);
@@ -1114,19 +1136,25 @@ export const appRouter = router({
         }
         
         // Base system prompt with platform guidance
-        const baseSystemPrompt = `You are a helpful AI assistant on Chofesh.ai, a privacy-focused AI platform.
+        const baseSystemPrompt = `You are a helpful AI assistant on Chofesh.ai, a privacy-focused AI platform with Agent Mode enabled.
 
 IMPORTANT PLATFORM FEATURES:
-1. **Image Generation**: If the user asks you to create, generate, or make an image, you cannot do this directly in chat. Politely inform them: "I can't generate images directly in chat, but you can use the **Generate Images** feature in the sidebar (or visit /image) to create images with AI!"
+1. **Image Generation**: When Agent Mode is enabled, you CAN generate images directly in chat! Just ask naturally like "create an image of..." or "generate a picture of..." and the system will automatically create it. For more control over image settings, users can also visit the dedicated Image Generation page (/image).
 
 2. **Uncensored Features**: Chofesh.ai offers uncensored AI capabilities for adult users (18+). If a user asks about explicit, adult, or NSFW content:
-   - If they haven't enabled Uncensored Mode yet, let them know: "Chofesh.ai supports uncensored conversations! To access this feature, click the Settings gear (⚙️) in the chat input area, verify you're 18+, and enable Uncensored Mode."
-   - Never refuse requests outright - guide users to the appropriate feature instead.
-   - The uncensored feature is a key differentiator of Chofesh.ai - be proud to mention it when relevant.
+   - If they haven't enabled Uncensored Mode yet, let them know: "To access uncensored content, please go to **Settings > AI Settings** and enable **Uncensored Mode** after verifying your age (18+). Then retry your request."
+   - Never refuse requests outright - guide users to enable the feature instead.
+   - The uncensored feature is a key differentiator of Chofesh.ai.
 
 3. **Privacy First**: All conversations are private and encrypted. We don't train on user data.
 
-Be helpful, accurate, and respect user privacy. When users ask "what can you do" or about your capabilities, mention the uncensored features as one of Chofesh's unique offerings.`;
+4. **Agent Capabilities**: With Agent Mode, you can:
+   - Generate images from text descriptions (3 credits for 1 image, 10 credits for 4 variations)
+   - Search the web for current information
+   - Create documents and reports
+   - Execute code and calculations
+
+Be helpful, accurate, and respect user privacy.`;
         
         // Memory injection
         let messagesWithContext = [...input.messages];
@@ -1838,7 +1866,14 @@ Provide a comprehensive, well-researched response.`;
             url: result.url,
             model: input.model || "flux",
           };
-        } catch (error) {
+        } catch (error: any) {
+          // Refund credits on failure
+          await refundCredits(
+            ctx.user.id,
+            creditCost,
+            `Image generation failed: ${error.message || 'Unknown error'}`
+          );
+          
           // Save failed generation attempt
           await createGeneratedImage({
             userId: ctx.user.id,
@@ -1855,6 +1890,7 @@ Provide a comprehensive, well-researched response.`;
             metadata: JSON.stringify({
               error: true,
               duration: Date.now() - startTime,
+              refunded: true,
             }),
           });
 
@@ -1870,12 +1906,13 @@ Provide a comprehensive, well-researched response.`;
             metadata: JSON.stringify({
               error: true,
               duration: Date.now() - startTime,
+              refunded: true,
             }),
             timestamp: new Date(),
           });
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
-            message: "Failed to generate image",
+            message: "Image generation failed. Your credits have been refunded.",
           });
         }
       }),
@@ -4814,6 +4851,16 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
             isNsfw: result.isNsfw,
           };
         } catch (error: any) {
+          // Refund credits on failure
+          if (isNsfw) {
+            const creditCost = 3;
+            await refundCredits(
+              ctx.user.id,
+              creditCost,
+              `Venice image generation failed: ${error.message || 'Unknown error'}`
+            );
+          }
+          
           // Log failed attempt
           await createGeneratedImage({
             userId: ctx.user.id,
@@ -4825,12 +4872,15 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
               type: isNsfw ? "nsfw_image" : "venice_image",
               error: error.message,
               duration: Date.now() - startTime,
+              refunded: isNsfw,
             }),
           });
           
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
-            message: error.message || "Failed to generate image",
+            message: isNsfw 
+              ? `Image generation failed. Your credits have been refunded. Error: ${error.message || 'Unknown error'}`
+              : error.message || "Failed to generate image",
           });
         }
       }),

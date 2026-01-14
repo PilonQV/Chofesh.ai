@@ -297,6 +297,48 @@ export async function addPurchasedCredits(
 }
 
 /**
+ * Refund credits to user account (for failed operations)
+ * Adds credits back to purchased credits pool
+ */
+export async function refundCredits(
+  userId: number,
+  amount: number,
+  reason: string
+): Promise<{ success: boolean; newBalance: number }> {
+  const credits = await getUserCredits(userId);
+  
+  const newPurchasedCredits = credits.purchasedCredits + amount;
+  const newBalance = credits.freeCredits + newPurchasedCredits;
+
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db
+    .update(userCredits)
+    .set({
+      purchasedCredits: newPurchasedCredits,
+    })
+    .where(eq(userCredits.userId, userId));
+
+  // Log refund transaction
+  await db.insert(creditTransactions).values({
+    userId,
+    type: "refund",
+    amount,
+    balanceAfter: newBalance,
+    creditSource: "purchased",
+    description: `Refund: ${reason}`,
+  });
+
+  console.log(`[Credits] Refunded ${amount} credits to user ${userId}: ${reason}`);
+
+  return {
+    success: true,
+    newBalance,
+  };
+}
+
+/**
  * Get all available credit packs
  */
 export async function getCreditPacks() {
