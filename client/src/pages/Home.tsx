@@ -79,6 +79,7 @@ export default function Home() {
           <div className="hidden md:flex items-center gap-6">
             <a href="#features" className="text-sm text-primary hover:text-primary/80 transition-colors font-semibold">Features</a>
             <a href="#pricing" className="text-sm text-primary hover:text-primary/80 transition-colors font-semibold">Pricing</a>
+            <Link href="/developers" className="text-sm text-primary hover:text-primary/80 transition-colors font-semibold">Developers</Link>
             <Link href="/privacy" className="text-sm text-primary hover:text-primary/80 transition-colors font-semibold">Privacy Policy</Link>
           </div>
           
@@ -334,6 +335,7 @@ export default function Home() {
                 description="Build autonomous agents with our Python SDK. 98% test coverage, 167+ tests, and full GitHub integration."
                 badge="New"
                 highlighted
+                href="/developers"
               />
               <FeatureCard
                 icon={<Code2 className="w-6 h-6" />}
@@ -889,14 +891,16 @@ function FeatureCard({
   description,
   badge,
   highlighted,
+  href,
 }: {
   icon: React.ReactNode;
   title: string;
   description: string;
   badge?: string;
   highlighted?: boolean;
+  href?: string;
 }) {
-  return (
+  const content = (
     <div className={`group p-4 md:p-6 rounded-xl border transition-all duration-300 relative cursor-pointer backdrop-blur-sm ${
       highlighted 
         ? 'bg-gradient-to-br from-primary/15 to-primary/5 border-primary/40 hover:border-primary shadow-lg shadow-primary/10 hover:shadow-xl hover:shadow-primary/20 hover:-translate-y-1' 
@@ -918,6 +922,12 @@ function FeatureCard({
       <p className="text-muted-foreground text-xs md:text-sm transition-colors duration-300 group-hover:text-muted-foreground/80">{description}</p>
     </div>
   );
+
+  if (href) {
+    return <Link href={href}>{content}</Link>;
+  }
+
+  return content;
 }
 
 function ComparisonRow({
