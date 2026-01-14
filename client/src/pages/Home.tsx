@@ -135,14 +135,12 @@ export default function Home() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <div className="flex items-center gap-4">
-                <Link href="/login">
-                  <Button variant="ghost">Sign In</Button>
-                </Link>
-                <Link href="/register">
-                  <Button>Get Started</Button>
-                </Link>
-              </div>
+              <Link href="/login">
+                <Button className="gap-2">
+                  Sign In to Chat
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              </Link>
             )}
           </div>
         </div>
@@ -161,7 +159,7 @@ export default function Home() {
             <div className="flex items-center justify-center gap-4">
               <Link href={isAuthenticated ? "/chat" : "/login"}>
                 <Button size="lg" className="gap-2">
-                  {isAuthenticated ? "Start Chatting Now" : "Sign In to Chat"}
+                  Start Chatting Now
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
@@ -288,12 +286,12 @@ export default function Home() {
               30 free credits daily. Buy more when you need them. Credits never expire.
             </p>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-5 max-w-7xl mx-auto">
-              <CreditPackCard title="Free Daily" credits="30" price="$0" description="Refreshes every 24 hours" features={["30 credits/day", "All AI models", "Image generation"]} buttonText="Start Free" buttonVariant="outline" />
-              <CreditPackCard title="Starter" credits="1,000" price="$10" description="$0.01 per credit" features={["One-time purchase", "Credits never expire"]} buttonText="Buy Now" />
-              <CreditPackCard title="Pro" credits="5,500" price="$50" description="10% bonus credits" features={["One-time purchase", "Credits never expire"]} buttonText="Buy Now" highlighted />
-              <CreditPackCard title="Power" credits="12,000" price="$100" description="20% bonus credits" features={["One-time purchase", "Credits never expire"]} buttonText="Buy Now" />
-              <CreditPackCard title="Ultimate" credits="30,000" price="$250" description="20% bonus credits" features={["One-time purchase", "Credits never expire"]} buttonText="Buy Now" />
-              <CreditPackCard title="Enterprise" credits="Custom" price="Contact Us" description="Volume discounts available" features={["Dedicated support", "Custom integrations"]} buttonText="Contact Sales" />
+              <CreditPackCard title="Free Daily" credits="30" price="$0" description="Refreshes every 24 hours" features={["30 credits/day", "All AI models", "Image generation"]} buttonText="Start Free" buttonVariant="outline" href="/chat" />
+              <CreditPackCard title="Starter" credits="1,000" price="$10" description="$0.01 per credit" features={["One-time purchase", "Credits never expire"]} buttonText="Buy Now" href="/credits" />
+              <CreditPackCard title="Pro" credits="5,500" price="$50" description="10% bonus credits" features={["One-time purchase", "Credits never expire"]} buttonText="Buy Now" highlighted href="/credits" />
+              <CreditPackCard title="Power" credits="12,000" price="$100" description="20% bonus credits" features={["One-time purchase", "Credits never expire"]} buttonText="Buy Now" href="/credits" />
+              <CreditPackCard title="Ultimate" credits="30,000" price="$250" description="20% bonus credits" features={["One-time purchase", "Credits never expire"]} buttonText="Buy Now" href="/credits" />
+              <CreditPackCard title="Enterprise" credits="Custom" price="Contact Us" description="Volume discounts available" features={["Dedicated support", "Custom integrations"]} buttonText="Contact Sales" href="/contact" />
             </div>
             <div className="text-center mt-8">
               <Link href="/credits" className="inline-block mt-4 text-sm text-primary hover:underline">
@@ -371,7 +369,7 @@ function PrivacyItem({ icon, title, text }: { icon: React.ReactNode; title: stri
   );
 }
 
-function CreditPackCard({ title, credits, price, description, features, buttonText, buttonVariant, highlighted }: { title: string; credits: string; price: string; description: string; features: string[]; buttonText: string; buttonVariant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | null | undefined; highlighted?: boolean }) {
+function CreditPackCard({ title, credits, price, description, features, buttonText, buttonVariant, highlighted, href }: { title: string; credits: string; price: string; description: string; features: string[]; buttonText: string; buttonVariant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | null | undefined; highlighted?: boolean; href?: string }) {
   return (
     <div className={`p-4 rounded-xl border ${highlighted ? "border-primary shadow-lg shadow-primary/10" : "border-border"}`}>
       <h3 className="text-lg font-semibold mb-2">{title}</h3>
@@ -388,7 +386,13 @@ function CreditPackCard({ title, credits, price, description, features, buttonTe
           </li>
         ))}
       </ul>
-      <Button variant={buttonVariant || "default"} className="w-full">{buttonText}</Button>
+      {href ? (
+        <Link href={href}>
+          <Button variant={buttonVariant || "default"} className="w-full">{buttonText}</Button>
+        </Link>
+      ) : (
+        <Button variant={buttonVariant || "default"} className="w-full">{buttonText}</Button>
+      )}
     </div>
   );
 }

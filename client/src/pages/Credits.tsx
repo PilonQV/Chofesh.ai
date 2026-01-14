@@ -38,7 +38,8 @@ export default function Credits() {
     onSuccess: (data) => {
       toast.success(`Successfully added ${data.creditsAdded} credits!`);
       refetchBalance();
-      // Clear URL params
+      // Clear URL params and replace history to prevent back button issues
+      window.history.replaceState({}, '', '/credits');
       setLocation("/credits");
     },
     onError: (error) => {
@@ -58,6 +59,8 @@ export default function Credits() {
     
     if (searchParams.get("canceled") === "true") {
       toast.info("Purchase canceled");
+      // Replace history to prevent back button issues
+      window.history.replaceState({}, '', '/credits');
       setLocation("/credits");
     }
   }, [searchParams]);
@@ -119,7 +122,7 @@ export default function Credits() {
             <h1 className="text-3xl font-bold text-white font-heading">Credits</h1>
             <p className="text-gray-400 mt-1">Purchase credits to use AI features</p>
           </div>
-          <Button variant="outline" onClick={() => window.history.back()}>
+          <Button variant="outline" onClick={() => setLocation("/")}>
             Back
           </Button>
         </div>
