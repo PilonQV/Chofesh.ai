@@ -90,20 +90,23 @@ export default function Home() {
           </Link>
           
           <div className="hidden md:flex items-center gap-6">
-            {isAuthenticated && (
-              <>
-                <Link href="/chat" className="text-sm text-primary hover:text-primary/80 transition-colors font-semibold">Chat</Link>
-                <Link href="/image" className="text-sm text-primary hover:text-primary/80 transition-colors font-semibold">Images</Link>
-                <Link href="/gallery" className="text-sm text-primary hover:text-primary/80 transition-colors font-semibold">Gallery</Link>
-              </>
-            )}
             <a onClick={() => scrollTo("features")} className="cursor-pointer text-sm text-primary hover:text-primary/80 transition-colors font-semibold">Features</a>
             <a onClick={() => scrollTo("pricing")} className="cursor-pointer text-sm text-primary hover:text-primary/80 transition-colors font-semibold">Pricing</a>
             <Link href="/developers" className="text-sm text-primary hover:text-primary/80 transition-colors font-semibold">Developers</Link>
             <a onClick={() => scrollTo("privacy")} className="cursor-pointer text-sm text-primary hover:text-primary/80 transition-colors font-semibold">Privacy</a>
           </div>
           
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            {/* Theme Toggle */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </Button>
+            
             {isAuthenticated ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -123,6 +126,10 @@ export default function Home() {
                     <Image className="w-4 h-4 mr-2" />
                     My Gallery
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setLocation("/credits")}>
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    Credits
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setLocation("/settings")}>
                     <Settings className="w-4 h-4 mr-2" />
                     Settings
@@ -134,14 +141,7 @@ export default function Home() {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            ) : (
-              <Link href="/login">
-                <Button className="gap-2">
-                  Sign In to Chat
-                  <ArrowRight className="w-4 h-4" />
-                </Button>
-              </Link>
-            )}
+            ) : null}
           </div>
         </div>
       </nav>
@@ -373,9 +373,12 @@ function CreditPackCard({ title, credits, price, description, features, buttonTe
   return (
     <div className={`p-4 rounded-xl border ${highlighted ? "border-primary shadow-lg shadow-primary/10" : "border-border"}`}>
       <h3 className="text-lg font-semibold mb-2">{title}</h3>
-      <div className="mb-4">
-        <span className="text-3xl font-bold">{credits}</span>
-        <span className="text-muted-foreground"> credits</span>
+      <div className="mb-2">
+        <span className="text-2xl font-bold text-primary">{price}</span>
+      </div>
+      <div className="mb-3">
+        <span className="text-xl font-semibold">{credits}</span>
+        <span className="text-muted-foreground text-sm"> credits</span>
       </div>
       <p className="text-sm text-muted-foreground mb-4">{description}</p>
       <ul className="space-y-2 text-sm mb-4">
