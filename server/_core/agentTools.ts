@@ -10,6 +10,7 @@
 
 import { generateVeniceImage } from './veniceImage';
 import { searchWithSonar } from './perplexitySonar';
+import { executeCode as executeCodeWithWorkspace, getSupportedLanguages, checkLanguageSupport, formatExecutionResult } from './codeExecution';
 
 // Tool result types
 export interface ImageToolResult {
@@ -212,58 +213,70 @@ export class AgentTools {
   }
   
   /**
-   * Execute simple code/calculations
+   * Execute code in multiple languages using workspace providers
+   * Supports 60+ languages via Piston, local execution, or Docker
    */
-  async executeCode(params: { code: string; language?: string }): Promise<CodeToolResult> {
-    console.log('[AgentTools] Executing code');
-    
+  async executeCode(params: { 
+    code: string; 
+    language?: string;
+    timeout?: number;
+    stdin?: string;
+  }): Promise<CodeToolResult> {
     const language = params.language || 'javascript';
+    console.log(`[AgentTools] Executing ${language} code`);
     
-    // Only support simple JavaScript math expressions for safety
-    if (language === 'javascript' || language === 'js') {
-      try {
-        // Very restricted evaluation - only math operations
-        const sanitizedCode = params.code
-          .replace(/[^0-9+\-*/%().Math\s]/g, '')
-          .trim();
-        
-        if (!sanitizedCode) {
-          return {
-            type: 'code',
-            code: params.code,
-            language,
-            output: '',
-            error: 'Only mathematical expressions are supported for security reasons.',
-          };
-        }
-        
-        // Use Function constructor for slightly safer eval
-        const result = new Function(`return ${sanitizedCode}`)();
-        
-        return {
-          type: 'code',
-          code: params.code,
-          language,
-          output: String(result),
-        };
-      } catch (error: any) {
-        return {
-          type: 'code',
-          code: params.code,
-          language,
-          output: '',
-          error: error.message,
-        };
-      }
+    // Check if language is supported
+    if (!checkLanguageSupport(language)) {
+      const supportedLangs = getSupportedLanguages().map(l => l.id).slice(0, 10).join(', ');
+      return {
+        type: 'code',
+        code: params.code,
+        language,
+        output: '',
+        error: `Language "${language}" is not supported. Supported languages include: ${supportedLangs}...`,
+      };
     }
     
-    return {
-      type: 'code',
-      code: params.code,
-      language,
-      output: '',
-      error: `Language "${language}" is not supported. Only JavaScript math expressions are allowed.`,
-    };
+    try {
+      // Execute code using the workspace system
+      const result = await executeCodeWithWorkspace(params.code, language, {
+        timeout: params.timeout || 30,
+        stdin: params.stdin,
+      });
+      
+      if (result.exitCode === 0) {
+        return {
+          type: 'code',
+          code: params.code,
+          language,
+          output: result.stdout || '(no output)',
+        };
+      } else {
+        return {
+          type: 'code',
+          code: params.code,
+          language,
+          output: result.stdout || '',
+          error: result.stderr || `Exit code: ${result.exitCode}`,
+        };
+      }
+    } catch (error: any) {
+      console.error('[AgentTools] Code execution failed:', error);
+      return {
+        type: 'code',
+        code: params.code,
+        language,
+        output: '',
+        error: error.message || 'Code execution failed',
+      };
+    }
+  }
+  
+  /**
+   * Get list of supported programming languages
+   */
+  getSupportedLanguages(): string[] {
+    return getSupportedLanguages().map(l => l.id);
   }
 }
 

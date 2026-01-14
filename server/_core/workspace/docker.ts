@@ -1,4 +1,4 @@
-import * as Docker from "dockerode";
+import Docker from "dockerode";
 import { WorkspaceProvider } from "./provider";
 
 export class DockerWorkspace implements WorkspaceProvider {
