@@ -974,8 +974,19 @@ To access adult/NSFW content, you need to enable Uncensored Mode:
           };
         }
         
+        // Auto-detect if query needs real-time information BEFORE agent mode
+        // This ensures agent mode has access to search results for data-driven tasks
+        const needsLiveSearch = promptContent && needsRealtimeSearch(promptContent);
+        let autoSearchTriggered = false;
+        if (needsLiveSearch && !input.webSearch && !input.deepResearch) {
+          console.log('[Auto Search] Detected real-time query, triggering automatic web search before agent mode');
+          autoSearchTriggered = true;
+          input.webSearch = true; // Enable web search for this request
+        }
+        
         // Agent Mode: Detect intent and execute tools if enabled
-        if (input.agentMode && promptContent) {
+        // Skip agent mode if real-time search is needed (let AI handle data-driven requests)
+        if (input.agentMode && promptContent && !needsLiveSearch) {
           const intent = detectIntent(promptContent);
           
           if (intent) {
@@ -1242,14 +1253,7 @@ Be helpful, accurate, and respect user privacy.`;
         let webSearchResults: { title: string; url: string; description: string }[] = [];
         let messagesWithSearch = [...messagesWithContext];
         let researchSummary = '';
-        let autoSearchTriggered = false;
-        
-        // Auto-detect if query needs real-time information (prices, news, weather, etc.)
-        const needsLiveSearch = promptContent && needsRealtimeSearch(promptContent);
-        if (needsLiveSearch && !input.webSearch && !input.deepResearch) {
-          console.log('[Auto Search] Detected real-time query, triggering automatic web search');
-          autoSearchTriggered = true;
-        }
+        // Note: needsLiveSearch and autoSearchTriggered are now declared earlier (before agent mode)
         
         if ((input.webSearch || input.deepResearch || autoSearchTriggered) && promptContent) {
           try {
