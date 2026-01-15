@@ -1698,9 +1698,211 @@ Provide a comprehensive, well-researched response.`;
           };
         } catch (error: any) {
           // Log the actual error for debugging
-          console.error("[Chat] Error generating response:", error.message || error);
+          console.error("[Chat] Primary model failed:", selectedModel.id, error.message || error);
           
-          // Log failed attempts too
+          // Try fallback models in order of preference
+          const fallbackModels = [
+            AVAILABLE_MODELS.find(m => m.id === "venice-uncensored"),
+            AVAILABLE_MODELS.find(m => m.id === "llama-3.3-70b-groq"),
+            AVAILABLE_MODELS.find(m => m.id === "deepseek-r1-free"),
+            AVAILABLE_MODELS.find(m => m.id === "llama-3.3-70b-cerebras"),
+            AVAILABLE_MODELS.find(m => m.id === "puter-gpt-4o"),
+          ].filter(Boolean) as typeof AVAILABLE_MODELS;
+          
+          let fallbackSuccess = false;
+          let fallbackResponse: any = null;
+          let fallbackModel: typeof selectedModel | null = null;
+          
+          for (const fallback of fallbackModels) {
+            if (fallback.id === selectedModel.id) continue; // Skip if same as failed model
+            
+            try {
+              console.log(`[Chat] Attempting fallback to ${fallback.id}`);
+              
+              // Try the fallback model
+              if (fallback.id === "venice-uncensored") {
+                fallbackResponse = await invokeVeniceUncensored({
+                  messages: messagesWithSearch.map(m => ({
+                    role: m.role as "system" | "user" | "assistant",
+                    content: m.content,
+                  })),
+                  temperature: input.temperature,
+                });
+              } else if (fallback.id === "deepseek-r1-free") {
+                fallbackResponse = await invokeDeepSeekR1({
+                  messages: messagesWithSearch.map(m => ({
+                    role: m.role as "system" | "user" | "assistant",
+                    content: m.content,
+                  })),
+                  temperature: input.temperature,
+                });
+              } else if (fallback.provider === "groq" && isGroqAvailable()) {
+                const groqModelId = fallback.id.replace("-groq", "");
+                const groqResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+                  },
+                  body: JSON.stringify({
+                    model: groqModelId,
+                    messages: messagesWithSearch.map(m => ({
+                      role: m.role,
+                      content: m.content,
+                    })),
+                    temperature: input.temperature ?? 0.7,
+                    max_tokens: 4096,
+                  }),
+                });
+                
+                if (!groqResponse.ok) {
+                  throw new Error(`Groq API error: ${groqResponse.status}`);
+                }
+                
+                fallbackResponse = await groqResponse.json();
+              } else if (fallback.provider === "cerebras" && isCerebrasAvailable()) {
+                const cerebrasModelId = fallback.id.replace("-cerebras", "");
+                const cerebrasResponse = await fetch("https://api.cerebras.ai/v1/chat/completions", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${process.env.CEREBRAS_API_KEY}`,
+                  },
+                  body: JSON.stringify({
+                    model: cerebrasModelId,
+                    messages: messagesWithSearch.map(m => ({
+                      role: m.role,
+                      content: m.content,
+                    })),
+                    temperature: input.temperature ?? 0.7,
+                    max_tokens: 4096,
+                  }),
+                });
+                
+                if (!cerebrasResponse.ok) {
+                  throw new Error(`Cerebras API error: ${cerebrasResponse.status}`);
+                }
+                
+                fallbackResponse = await cerebrasResponse.json();
+              } else {
+                // Use default LLM (Manus Forge API)
+                fallbackResponse = await invokeLLM({
+                  messages: messagesWithSearch.map(m => ({
+                    role: m.role as "system" | "user" | "assistant",
+                    content: m.content,
+                  })),
+                });
+              }
+              
+              // Check if we got a valid response
+              const content = fallbackResponse.choices?.[0]?.message?.content;
+              if (content && typeof content === 'string' && content.trim()) {
+                console.log(`[Chat] Fallback successful with ${fallback.id}`);
+                fallbackSuccess = true;
+                fallbackModel = fallback;
+                
+                // Build successful response with fallback model
+                const assistantContent = content;
+                const outputTokens = estimateTokens(assistantContent);
+                const totalTokens = inputTokens + outputTokens;
+                const cost = estimateCost(fallback, inputTokens, outputTokens);
+                
+                // Cache the response
+                if (input.useCache !== false) {
+                  setCachedResponse(cacheKey, assistantContent, fallback.id);
+                }
+                
+                // Log successful API call
+                await createAuditLog({
+                  userId: ctx.user.id,
+                  userOpenId: ctx.user.openId,
+                  actionType: "chat",
+                  ipAddress: getClientIp(ctx.req),
+                  userAgent: ctx.req.headers["user-agent"] || null,
+                  contentHash: hashContent(promptContent),
+                  modelUsed: fallback.id,
+                  promptLength: promptContent.length,
+                  metadata: JSON.stringify({
+                    complexity,
+                    routingMode,
+                    duration: Date.now() - startTime,
+                    webSearchUsed: webSearchResults.length > 0,
+                    autoSearchTriggered,
+                    usedFallback: true,
+                    originalModel: selectedModel.id,
+                    fallbackReason: "Primary model failed",
+                  }),
+                  timestamp: new Date(),
+                });
+                
+                // Create detailed API call log
+                auditLogApiCall({
+                  userId: ctx.user.id,
+                  userEmail: ctx.user.email || undefined,
+                  userName: ctx.user.name || undefined,
+                  actionType: "chat",
+                  modelUsed: fallback.id,
+                  prompt: promptContent,
+                  systemPrompt: baseSystemPrompt || undefined,
+                  response: assistantContent,
+                  usedFallback: true,
+                  tokensInput: inputTokens,
+                  tokensOutput: outputTokens,
+                  durationMs: Date.now() - startTime,
+                  ipAddress: getClientIp(ctx.req),
+                  userAgent: getUserAgent(ctx.req),
+                  status: "success",
+                });
+                
+                // Track usage
+                await createUsageRecord({
+                  userId: ctx.user.id,
+                  actionType: "chat",
+                  modelUsed: fallback.id,
+                  tokensUsed: totalTokens,
+                  cost: cost,
+                  metadata: JSON.stringify({
+                    complexity,
+                    routingMode,
+                    usedFallback: true,
+                    originalModel: selectedModel.id,
+                  }),
+                  success: true,
+                  costSaved: fallback.tier === "free" ? estimateCostSaved(fallback.id, inputTokens, outputTokens) : undefined,
+                });
+                
+                return {
+                  content: `⚠️ Switched to alternate provider due to temporary issues.\n\n${assistantContent}`,
+                  model: fallback.id,
+                  modelName: fallback.name,
+                  tier: fallback.tier,
+                  cached: false,
+                  complexity,
+                  cost,
+                  webSearchUsed: webSearchResults.length > 0,
+                  webSearchResultsCount: webSearchResults.length,
+                  autoSearchTriggered,
+                  deepResearchUsed: input.deepResearch && webSearchResults.length > 0,
+                  researchSummary: researchSummary || undefined,
+                  tokens: {
+                    input: inputTokens,
+                    output: outputTokens,
+                    total: totalTokens,
+                  },
+                  usedFallback: true,
+                  fallbackReason: `Original model (${selectedModel.name}) temporarily unavailable`,
+                  autoSwitchedToUncensored,
+                  creditsUsed: creditCost,
+                  creditsRemaining: creditDeduction.remainingCredits,
+                };
+              }
+            } catch (fallbackError: any) {
+              console.error(`[Chat] Fallback ${fallback.id} failed:`, fallbackError.message || fallbackError);
+              // Continue to next fallback
+            }
+          }
+          
+          // All fallbacks failed - log and throw error
           await createAuditLog({
             userId: ctx.user.id,
             userOpenId: ctx.user.openId,
@@ -1716,18 +1918,19 @@ Provide a comprehensive, well-researched response.`;
               duration: Date.now() - startTime,
               complexity,
               routingMode,
+              allFallbacksFailed: true,
             }),
             timestamp: new Date(),
           });
           
           // Provide more specific error messages
-          let errorMessage = "Failed to generate response. Please try again.";
+          let errorMessage = "All AI services are temporarily unavailable. Please try again in a few moments.";
           if (error.message?.includes("API key") || error.message?.includes("not configured")) {
-            errorMessage = "AI service temporarily unavailable. Please try again later.";
+            errorMessage = "AI service configuration error. Please contact support.";
           } else if (error.message?.includes("rate limit") || error.message?.includes("429")) {
-            errorMessage = "Too many requests. Please wait a moment and try again.";
+            errorMessage = "Rate limit exceeded on all providers. Please wait a moment and try again.";
           } else if (error.message?.includes("timeout")) {
-            errorMessage = "Request timed out. Please try again.";
+            errorMessage = "Request timed out on all providers. Please try again.";
           }
           
           throw new TRPCError({
