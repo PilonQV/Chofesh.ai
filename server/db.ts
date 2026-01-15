@@ -1592,14 +1592,29 @@ export async function getAllConversationFolderMappings(userId: number): Promise<
 export async function logApiCall(log: InsertApiCallLog): Promise<void> {
   const db = await getDb();
   if (!db) {
-    console.warn("[Database] Cannot log API call: database not available");
-    return;
+    console.error("[Database] CRITICAL: Cannot log API call - database not available!");
+    console.error("[Database] Check DATABASE_URL environment variable");
+    throw new Error("Database not available for API call logging");
   }
   
   try {
-    await db.insert(apiCallLogs).values(log);
+    console.log(`[Database] Inserting API call log for user ${log.userId}, action: ${log.actionType}`);
+    const result = await db.insert(apiCallLogs).values(log);
+    console.log(`[Database] Successfully inserted API call log, result:`, result);
   } catch (error) {
-    console.error("[Database] Failed to log API call:", error);
+    console.error("[Database] CRITICAL: Failed to insert API call log:", error);
+    console.error("[Database] Error details:", {
+      name: (error as any)?.name,
+      message: (error as any)?.message,
+      code: (error as any)?.code,
+      sqlMessage: (error as any)?.sqlMessage,
+    });
+    console.error("[Database] Log data:", {
+      userId: log.userId,
+      actionType: log.actionType,
+      modelUsed: log.modelUsed,
+    });
+    throw error;
   }
 }
 
