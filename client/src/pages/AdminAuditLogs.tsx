@@ -364,7 +364,14 @@ export default function AdminAuditLogs() {
                                 {truncateText(log.response, 150)}
                               </div>
                             </div>
-                            <Button variant="ghost" size="sm">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedLog(log);
+                              }}
+                            >
                               <Eye className="h-4 w-4" />
                             </Button>
                           </div>
