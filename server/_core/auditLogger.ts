@@ -41,6 +41,7 @@ export type ImageAccessLogInput = {
 /**
  * Log an API call for audit purposes.
  * Call this after each LLM/AI API call completes.
+ * This is NON-BLOCKING - errors won't stop the chat response.
  */
 export async function auditLogApiCall(input: ApiCallLogInput): Promise<void> {
   const log: InsertApiCallLog = {
@@ -64,19 +65,23 @@ export async function auditLogApiCall(input: ApiCallLogInput): Promise<void> {
     isUncensored: input.isUncensored || false,
   };
   
-  try {
-    console.log(`[AuditLogger] Logging API call for user ${input.userId}, action: ${input.actionType}, model: ${input.modelUsed}`);
-    await logApiCall(log);
-    console.log(`[AuditLogger] Successfully logged API call for user ${input.userId}`);
-  } catch (err) {
-    console.error("[AuditLogger] CRITICAL: Failed to log API call:", err);
-    console.error("[AuditLogger] Log data:", JSON.stringify({
-      userId: input.userId,
-      actionType: input.actionType,
-      modelUsed: input.modelUsed,
-      status: input.status,
-    }));
-  }
+  // Log asynchronously without blocking - fire and forget with detailed error logging
+  (async () => {
+    try {
+      console.log(`[AuditLogger] Logging API call for user ${input.userId}, action: ${input.actionType}, model: ${input.modelUsed}`);
+      await logApiCall(log);
+      console.log(`[AuditLogger] ✓ Successfully logged API call for user ${input.userId}`);
+    } catch (err) {
+      console.error("[AuditLogger] ✗ CRITICAL: Failed to log API call:", err);
+      console.error("[AuditLogger] Error details:", {
+        error: err,
+        userId: input.userId,
+        actionType: input.actionType,
+        modelUsed: input.modelUsed,
+        status: input.status,
+      });
+    }
+  })();
 }
 
 /**
