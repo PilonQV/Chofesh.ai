@@ -137,6 +137,7 @@ import { needsRealtimeSearch, extractSearchQuery, getRealtimeQueryType } from ".
 import { notifyOwner } from "./_core/notification";
 import { getAgentTools, detectIntent, extractParams, type ToolResult } from "./_core/agentTools";
 import { runAutonomousAgent, understandUserGoal } from "./_core/autonomousAgent";
+import { searchWithGemini, needsWebSearch as needsGeminiSearch, formatSearchResults } from "./_core/geminiSearch";
 import {
   isGitHubOAuthConfigured,
   getGitHubAuthUrl,
@@ -1308,7 +1309,21 @@ Be helpful, accurate, and respect user privacy.`;
         
         if ((input.webSearch || input.deepResearch || autoSearchTriggered) && promptContent) {
           try {
-            if (input.deepResearch) {
+            // Use Gemini Search Grounding for live search (free, 500/day)
+            if (input.webSearch && !input.deepResearch && needsGeminiSearch(promptContent)) {
+              console.log('[Gemini Search] Using Gemini API with Google Search grounding...');
+              const geminiResult = await searchWithGemini(promptContent);
+              
+              // Add Gemini's AI-generated response directly to context
+              const geminiContext = `**Live Search Results (via Gemini):**\n\n${geminiResult.text}`;
+              
+              messagesWithContext.push({
+                role: 'system',
+                content: geminiContext,
+              });
+              
+              console.log(`[Gemini Search] Added ${geminiResult.text.length} chars of search context`);
+            } else if (input.deepResearch) {
               // Deep Research Mode: Multi-step search with follow-up queries
               // Step 1: Initial broad search
               const initialResults = await enhancedWebSearch(promptContent);
