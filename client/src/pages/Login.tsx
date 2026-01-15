@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { trpc } from "@/lib/trpc";
 import { useQueryClient } from "@tanstack/react-query";
-import { Mail, Lock, Eye, EyeOff, Loader2, Shield, ArrowLeft, AlertCircle, Info } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, Loader2, ArrowLeft, AlertCircle, Info } from "lucide-react";
 
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -135,9 +135,11 @@ export default function Login() {
         <Card className="border-border/50 bg-card/50 backdrop-blur">
           <CardHeader className="space-y-1 text-center">
             <div className="flex justify-center mb-4">
-              <div className="p-3 rounded-full bg-primary/10">
-                <Shield className="h-8 w-8 text-primary" />
-              </div>
+              <img 
+                src="/chofesh-logo-login.jpg" 
+                alt="Chofesh Logo" 
+                className="h-20 w-20 object-contain"
+              />
             </div>
             <CardTitle className="text-2xl font-bold">{headerContent.title}</CardTitle>
             <CardDescription>
