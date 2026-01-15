@@ -123,6 +123,12 @@ export const PROVIDER_CONFIGS: Record<AIProvider, ProviderConfig> = {
       { id: "cognitivecomputations/dolphin-mistral-24b-venice-edition:free", name: "Venice Uncensored", provider: "openrouter", contextWindow: 32768, isFree: true, tier: "free" },
       { id: "nousresearch/hermes-3-llama-3.1-405b:free", name: "Hermes 3 405B", provider: "openrouter", contextWindow: 128000, isFree: true, tier: "free" },
       { id: "moonshotai/kimi-k2:free", name: "Kimi K2", provider: "openrouter", contextWindow: 128000, isFree: true, tier: "free" },
+      // NEW models (January 2026)
+      { id: "xiaomi/mimo-v2-flash:free", name: "Xiaomi MiMo-V2-Flash", provider: "openrouter", contextWindow: 262000, isFree: true, isReasoning: true, tier: "free" },
+      { id: "mistralai/devstral-2-2512:free", name: "Mistral Devstral 2", provider: "openrouter", contextWindow: 262000, isFree: true, tier: "free" },
+      { id: "tngtech/deepseek-r1t2-chimera:free", name: "TNG DeepSeek R1T2 Chimera", provider: "openrouter", contextWindow: 164000, isFree: true, isReasoning: true, tier: "free" },
+      { id: "google/gemini-2.0-flash-exp:free", name: "Gemini 2.0 Flash Exp", provider: "openrouter", contextWindow: 1050000, isFree: true, isVision: true, tier: "free" },
+      { id: "qwen/qwen3-coder-480b-a35b:free", name: "Qwen3 Coder 480B", provider: "openrouter", contextWindow: 262000, isFree: true, tier: "free" },
     ],
     rateLimit: { requestsPerMinute: 20, requestsPerDay: 50 },
     requiresApiKey: true,
