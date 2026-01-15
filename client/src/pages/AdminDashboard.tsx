@@ -86,6 +86,10 @@ const ACTION_ICONS: Record<string, React.ReactNode> = {
   login: <LogIn className="w-4 h-4" />,
   logout: <LogOut className="w-4 h-4" />,
   settings_change: <Settings className="w-4 h-4" />,
+  document_upload: <FileText className="w-4 h-4" />,
+  document_chat: <ScrollText className="w-4 h-4" />,
+  credit_purchase: <CreditCard className="w-4 h-4" />,
+  security_alert: <Shield className="w-4 h-4" />,
 };
 
 const ACTION_COLORS: Record<string, string> = {
@@ -94,6 +98,10 @@ const ACTION_COLORS: Record<string, string> = {
   login: "bg-green-500/10 text-green-500",
   logout: "bg-orange-500/10 text-orange-500",
   settings_change: "bg-gray-500/10 text-gray-500",
+  document_upload: "bg-cyan-500/10 text-cyan-500",
+  document_chat: "bg-teal-500/10 text-teal-500",
+  credit_purchase: "bg-emerald-500/10 text-emerald-500",
+  security_alert: "bg-red-500/10 text-red-500",
 };
 
 const TIER_ICONS: Record<string, React.ReactNode> = {

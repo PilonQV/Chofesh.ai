@@ -855,6 +855,24 @@ export const appRouter = router({
             session.payment_intent as string
           );
           
+          // Log the credit purchase
+          await createAuditLog({
+            userId: ctx.user.id,
+            userOpenId: ctx.user.openId,
+            actionType: "credit_purchase",
+            ipAddress: getClientIp(ctx.req),
+            userAgent: ctx.req.headers["user-agent"] || null,
+            metadata: JSON.stringify({
+              packName,
+              credits,
+              amount: session.amount_total ? session.amount_total / 100 : 0,
+              currency: session.currency || 'usd',
+              paymentIntent: session.payment_intent,
+              newBalance: result.newBalance,
+            }),
+            timestamp: new Date(),
+          });
+          
           return { success: true, newBalance: result.newBalance, creditsAdded: credits };
         }
         

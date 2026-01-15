@@ -52,7 +52,7 @@ export const auditLogs = mysqlTable("audit_logs", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").references(() => users.id, { onDelete: "cascade" }),
   userOpenId: varchar("userOpenId", { length: 64 }),
-  actionType: mysqlEnum("actionType", ["chat", "image_generation", "login", "logout", "settings_change", "document_upload", "document_chat"]).notNull(),
+  actionType: mysqlEnum("actionType", ["chat", "image_generation", "login", "logout", "settings_change", "document_upload", "document_chat", "credit_purchase", "security_alert"]).notNull(),
   ipAddress: varchar("ipAddress", { length: 45 }).notNull(),
   userAgent: text("userAgent"),
   contentHash: varchar("contentHash", { length: 64 }),
@@ -751,7 +751,7 @@ export type InsertSharedConversation = typeof sharedConversations.$inferInsert;
  * Conversation collaborators table.
  * Team members with access to shared conversations.
  */
-export const conversationCollaborators = mysqlTable("conversation_collaborators", {
+export const conversationCollaborators = mysqlTable("conv_collabs", {
   id: int("id").autoincrement().primaryKey(),
   conversationId: int("conversationId").references(() => sharedConversations.id, { onDelete: "cascade" }).notNull(),
   userId: int("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
