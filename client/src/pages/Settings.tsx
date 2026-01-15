@@ -27,6 +27,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
 import { Link, useLocation } from "wouter";
 import { useState, useEffect } from "react";
@@ -67,6 +68,11 @@ import {
   Sliders,
   MessageSquare,
   Globe,
+  Github,
+  LogOut,
+  ExternalLink,
+  Activity,
+  FileText,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -82,7 +88,7 @@ interface ApiKeyDisplay {
 }
 
 // Settings sections
-type SettingsSection = "general" | "ai" | "privacy" | "account";
+type SettingsSection = "general" | "ai" | "privacy" | "security" | "integrations" | "account";
 
 export default function Settings() {
   const { user, logout, loading: authLoading, isAuthenticated } = useAuth();
@@ -125,6 +131,24 @@ export default function Settings() {
   // Credit balance query
   const { data: creditBalance } = trpc.credits.balance.useQuery(undefined, {
     enabled: !!user,
+  });
+  
+  // GitHub integration queries
+  const githubConfigured = trpc.github.isConfigured.useQuery();
+  const githubConnection = trpc.github.getConnection.useQuery(undefined, {
+    enabled: isAuthenticated,
+  });
+  const githubAuthUrl = trpc.github.getAuthUrl.useQuery(undefined, {
+    enabled: isAuthenticated && !githubConnection.data?.connected,
+  });
+  const disconnectGithub = trpc.github.disconnect.useMutation({
+    onSuccess: () => {
+      toast.success("GitHub account disconnected");
+      githubConnection.refetch();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to disconnect GitHub");
+    },
   });
   
   // Mutations
@@ -178,6 +202,8 @@ export default function Settings() {
     { id: "general" as const, label: "General", icon: SettingsIcon },
     { id: "ai" as const, label: "AI Settings", icon: Brain },
     { id: "privacy" as const, label: "Privacy & Data", icon: Shield },
+    { id: "security" as const, label: "Security", icon: ShieldAlert },
+    { id: "integrations" as const, label: "Integrations", icon: Globe },
     { id: "account" as const, label: "Account", icon: User },
   ];
 
@@ -605,6 +631,275 @@ export default function Settings() {
                         <p className="text-sm text-muted-foreground">
                           We don't track or sell your conversations
                         </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Security Section */}
+            {activeSection === "security" && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-semibold mb-1">Security</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Security features and protection status
+                  </p>
+                </div>
+
+                {/* Prompt Guard Status */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Shield className="h-5 w-5 text-green-500" />
+                      Prompt Guard 2
+                    </CardTitle>
+                    <CardDescription>
+                      AI-powered protection against prompt injection attacks using Llama Guard 2 86M
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-full bg-green-500/20">
+                          <CheckCircle2 className="h-5 w-5 text-green-500" />
+                        </div>
+                        <div>
+                          <p className="font-medium">Active Protection</p>
+                          <p className="text-sm text-muted-foreground">All messages are automatically scanned</p>
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/30">
+                        Enabled
+                      </Badge>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-medium">Protection Features</h4>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-sm">
+                          <CheckCircle2 className="h-4 w-4 text-green-500" />
+                          <span>Prompt injection detection</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <CheckCircle2 className="h-4 w-4 text-green-500" />
+                          <span>Jailbreak attempt blocking</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <CheckCircle2 className="h-4 w-4 text-green-500" />
+                          <span>Real-time threat analysis</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <CheckCircle2 className="h-4 w-4 text-green-500" />
+                          <span>Audit logging</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t">
+                      <p className="text-sm text-muted-foreground">
+                        Prompt Guard 2 runs automatically on all chat messages to protect against malicious prompts. 
+                        Your conversations remain private while being protected.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Additional Security Features */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <ShieldAlert className="h-5 w-5" />
+                      Additional Security
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Lock className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">AES-256 Encryption</span>
+                      </div>
+                      <Badge variant="outline" className="text-green-500 border-green-500/30">Active</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Shield className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">Rate Limiting</span>
+                      </div>
+                      <Badge variant="outline" className="text-green-500 border-green-500/30">Active</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">Audit Logging</span>
+                      </div>
+                      <Badge variant="outline" className="text-green-500 border-green-500/30">Active</Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Integrations Section */}
+            {activeSection === "integrations" && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-semibold mb-1">Integrations</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Connect external services and platforms
+                  </p>
+                </div>
+
+                {/* GitHub Integration */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Github className="h-5 w-5" />
+                      GitHub
+                    </CardTitle>
+                    <CardDescription>
+                      Connect your GitHub account to access repositories in Code Review
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {githubConnection.data?.connected ? (
+                      <>
+                        {/* Connected State */}
+                        <div className="flex items-center justify-between p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+                          <div className="flex items-center gap-3">
+                            {githubConnection.data.avatarUrl ? (
+                              <img 
+                                src={githubConnection.data.avatarUrl} 
+                                alt={githubConnection.data.username} 
+                                className="w-10 h-10 rounded-full"
+                              />
+                            ) : (
+                              <div className="p-2 rounded-full bg-green-500/20">
+                                <Github className="h-6 w-6 text-green-500" />
+                              </div>
+                            )}
+                            <div>
+                              <p className="font-medium">{githubConnection.data.username}</p>
+                              <p className="text-sm text-muted-foreground">{githubConnection.data.email}</p>
+                            </div>
+                          </div>
+                          <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/30">
+                            Connected
+                          </Badge>
+                        </div>
+
+                        <div className="space-y-2">
+                          <h4 className="text-sm font-medium">Available Features</h4>
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2 text-sm">
+                              <CheckCircle2 className="h-4 w-4 text-green-500" />
+                              <span>Access repositories in Code Review</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <CheckCircle2 className="h-4 w-4 text-green-500" />
+                              <span>Browse repository files</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <CheckCircle2 className="h-4 w-4 text-green-500" />
+                              <span>Review code from GitHub</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex gap-2 pt-4 border-t">
+                          <Link href="/code-review">
+                            <Button variant="outline" className="flex-1">
+                              <ExternalLink className="h-4 w-4 mr-2" />
+                              Go to Code Review
+                            </Button>
+                          </Link>
+                          <Button 
+                            variant="outline" 
+                            onClick={() => disconnectGithub.mutate()}
+                            disabled={disconnectGithub.isLoading}
+                          >
+                            <LogOut className="h-4 w-4 mr-2" />
+                            Disconnect
+                          </Button>
+                        </div>
+                      </>
+                    ) : githubConfigured.data?.configured ? (
+                      <>
+                        {/* Not Connected - OAuth Available */}
+                        <div className="text-center py-6">
+                          <div className="inline-flex p-3 rounded-full bg-muted mb-4">
+                            <Github className="h-8 w-8 text-muted-foreground" />
+                          </div>
+                          <h3 className="font-medium mb-2">Connect GitHub</h3>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            Connect your GitHub account to access repositories and review code directly from Chofesh
+                          </p>
+                          <Button 
+                            onClick={() => {
+                              if (githubAuthUrl.data?.authUrl) {
+                                window.location.href = githubAuthUrl.data.authUrl;
+                              }
+                            }}
+                            disabled={!githubAuthUrl.data?.authUrl}
+                          >
+                            <Github className="h-4 w-4 mr-2" />
+                            Connect with GitHub
+                          </Button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        {/* OAuth Not Configured */}
+                        <div className="text-center py-6">
+                          <div className="inline-flex p-3 rounded-full bg-muted mb-4">
+                            <AlertCircle className="h-8 w-8 text-muted-foreground" />
+                          </div>
+                          <h3 className="font-medium mb-2">GitHub OAuth Not Configured</h3>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            GitHub integration requires OAuth configuration. You can still use personal access tokens in Code Review.
+                          </p>
+                          <Link href="/code-review">
+                            <Button variant="outline">
+                              <ExternalLink className="h-4 w-4 mr-2" />
+                              Go to Code Review
+                            </Button>
+                          </Link>
+                        </div>
+                      </>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Coming Soon */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Globe className="h-5 w-5" />
+                      More Integrations Coming Soon
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                        <div className="p-2 rounded bg-background">
+                          <Database className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">GitLab</p>
+                          <p className="text-xs text-muted-foreground">Coming in Phase 3.2</p>
+                        </div>
+                        <Badge variant="secondary">Planned</Badge>
+                      </div>
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                        <div className="p-2 rounded bg-background">
+                          <Activity className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">Jira</p>
+                          <p className="text-xs text-muted-foreground">Project management integration</p>
+                        </div>
+                        <Badge variant="secondary">Planned</Badge>
                       </div>
                     </div>
                   </CardContent>
