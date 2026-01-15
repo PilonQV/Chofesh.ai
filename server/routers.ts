@@ -895,6 +895,9 @@ export const appRouter = router({
         const startTime = Date.now();
         const routingMode = (input.routingMode || "auto") as RoutingMode;
         
+        // Check if user is age-verified for uncensored content (declare early to avoid TDZ)
+        const userAgeVerified = ctx.user.ageVerified === true;
+        
         // Check usage limits and apply slowdown
         const tier = (ctx.user.subscriptionTier || "free") as SubscriptionTier;
         const currentQueries = await getDailyQueryCount(ctx.user.id);
@@ -1095,9 +1098,6 @@ To access adult/NSFW content, you need to enable Uncensored Mode:
             }
           }
         }
-        
-        // Check if user is age-verified for uncensored content
-        const userAgeVerified = ctx.user.ageVerified === true;
         
         // Map "uncensored" model alias to actual model id
         let effectiveModel = input.model;
