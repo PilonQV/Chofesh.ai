@@ -64,10 +64,19 @@ export async function auditLogApiCall(input: ApiCallLogInput): Promise<void> {
     isUncensored: input.isUncensored || false,
   };
   
-  // Log asynchronously to not block the response
-  logApiCall(log).catch(err => {
-    console.error("[AuditLogger] Failed to log API call:", err);
-  });
+  try {
+    console.log(`[AuditLogger] Logging API call for user ${input.userId}, action: ${input.actionType}, model: ${input.modelUsed}`);
+    await logApiCall(log);
+    console.log(`[AuditLogger] Successfully logged API call for user ${input.userId}`);
+  } catch (err) {
+    console.error("[AuditLogger] CRITICAL: Failed to log API call:", err);
+    console.error("[AuditLogger] Log data:", JSON.stringify({
+      userId: input.userId,
+      actionType: input.actionType,
+      modelUsed: input.modelUsed,
+      status: input.status,
+    }));
+  }
 }
 
 /**
