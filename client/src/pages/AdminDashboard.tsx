@@ -218,6 +218,7 @@ export default function AdminDashboard() {
   const [countdown, setCountdown] = useState(30);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedAuditLog, setSelectedAuditLog] = useState<any>(null);
   const pageSize = 20;
   const imagePageSize = 24;
 
@@ -636,6 +637,7 @@ export default function AdminDashboard() {
                             <TableHead>IP Address</TableHead>
                             <TableHead>Content Hash</TableHead>
                             <TableHead>Timestamp</TableHead>
+                            <TableHead>Actions</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -665,6 +667,16 @@ export default function AdminDashboard() {
                               </TableCell>
                               <TableCell className="text-sm text-muted-foreground">
                                 {new Date(log.timestamp).toLocaleString()}
+                              </TableCell>
+                              <TableCell>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setSelectedAuditLog(log)}
+                                >
+                                  <Eye className="w-4 h-4 mr-1" />
+                                  View
+                                </Button>
                               </TableCell>
                             </TableRow>
                           ))}
@@ -1068,6 +1080,69 @@ export default function AdminDashboard() {
           </TabsContent>
         </Tabs>
       </main>
+
+      {/* Audit Log Detail Dialog */}
+      <Dialog open={!!selectedAuditLog} onOpenChange={() => setSelectedAuditLog(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Audit Log Details</DialogTitle>
+            <DialogDescription>
+              Detailed information about this audit log entry
+            </DialogDescription>
+          </DialogHeader>
+          {selectedAuditLog && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-3 rounded-lg bg-muted">
+                  <p className="text-xs text-muted-foreground">Action Type</p>
+                  <div className={`inline-flex items-center gap-2 px-2 py-1 rounded mt-1 ${ACTION_COLORS[selectedAuditLog.actionType]}`}>
+                    {ACTION_ICONS[selectedAuditLog.actionType]}
+                    <span className="capitalize text-sm">
+                      {selectedAuditLog.actionType.replace("_", " ")}
+                    </span>
+                  </div>
+                </div>
+                <div className="p-3 rounded-lg bg-muted">
+                  <p className="text-xs text-muted-foreground">User</p>
+                  <p className="font-mono text-sm mt-1">{selectedAuditLog.userOpenId}</p>
+                </div>
+                <div className="p-3 rounded-lg bg-muted">
+                  <p className="text-xs text-muted-foreground">Model Used</p>
+                  <p className="font-medium mt-1">{selectedAuditLog.modelUsed || "-"}</p>
+                </div>
+                <div className="p-3 rounded-lg bg-muted">
+                  <p className="text-xs text-muted-foreground">Timestamp</p>
+                  <p className="text-sm mt-1">{new Date(selectedAuditLog.timestamp).toLocaleString()}</p>
+                </div>
+                <div className="p-3 rounded-lg bg-muted">
+                  <p className="text-xs text-muted-foreground">IP Address</p>
+                  <p className="font-mono text-sm mt-1">{selectedAuditLog.ipAddress}</p>
+                </div>
+                <div className="p-3 rounded-lg bg-muted">
+                  <p className="text-xs text-muted-foreground">Content Hash</p>
+                  <p className="font-mono text-sm mt-1 break-all">{selectedAuditLog.contentHash}</p>
+                </div>
+              </div>
+              {selectedAuditLog.metadata && (
+                <div className="p-3 rounded-lg bg-muted">
+                  <p className="text-xs text-muted-foreground mb-2">Metadata</p>
+                  <pre className="text-xs overflow-x-auto">
+                    {JSON.stringify(JSON.parse(selectedAuditLog.metadata), null, 2)}
+                  </pre>
+                </div>
+              )}
+              <div className="flex justify-end gap-2">
+                <Link href="/admin/audit-logs">
+                  <Button variant="outline" size="sm">
+                    <ExternalLink className="w-4 h-4 mr-1" />
+                    View Full Logs
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Image Preview Modal */}
       {selectedImage && (
