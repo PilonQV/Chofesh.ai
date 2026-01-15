@@ -132,7 +132,6 @@ import { addDocumentToChroma, searchSimilarChunks, deleteDocumentFromChroma, get
 import { callDataApi } from "./_core/dataApi";
 import { searchDuckDuckGo } from "./_core/duckduckgo";
 import { enhancedWebSearch } from "./_core/webSearchEnhanced";
-import { isFinancialQuery, getFinancialData, formatFinancialData } from "./_core/financialData";
 import { getRealtimeAnswer } from "./_core/perplexitySonar";
 import { needsRealtimeSearch, extractSearchQuery, getRealtimeQueryType } from "./_core/liveSearchDetector";
 import { notifyOwner } from "./_core/notification";
@@ -1388,20 +1387,6 @@ Provide a comprehensive, well-researched response.`;
               
               console.log(`[Web Search] Query: "${searchQuery}" (type: ${queryType}, auto: ${autoSearchTriggered})`);
               
-              // Check if this is a financial query and try to get real-time data from Yahoo Finance
-              let financialData = null;
-              if (isFinancialQuery(promptContent)) {
-                console.log('[Financial Data] Detected financial query, fetching real-time data...');
-                try {
-                  financialData = await getFinancialData(promptContent, '6mo');
-                  if (financialData) {
-                    console.log(`[Financial Data] Retrieved data for ${financialData.symbol}: ${financialData.currency} ${financialData.price}`);
-                  }
-                } catch (error) {
-                  console.error('[Financial Data] Error fetching financial data:', error);
-                }
-              }
-              
               // For auto-triggered real-time queries, use Perplexity Sonar for direct answers
               let sonarDirectAnswer = '';
               if (autoSearchTriggered && (queryType === 'price' || queryType === 'weather' || queryType === 'news')) {
@@ -1424,27 +1409,15 @@ Provide a comprehensive, well-researched response.`;
                 description: r.description || '',
               }));
               
-              if (webSearchResults.length > 0 || sonarDirectAnswer || financialData) {
-                // Build search context with financial data and/or Sonar answer
+              if (webSearchResults.length > 0 || sonarDirectAnswer) {
+                // Build search context with Sonar answer if available
                 let searchContext = '';
-                
-                // Add financial data first (most accurate)
-                if (financialData) {
-                  searchContext = `REAL-TIME FINANCIAL DATA (from Yahoo Finance API):\n${formatFinancialData(financialData)}\n\n---\n\n`;
-                }
-                
-                // Add Sonar answer if available
                 if (sonarDirectAnswer) {
-                  searchContext += `REAL-TIME SEARCH ANSWER (from Perplexity Sonar):\n${sonarDirectAnswer}\n\n---\n\n`;
+                  searchContext = `REAL-TIME SEARCH ANSWER (from Perplexity Sonar):\n${sonarDirectAnswer}\n\n---\n\nAdditional Sources:\n`;
                 }
-                
-                // Add web search results
-                if (webSearchResults.length > 0) {
-                  searchContext += `Additional Sources:\n`;
-                  searchContext += webSearchResults.map((r, i) => 
-                    `[${i + 1}] ${r.title}\n${r.description}\nSource: ${r.url}`
-                  ).join('\n\n');
-                }
+                searchContext += webSearchResults.map((r, i) => 
+                  `[${i + 1}] ${r.title}\n${r.description}\nSource: ${r.url}`
+                ).join('\n\n');
                 
                 // Enhanced system prompt for auto-search with query type context
                 let searchSystemPrompt = '';
