@@ -1450,6 +1450,12 @@ Provide a comprehensive, well-researched response.`;
               "mistral-small-free": "mistralai/mistral-small-3.1-24b-instruct:free",
               "qwen-vl-free": "qwen/qwen-2.5-vl-7b-instruct:free",
               "gemma-3-27b-free": "google/gemma-3-27b-it:free",
+              // NEW models (January 2026)
+              "mimo-v2-flash-free": "xiaomi/mimo-v2-flash:free",
+              "devstral-2-free": "mistralai/devstral-2-2512:free",
+              "deepseek-r1t2-chimera-free": "tngtech/deepseek-r1t2-chimera:free",
+              "gemini-2-flash-exp-free": "google/gemini-2.0-flash-exp:free",
+              "qwen3-coder-480b-free": "qwen/qwen3-coder-480b-a35b:free",
             };
             const openRouterModelId = openRouterModelMap[selectedModel.id] || "deepseek/deepseek-r1-0528:free";
             
