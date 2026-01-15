@@ -1511,15 +1511,15 @@ export default function Chat() {
                     />
                   </div>
 
-                  {/* Agent Mode Toggle */}
+                  {/* Autonomous Agent Toggle */}
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <Label className="flex items-center gap-2">
                         <Sparkles className="w-4 h-4 text-cyan-500" />
-                        Agent Mode
+                        Autonomous Agent
                       </Label>
                       <p className="text-xs text-muted-foreground">
-                        Auto-generate images, search web, create docs
+                        AI thinks, plans, researches & offers solutions automatically
                       </p>
                     </div>
                     <Switch
@@ -1745,7 +1745,7 @@ export default function Chat() {
             {agentModeEnabled && (
               <Badge variant="outline" className="text-xs bg-cyan-500/10 text-cyan-400 border-cyan-500/30">
                 <Sparkles className="w-3 h-3 mr-1" />
-                Agent Mode
+                Autonomous Agent
               </Badge>
             )}
             {!includeMemories && (

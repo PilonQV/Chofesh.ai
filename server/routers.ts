@@ -136,6 +136,7 @@ import { getRealtimeAnswer } from "./_core/perplexitySonar";
 import { needsRealtimeSearch, extractSearchQuery, getRealtimeQueryType } from "./_core/liveSearchDetector";
 import { notifyOwner } from "./_core/notification";
 import { getAgentTools, detectIntent, extractParams, type ToolResult } from "./_core/agentTools";
+import { runAutonomousAgent, understandUserGoal } from "./_core/autonomousAgent";
 import {
   isGitHubOAuthConfigured,
   getGitHubAuthUrl,
@@ -974,18 +975,68 @@ To access adult/NSFW content, you need to enable Uncensored Mode:
           };
         }
         
-        // Auto-detect if query needs real-time information BEFORE agent mode
-        // This ensures agent mode has access to search results for data-driven tasks
-        const needsLiveSearch = promptContent && needsRealtimeSearch(promptContent);
+        // ========================================================================
+        // AUTONOMOUS AGENT SYSTEM
+        // Always-on intelligent agent that thinks like Manus
+        // ========================================================================
+        
+        // Step 1: Understand user's goal (always, not just in agent mode)
+        const userGoal = understandUserGoal(promptContent, input.messages);
+        console.log('[Autonomous Agent] Goal:', userGoal.primary);
+        
+        // Step 2: Auto-enable web search if real-time data is needed
         let autoSearchTriggered = false;
-        if (needsLiveSearch && !input.webSearch && !input.deepResearch) {
-          console.log('[Auto Search] Detected real-time query, triggering automatic web search before agent mode');
+        if (userGoal.requiresRealTimeData && !input.webSearch && !input.deepResearch) {
+          console.log('[Autonomous Agent] Auto-enabling web search for real-time data');
           autoSearchTriggered = true;
-          input.webSearch = true; // Enable web search for this request
+          input.webSearch = true;
         }
         
-        // Agent Mode: Detect intent and execute tools if enabled
-        // Skip agent mode if real-time search is needed (let AI handle data-driven requests)
+        // Step 3: Run full autonomous agent if enabled (replaces old agent mode)
+        // The autonomous agent will think, plan, research, and offer options
+        if (input.agentMode && promptContent) {
+          console.log('[Autonomous Agent] Running full autonomous flow');
+          
+          try {
+            const agentResponse = await runAutonomousAgent(promptContent, input.messages);
+            
+            // If agent has a complete result, return it
+            if (agentResponse.result && !agentResponse.needsConfirmation) {
+              return {
+                content: `${agentResponse.thinking}\n\n${agentResponse.result}\n\n**What would you like to do next?**\n${agentResponse.options.map((opt, i) => `${i + 1}. ${opt.label}: ${opt.description}`).join('\n')}`,
+                model: 'autonomous-agent',
+                cached: false,
+                complexity: 'simple' as const,
+                cost: 0,
+                thinking: agentResponse.thinking,
+              };
+            }
+            
+            // If agent needs confirmation, present the plan
+            if (agentResponse.needsConfirmation && agentResponse.plan) {
+              const planSteps = agentResponse.plan.steps.map((s, i) => 
+                `${i + 1}. ${s.action}${s.tool ? ` (using ${s.tool})` : ''}`
+              ).join('\n');
+              
+              return {
+                content: `${agentResponse.thinking}\n\n**Here's my plan:**\n${planSteps}\n\n**Estimated time:** ${agentResponse.plan.estimatedTime}\n\n**Would you like me to proceed?** Reply with 'yes' to continue, or tell me how you'd like to adjust the plan.\n\n**Alternatives:**\n${agentResponse.plan.alternatives.map((alt, i) => `${i + 1}. ${alt}`).join('\n')}`,
+                model: 'autonomous-agent',
+                cached: false,
+                complexity: 'simple' as const,
+                cost: 0,
+                thinking: agentResponse.thinking,
+                needsConfirmation: true,
+              };
+            }
+          } catch (error: any) {
+            console.error('[Autonomous Agent] Error:', error);
+            // Fall through to regular chat if autonomous agent fails
+          }
+        }
+        
+        // Step 4: Legacy agent mode tools (kept for backward compatibility)
+        // This only runs if autonomous agent is disabled or failed
+        const needsLiveSearch = userGoal.requiresRealTimeData;
         if (input.agentMode && promptContent && !needsLiveSearch) {
           const intent = detectIntent(promptContent);
           
