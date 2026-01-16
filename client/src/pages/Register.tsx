@@ -73,8 +73,27 @@ export default function Register() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!name || !email || !password || !confirmPassword) {
-      toast.error("Please fill in all fields");
+    // Trim whitespace from inputs
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+    const trimmedPassword = password.trim();
+    const trimmedConfirmPassword = confirmPassword.trim();
+    
+    // Specific field validation with helpful error messages
+    if (!trimmedName) {
+      toast.error("Please enter your full name");
+      return;
+    }
+    if (!trimmedEmail) {
+      toast.error("Please enter your email address");
+      return;
+    }
+    if (!trimmedPassword) {
+      toast.error("Please enter a password");
+      return;
+    }
+    if (!trimmedConfirmPassword) {
+      toast.error("Please confirm your password");
       return;
     }
     
@@ -94,7 +113,7 @@ export default function Register() {
     }
     
     setIsLoading(true);
-    registerMutation.mutate({ email, password, name });
+    registerMutation.mutate({ email: trimmedEmail, password: trimmedPassword, name: trimmedName });
   };
 
   const handleOAuthLogin = (provider: "google") => {
