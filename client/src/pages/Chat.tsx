@@ -82,6 +82,7 @@ import {
   Rocket,
   Mic,
   MicOff,
+  Plus,
   Volume2,
   VolumeX,
   Globe,
@@ -2048,72 +2049,51 @@ export default function Chat() {
               
 
               
-              {/* Input container with image/voice buttons inside - glassmorphism */}
+              {/* Input container with single attachment button - glassmorphism */}
               <div className="flex-1 relative flex items-end rounded-xl glass-input focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary/50 transition-all duration-300">
-                {/* Image and Voice buttons inside the input area */}
+                {/* Single + button for all attachments (Manus-like) */}
                 <div className="flex items-center gap-1 pl-2 pb-2 self-end">
-                  {/* Image Upload Button */}
-                  <Tooltip>
-                    <TooltipTrigger asChild>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
                       <button
                         type="button"
+                        disabled={isGenerating}
+                        className="p-1.5 rounded-full hover:bg-primary/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-muted-foreground hover:text-primary"
+                      >
+                        <Plus className="w-5 h-5" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-56">
+                      <DropdownMenuItem
                         onClick={() => imageInputRef.current?.click()}
-                        disabled={isUploadingImage || isGenerating}
-                        className="p-1.5 rounded hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={isUploadingImage}
                       >
                         {isUploadingImage ? (
-                          <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                         ) : (
-                          <Image className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                          <Image className="w-4 h-4 mr-2" />
                         )}
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      Upload image for AI to analyze
-                    </TooltipContent>
-                  </Tooltip>
-                  
-                  {/* Generate Image Button - Quick access to /image page */}
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Link href="/image">
-                        <button
-                          type="button"
-                          className="p-1.5 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-primary"
-                        >
-                          <Sparkles className="w-4 h-4" />
-                        </button>
-                      </Link>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      Generate AI Images (or type "create an image of...")
-                    </TooltipContent>
-                  </Tooltip>
-                  
-                  {/* Voice Input Button */}
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        type="button"
+                        Upload Image
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/image" className="flex items-center">
+                          <Sparkles className="w-4 h-4 mr-2" />
+                          Generate AI Image
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
                         onClick={toggleVoiceInput}
-                        className={`p-1.5 rounded transition-colors ${isListening ? "bg-red-500 text-white animate-pulse" : "hover:bg-muted text-muted-foreground hover:text-foreground"}`}
+                        className={isListening ? "bg-red-500/10 text-red-500" : ""}
                       >
                         {isListening ? (
-                          <MicOff className="w-4 h-4" />
+                          <MicOff className="w-4 h-4 mr-2" />
                         ) : (
-                          <Mic className="w-4 h-4" />
+                          <Mic className="w-4 h-4 mr-2" />
                         )}
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {isListening ? "Stop listening (continuous mode)" : "Voice input (continuous)"}
-                    </TooltipContent>
-                  </Tooltip>
-                  
-                  {/* Search with AI Button */}
-                  <SearchWithAI 
-                    onInsertResult={(result) => setInput(prev => prev + (prev ? "\n\n" : "") + result)}
-                  />
+                        {isListening ? "Stop Voice Input" : "Voice Input"}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
                 
                 {/* Textarea */}
