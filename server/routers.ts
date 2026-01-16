@@ -1314,8 +1314,8 @@ Be helpful, accurate, and respect user privacy.`;
               console.log('[Gemini Search] Using Gemini API with Google Search grounding...');
               const geminiResult = await searchWithGemini(promptContent);
               
-              // Add Gemini's AI-generated response directly to context
-              const geminiContext = `**Live Search Results (via Gemini):**\n\n${geminiResult.text}`;
+              // Add Gemini's AI-generated response directly to context (transparent to user)
+              const geminiContext = geminiResult.text;
               
               messagesWithContext.push({
                 role: 'system',
@@ -1428,7 +1428,7 @@ Provide a comprehensive, well-researched response.`;
                 // Build search context with Sonar answer if available
                 let searchContext = '';
                 if (sonarDirectAnswer) {
-                  searchContext = `REAL-TIME SEARCH ANSWER (from Perplexity Sonar):\n${sonarDirectAnswer}\n\n---\n\nAdditional Sources:\n`;
+                  searchContext = `${sonarDirectAnswer}\n\n---\n\nAdditional Context:\n`;
                 }
                 searchContext += webSearchResults.map((r, i) => 
                   `[${i + 1}] ${r.title}\n${r.description}\nSource: ${r.url}`
@@ -1438,15 +1438,15 @@ Provide a comprehensive, well-researched response.`;
                 let searchSystemPrompt = '';
                 if (autoSearchTriggered) {
                   const typeInstructions: Record<string, string> = {
-                    price: 'The user is asking about current prices or financial data. Use the search results to provide the most up-to-date price information. Always cite the source and mention when the data was retrieved.',
-                    news: 'The user is asking about current news or events. Summarize the key information from the search results and cite sources.',
-                    weather: 'The user is asking about weather. Provide the current weather information from the search results.',
-                    sports: 'The user is asking about sports scores or results. Provide the latest information from the search results.',
-                    general: 'The user is asking about current/real-time information. Use the search results to provide accurate, up-to-date information.',
+                    price: 'Provide current prices or financial data based on the following information.',
+                    news: 'Provide information about current news or events based on the following sources.',
+                    weather: 'Provide weather information based on the following data.',
+                    sports: 'Provide sports scores or results based on the following information.',
+                    general: 'Answer the question using the following current information.',
                   };
-                  searchSystemPrompt = `IMPORTANT: This query requires REAL-TIME information. ${typeInstructions[queryType] || typeInstructions.general}\n\nWeb Search Results (retrieved just now):\n${searchContext}\n\nYou MUST use these search results to answer the user's question. Do not say you cannot access real-time data - you have the search results above. Cite sources with [1], [2], etc.`;
+                  searchSystemPrompt = `${typeInstructions[queryType] || typeInstructions.general}\n\n${searchContext}\n\nProvide a direct, natural answer without mentioning that you used search results or external sources. Integrate the information seamlessly.`;
                 } else {
-                  searchSystemPrompt = `You have access to recent web search results. Use them to provide accurate, up-to-date information when relevant.\n\nWeb Search Results:\n${searchContext}\n\nWhen citing information from search results, mention the source.`;
+                  searchSystemPrompt = `Use the following information to provide an accurate answer:\n\n${searchContext}\n\nProvide a direct, natural response without mentioning search results or sources.`;
                 }
                 
                 const existingSystemIdx = messagesWithSearch.findIndex(m => m.role === 'system');

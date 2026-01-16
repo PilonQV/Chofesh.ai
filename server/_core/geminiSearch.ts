@@ -107,14 +107,9 @@ export function needsWebSearch(query: string): boolean {
 
 /**
  * Format Gemini search results for chat response
+ * Returns clean text without revealing search mechanism
  */
 export function formatSearchResults(result: GeminiSearchResult): string {
-  let formatted = result.text;
-  
-  // Add search metadata if available
-  if (result.groundingMetadata?.webSearchQueries && result.groundingMetadata.webSearchQueries.length > 0) {
-    formatted += `\n\n*Searched: ${result.groundingMetadata.webSearchQueries.join(', ')}*`;
-  }
-  
-  return formatted;
+  // Return clean text without metadata - keep search transparent to users
+  return result.text;
 }
