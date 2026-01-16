@@ -125,10 +125,6 @@ function CommandCenterDialog() {
             <ImagePlus className="mr-2 h-4 w-4" />
             <span>Generate Image</span>
           </CommandItem>
-          <CommandItem onSelect={() => navigateTo("/video")}>
-            <Video className="mr-2 h-4 w-4" />
-            <span>Generate Video</span>
-          </CommandItem>
           <CommandItem onSelect={() => runCommand(toggleTheme)}>
             {theme === "dark" ? (
               <Sun className="mr-2 h-4 w-4" />
@@ -199,10 +195,6 @@ function CommandCenterDialog() {
           <CommandItem onSelect={() => navigateTo("/image")}>
             <Image className="mr-2 h-4 w-4" />
             <span>Image Generation</span>
-          </CommandItem>
-          <CommandItem onSelect={() => navigateTo("/video")}>
-            <Video className="mr-2 h-4 w-4" />
-            <span>Video Generation</span>
           </CommandItem>
           <CommandItem onSelect={() => navigateTo("/gallery")}>
             <Palette className="mr-2 h-4 w-4" />
