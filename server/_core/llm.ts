@@ -216,11 +216,8 @@ const resolveApiUrl = () =>
 
 const assertApiKey = () => {
   if (!ENV.forgeApiKey) {
-    console.error('[LLM] BUILT_IN_FORGE_API_KEY is not set in environment variables');
-    console.error('[LLM] Available env vars:', Object.keys(process.env).filter(k => k.includes('FORGE') || k.includes('API')));
-    throw new Error("BUILT_IN_FORGE_API_KEY is not configured. Please set it in Render environment variables.");
+    throw new Error("OPENAI_API_KEY is not configured");
   }
-  console.log('[LLM] Forge API key found:', ENV.forgeApiKey.substring(0, 10) + '...');
 };
 
 const normalizeResponseFormat = ({

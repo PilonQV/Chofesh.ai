@@ -7,9 +7,6 @@
 
 import { eq, desc, and, gte } from "drizzle-orm";
 import { getDb } from "../db";
-
-// Flag to track if database tables exist
-let tablesExist = true;
 import {
   agentShortTermMemory,
   agentLongTermMemory,
