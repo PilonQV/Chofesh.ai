@@ -9,10 +9,18 @@
 
 import { GoogleGenAI } from '@google/genai';
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
+// Check multiple possible environment variable names
+const GEMINI_API_KEY = 
+  process.env.GEMINI_API_KEY || 
+  process.env.GOOGLE_API_KEY || 
+  process.env.GOOGLE_AI_API_KEY || 
+  '';
 
 if (!GEMINI_API_KEY) {
   console.warn('⚠️ GEMINI_API_KEY not set - Gemini search grounding will not work');
+  console.warn('   Checked: GEMINI_API_KEY, GOOGLE_API_KEY, GOOGLE_AI_API_KEY');
+} else {
+  console.log('✅ Gemini API key found (ending in:', GEMINI_API_KEY.slice(-8) + ')');
 }
 
 // Initialize with API key
