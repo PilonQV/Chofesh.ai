@@ -446,7 +446,7 @@ export default function Settings() {
                                     Cancel
                                   </Button>
                                   <Button
-                                    onClick={() => verifyAgeMutation.mutate()}
+                                    onClick={() => verifyAgeMutation.mutate({ confirmed: true })}
                                     disabled={!confirmAge || verifyAgeMutation.isPending}
                                     className="bg-pink-500 hover:bg-pink-600 text-white"
                                   >

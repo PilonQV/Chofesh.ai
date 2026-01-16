@@ -112,12 +112,28 @@ export default function ImageGen() {
   // NSFW state and queries
   const [nsfwMode, setNsfwMode] = useState(false);
   const [showNsfwModal, setShowNsfwModal] = useState(false);
+  const [confirmAge, setConfirmAge] = useState(false);
+  const [batchCount, setBatchCount] = useState<1 | 4>(1);
   const { data: nsfwStatus } = trpc.nsfw.getStatus.useQuery(undefined, {
     enabled: isAuthenticated,
   });
   const { data: nsfwModels } = trpc.nsfw.getModels.useQuery();
   const nsfwGenerateMutation = trpc.nsfw.generate.useMutation();
   const nsfwCheckoutMutation = trpc.nsfw.createCheckout.useMutation();
+  const utils = trpc.useUtils();
+  const verifyAgeMutation = trpc.nsfw.verifyAge.useMutation({
+    onSuccess: () => {
+      toast.success("Age verified! Uncensored mode unlocked.");
+      setConfirmAge(false);
+      setNsfwMode(true);
+      setModel("lustify-sdxl");
+      setShowNsfwModal(false);
+      utils.nsfw.getStatus.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to verify age");
+    },
+  });
   
   // Image editing state
   const [editMode, setEditMode] = useState(false);
@@ -227,11 +243,13 @@ export default function ImageGen() {
           model,
           size: imageSize,
           negativePrompt: negativePrompt.trim() || undefined,
+          batchCount,
         });
 
-        const newImage: GeneratedImage = {
+        // Handle batch generation response
+        const newImages: GeneratedImage[] = result.images.map((img: any) => ({
           id: crypto.randomUUID(),
-          url: result.url,
+          url: img.url,
           prompt: prompt.trim(),
           negativePrompt: negativePrompt.trim() || undefined,
           aspectRatio,
@@ -239,12 +257,12 @@ export default function ImageGen() {
           steps,
           cfgScale,
           timestamp: Date.now(),
-          model: `${result.model}${result.isNsfw ? ' (NSFW)' : ''}`,
-        };
+          model: `${img.model}${img.isNsfw ? ' (NSFW)' : ''}`,
+        }));
 
-        saveImages([newImage, ...images]);
-        setSelectedImage(newImage);
-        toast.success("Image generated successfully!");
+        saveImages([...newImages, ...images]);
+        setSelectedImage(newImages[0]);
+        toast.success(`${result.batchCount} image${result.batchCount > 1 ? 's' : ''} generated successfully!`);
         return;
       } catch (error: any) {
         console.error("Image generation error:", error);
@@ -1057,6 +1075,29 @@ export default function ImageGen() {
               </div>
             </div>
             
+            {/* Batch Selection */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Number of Images</Label>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant={batchCount === 1 ? "default" : "outline"}
+                  onClick={() => setBatchCount(1)}
+                  className="flex flex-col h-auto py-3"
+                >
+                  <span className="font-semibold">1 Image</span>
+                  <span className="text-xs opacity-70">3 credits</span>
+                </Button>
+                <Button
+                  variant={batchCount === 4 ? "default" : "outline"}
+                  onClick={() => setBatchCount(4)}
+                  className="flex flex-col h-auto py-3"
+                >
+                  <span className="font-semibold">4 Images</span>
+                  <span className="text-xs opacity-70">10 credits (save 2!)</span>
+                </Button>
+              </div>
+            </div>
+            
             {/* Credits Info */}
             <div className="p-4 rounded-lg border border-pink-500/30 bg-pink-500/10">
               <div className="flex items-center justify-between">
@@ -1065,7 +1106,7 @@ export default function ImageGen() {
                   <div>
                     <p className="font-medium">Pay with Credits</p>
                     <p className="text-sm text-muted-foreground">
-                      3 credits per image (or 10 for 4 variations)
+                      {batchCount === 1 ? "3 credits per image" : "10 credits for 4 images (save 17%)"}
                     </p>
                   </div>
                 </div>
@@ -1095,13 +1136,34 @@ export default function ImageGen() {
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            {/* If not age verified, show age verification button */}
+            {/* If not age verified, show inline age verification */}
             {!nsfwStatus?.ageVerified && (
-              <Link href="/settings" className="w-full">
-                <Button className="w-full bg-yellow-500 hover:bg-yellow-600 text-black">
-                  Verify Age (18+) in Settings
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
+                  <input
+                    type="checkbox"
+                    id="confirm-age-nsfw"
+                    checked={confirmAge}
+                    onChange={(e) => setConfirmAge(e.target.checked)}
+                    className="w-4 h-4 rounded border-gray-300"
+                  />
+                  <label htmlFor="confirm-age-nsfw" className="text-sm">
+                    I confirm I'm 18 years or older
+                  </label>
+                </div>
+                <Button 
+                  className="w-full bg-yellow-500 hover:bg-yellow-600 text-black"
+                  disabled={!confirmAge || verifyAgeMutation.isPending}
+                  onClick={() => verifyAgeMutation.mutate({ confirmed: true })}
+                >
+                  {verifyAgeMutation.isPending ? (
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  ) : (
+                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                  )}
+                  Verify Age & Enable
                 </Button>
-              </Link>
+              </div>
             )}
             
             {/* If age verified, show enable button */}
