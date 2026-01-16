@@ -4771,10 +4771,40 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
     }),
 
     // Verify age (18+)
-    verifyAge: protectedProcedure.mutation(async ({ ctx }) => {
-      await verifyUserAge(ctx.user.id);
-      return { success: true, ageVerified: true };
-    }),
+    verifyAge: protectedProcedure
+      .input(z.object({ dateOfBirth: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await getDb();
+        
+        // Parse date of birth
+        const dob = new Date(input.dateOfBirth);
+        const today = new Date();
+        let age = today.getFullYear() - dob.getFullYear();
+        const monthDiff = today.getMonth() - dob.getMonth();
+        
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+          age--;
+        }
+        
+        // Must be 18 or older
+        if (age < 18) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "You must be 18 or older to access uncensored features.",
+          });
+        }
+        
+        // Update user record
+        await db!.update(users)
+          .set({
+            ageVerified: true,
+            ageVerifiedAt: new Date(),
+            dateOfBirth: input.dateOfBirth,
+          })
+          .where(eq(users.id, ctx.user.id));
+        
+        return { success: true, ageVerified: true };
+      }),
 
     // Check if user can generate NSFW images (credits-based)
     canGenerate: protectedProcedure.query(async ({ ctx }) => {
