@@ -1276,12 +1276,6 @@ export default function Chat() {
                     {!sidebarCollapsed && "Generate Images"}
                   </Button>
                 </Link>
-                <Link href="/video">
-                  <Button variant="ghost" size="sm" className={`w-full gap-2 ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`} title="Generate Videos">
-                    <Video className="w-4 h-4" />
-                    {!sidebarCollapsed && "Generate Videos"}
-                  </Button>
-                </Link>
                 <Link href="/documents">
                   <Button variant="ghost" size="sm" className={`w-full gap-2 ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`} title="Document Chat">
                     <MessageSquare className="w-4 h-4" />

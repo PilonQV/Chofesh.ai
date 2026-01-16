@@ -653,14 +653,24 @@ export async function searchDocumentChunks(userId: number, query: string, limit:
   }
   
   // Fallback to text search if no embeddings or error
-  const textResults = allChunks.filter(c => 
-    c.content.toLowerCase().includes(query.toLowerCase())
-  ).slice(0, limit);
+  // Use fuzzy matching: split query into words and match any word
+  const queryWords = query.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+  
+  const textResults = allChunks
+    .map(chunk => {
+      const contentLower = chunk.content.toLowerCase();
+      // Count how many query words appear in the chunk
+      const matchCount = queryWords.filter(word => contentLower.includes(word)).length;
+      const matchScore = queryWords.length > 0 ? matchCount / queryWords.length : 0;
+      return { ...chunk, similarity: matchScore * 0.7 }; // Max 0.7 for text match
+    })
+    .filter(c => c.similarity > 0) // Only include chunks with at least one match
+    .sort((a, b) => b.similarity - a.similarity)
+    .slice(0, limit);
   
   return textResults.map(r => ({
     ...r,
     embedding: undefined,
-    similarity: 0.7, // Lower score for text match
   }));
 }
 

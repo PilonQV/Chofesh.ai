@@ -770,10 +770,9 @@ export default function CodeWorkspace() {
                 scrollBeyondLastLine: false,
                 padding: { top: 16 },
               }}
-              onMount={(editor) => {
+              onMount={(editor, monaco) => {
                 // Add Ctrl+S save shortcut
                 editor.addCommand(
-                  // @ts-ignore
                   monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,
                   () => {
                     if (selectedFile) {

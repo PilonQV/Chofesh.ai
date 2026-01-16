@@ -30,7 +30,6 @@ import { Button } from "./ui/button";
 const menuItems = [
   { icon: MessageSquare, label: "Chat", path: "/chat" },
   { icon: Image, label: "Images", path: "/image" },
-  { icon: Video, label: "Videos", path: "/video" },
   { icon: Wrench, label: "Tools", path: "/tools" },
   { icon: FileText, label: "Documents", path: "/documents" },
   { icon: BookOpen, label: "Knowledge Base", path: "/knowledge" },

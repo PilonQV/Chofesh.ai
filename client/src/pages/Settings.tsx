@@ -895,7 +895,7 @@ export default function Settings() {
                         ) : creditBalanceError ? (
                           <span className="text-red-500">Error loading</span>
                         ) : (
-                          `${creditBalance?.credits?.toLocaleString() ?? "0"} credits`
+                          `${creditBalance?.totalCredits?.toLocaleString() ?? "0"} credits`
                         )}
                       </span>
                     </div>

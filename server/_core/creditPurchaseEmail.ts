@@ -80,7 +80,6 @@ export async function sendCreditPurchaseEmail(
                 <ul style="color: #a0a0b0; font-size: 14px; margin: 12px 0 0 0; padding-left: 20px;">
                   <li style="margin: 6px 0;">AI Chat & Conversations</li>
                   <li style="margin: 6px 0;">Image Generation (1 credit per image)</li>
-                  <li style="margin: 6px 0;">Video Generation (10-20 credits per video)</li>
                   <li style="margin: 6px 0;">Document Analysis</li>
                   <li style="margin: 6px 0;">Code Generation & Review</li>
                 </ul>
@@ -126,7 +125,6 @@ ${purchaseDetails.transactionId ? `Transaction ID: ${purchaseDetails.transaction
 Your credits are now available and ready to use for:
 - AI Chat & Conversations
 - Image Generation (1 credit per image)
-- Video Generation (10-20 credits per video)
 - Document Analysis
 - Code Generation & Review
 
