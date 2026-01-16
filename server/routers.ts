@@ -930,32 +930,6 @@ export const appRouter = router({
         const lastUserMessage = input.messages.filter(m => m.role === "user").pop();
         const promptContent = lastUserMessage?.content || "";
         
-        // Security: Check for prompt injection attacks using Llama Prompt Guard 2
-        if (promptContent && process.env.ENABLE_PROMPT_GUARD !== "false") {
-          const { validatePromptSecurity } = await import("./_core/promptGuard");
-          const userApiKeys = await getUserApiKeys(ctx.user.id);
-          const groqKey = userApiKeys.find(k => k.provider === "groq" && k.isActive);
-          
-          try {
-            await validatePromptSecurity(promptContent, groqKey?.apiKey, true);
-          } catch (error) {
-            // Log the injection attempt
-            await createAuditLog({
-              userId: ctx.user.id,
-              userOpenId: ctx.user.openId,
-              actionType: "security_alert",
-              ipAddress: getClientIp(ctx.req),
-              userAgent: ctx.req.headers["user-agent"] || null,
-              metadata: JSON.stringify({
-                type: "prompt_injection_detected",
-                prompt: promptContent.substring(0, 200), // Log first 200 chars
-              }),
-              timestamp: new Date(),
-            });
-            throw error;
-          }
-        }
-        
         // Check if user is requesting NSFW content without being age-verified
         // Direct user to Settings to complete age verification
         if (!userAgeVerified && isNsfwContentRequest(promptContent)) {
