@@ -45,8 +45,8 @@ export async function searchWithGemini(
       },
     });
     
-    // Extract text
-    const text = response.text();
+    // Extract text (text is a property, not a method)
+    const text = response.text;
     
     // Extract grounding metadata if available
     let groundingMetadata: any = undefined;
