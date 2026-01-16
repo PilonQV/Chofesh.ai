@@ -95,11 +95,7 @@ export const PROVIDER_CONFIGS: Record<AIProvider, ProviderConfig> = {
       { id: "groq/compound", name: "Groq Compound (Web Search + Code)", provider: "groq", contextWindow: 131072, isFree: true, tier: "free", isReasoning: true },
       { id: "groq/compound-mini", name: "Groq Compound Mini", provider: "groq", contextWindow: 131072, isFree: true, tier: "free", isReasoning: true },
       
-      // Safety & Moderation
-      { id: "meta-llama/llama-guard-4-12b", name: "Llama Guard 4 12B", provider: "groq", contextWindow: 131072, isFree: true, tier: "free" },
-      { id: "meta-llama/llama-prompt-guard-2-86m", name: "Prompt Guard 2 86M", provider: "groq", contextWindow: 512, isFree: true, tier: "free" },
-      { id: "meta-llama/llama-prompt-guard-2-22m", name: "Prompt Guard 2 22M", provider: "groq", contextWindow: 512, isFree: true, tier: "free" },
-      
+
       // Legacy Models (for compatibility)
       { id: "mixtral-8x7b-32768", name: "Mixtral 8x7B", provider: "groq", contextWindow: 32768, isFree: true, tier: "free" },
       { id: "gemma2-9b-it", name: "Gemma 2 9B", provider: "groq", contextWindow: 8192, isFree: true, tier: "free" },
