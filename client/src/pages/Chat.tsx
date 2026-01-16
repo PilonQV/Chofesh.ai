@@ -102,6 +102,7 @@ import {
   Workflow,
   Shield,
   Database,
+  Video,
   Pin,
   PinOff,
   Folder,
@@ -1273,6 +1274,12 @@ export default function Chat() {
                   <Button variant="ghost" size="sm" className={`w-full gap-2 ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`} title="Generate Images">
                     <Image className="w-4 h-4" />
                     {!sidebarCollapsed && "Generate Images"}
+                  </Button>
+                </Link>
+                <Link href="/video">
+                  <Button variant="ghost" size="sm" className={`w-full gap-2 ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`} title="Generate Videos">
+                    <Video className="w-4 h-4" />
+                    {!sidebarCollapsed && "Generate Videos"}
                   </Button>
                 </Link>
                 <Link href="/documents">
