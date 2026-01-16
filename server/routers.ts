@@ -955,17 +955,12 @@ export const appRouter = router({
         }
         
         // Check if user is requesting NSFW content without being age-verified
-        // Return a helpful message guiding them to enable Uncensored Mode
+        // Return a special flag to trigger age verification modal automatically
         if (!userAgeVerified && isNsfwContentRequest(promptContent)) {
           return {
-            content: `🔒 **Uncensored Mode Required**
+            content: `🔒 **Age Verification Required**
 
-To access adult/NSFW content, you need to enable Uncensored Mode:
-
-1. Click the **Settings** gear (⚙️) in the chat header
-2. Go to **AI Settings** tab
-3. Click **Enable Uncensored Mode** and verify you're 18+
-4. Once enabled, retry your request
+This content requires age verification (18+). Please verify your age to access uncensored features.
 
 *Chofesh.ai offers uncensored AI capabilities for verified adult users. Your privacy is always protected.*`,
             model: 'system',
@@ -973,6 +968,7 @@ To access adult/NSFW content, you need to enable Uncensored Mode:
             complexity: 'simple' as const,
             cost: 0,
             nsfwBlocked: true,
+            requiresAgeVerification: true, // Trigger age verification modal in frontend
           };
         }
         
