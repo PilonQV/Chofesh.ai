@@ -1001,58 +1001,22 @@ To access adult/NSFW content, please verify your age (18+):
           console.log('[Autonomous Agent] Running full autonomous flow with ReAct');
           
           try {
-            // Check if this query should use the advanced ReAct agent
-            const useReAct = shouldUseReActAgent(promptContent);
-            
-            if (useReAct) {
-              console.log('[ReAct Agent] Using Manus-like ReAct agent for complex query');
+            // ALWAYS use the advanced ReAct agent (Manus-level)
+            console.log('[ReAct Agent] Using Manus-like ReAct agent');
               const reactResponse = await runReActForChat(
                 promptContent,
                 input.messages,
                 ctx.user.id
               );
               
-              return {
-                content: reactResponse.content,
-                model: 'react-agent',
-                cached: false,
-                complexity: 'simple' as const,
-                cost: 0,
-                thinking: reactResponse.reasoning,
-              };
-            }
-            
-            // Fall back to original autonomous agent for simpler queries
-            const agentResponse = await runAutonomousAgent(promptContent, input.messages);
-            
-            // If agent has a complete result, return it
-            if (agentResponse.result && !agentResponse.needsConfirmation) {
-              return {
-                content: `${agentResponse.thinking}\n\n${agentResponse.result}\n\n**What would you like to do next?**\n${agentResponse.options.map((opt, i) => `${i + 1}. ${opt.label}: ${opt.description}`).join('\n')}`,
-                model: 'autonomous-agent',
-                cached: false,
-                complexity: 'simple' as const,
-                cost: 0,
-                thinking: agentResponse.thinking,
-              };
-            }
-            
-            // If agent needs confirmation, present the plan
-            if (agentResponse.needsConfirmation && agentResponse.plan) {
-              const planSteps = agentResponse.plan.steps.map((s, i) => 
-                `${i + 1}. ${s.action}${s.tool ? ` (using ${s.tool})` : ''}`
-              ).join('\n');
-              
-              return {
-                content: `${agentResponse.thinking}\n\n**Here's my plan:**\n${planSteps}\n\n**Estimated time:** ${agentResponse.plan.estimatedTime}\n\n**Would you like me to proceed?** Reply with 'yes' to continue, or tell me how you'd like to adjust the plan.\n\n**Alternatives:**\n${agentResponse.plan.alternatives.map((alt, i) => `${i + 1}. ${alt}`).join('\n')}`,
-                model: 'autonomous-agent',
-                cached: false,
-                complexity: 'simple' as const,
-                cost: 0,
-                thinking: agentResponse.thinking,
-                needsConfirmation: true,
-              };
-            }
+            return {
+              content: reactResponse.content,
+              model: 'react-agent',
+              cached: false,
+              complexity: 'simple' as const,
+              cost: 0,
+              // thinking: reactResponse.reasoning, // Hide reasoning from user
+            };
           } catch (error: any) {
             console.error('[Autonomous Agent] Error:', error);
             // Fall through to regular chat if autonomous agent fails

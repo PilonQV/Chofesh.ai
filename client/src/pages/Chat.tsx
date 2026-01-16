@@ -336,7 +336,7 @@ export default function Chat() {
     cost: number;
     cached: boolean;
     tokens?: { input: number; output: number; total: number };
-    webSearchUsed?: boolean;
+
     autoSwitchedToUncensored?: boolean;
   } | null>(null);
   
@@ -704,7 +704,7 @@ export default function Chat() {
         useCache: true,
         temperature,
         topP,
-        webSearch: false,
+
         showThinking,
         includeMemories,
         imageUrls: uploadedImages.length > 0 ? uploadedImages.map(img => img.url) : undefined,
@@ -732,7 +732,7 @@ export default function Chat() {
         cost: response.cost || 0,
         cached: response.cached || false,
         tokens: response.tokens,
-        webSearchUsed: response.webSearchUsed,
+
         autoSwitchedToUncensored: response.autoSwitchedToUncensored,
       });
       
@@ -1652,9 +1652,7 @@ export default function Chat() {
                   <div className="hidden md:flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded">
                     {getTierIcon(lastResponse.tier)}
                     <span>{lastResponse.modelName}</span>
-                    {lastResponse.webSearchUsed && (
-                      <Globe className="w-3 h-3 text-blue-400" />
-                    )}
+
                     {lastResponse.cached && (
                       <Badge variant="outline" className="text-[10px] px-1">cached</Badge>
                     )}
@@ -1669,7 +1667,7 @@ export default function Chat() {
                       <div>Tokens: {lastResponse.tokens.total} ({lastResponse.tokens.input} in / {lastResponse.tokens.output} out)</div>
                     )}
 
-                    {lastResponse.webSearchUsed && <div className="text-blue-400">Web search used</div>}
+
                     {lastResponse.cached && <div className="text-green-400">Served from cache</div>}
                   </div>
                 </TooltipContent>

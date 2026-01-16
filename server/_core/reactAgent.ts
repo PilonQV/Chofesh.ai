@@ -212,6 +212,8 @@ IMPORTANT RULES:
 4. Think step-by-step and show your reasoning
 5. When you have enough information, provide a final_answer
 6. Maximum 10 iterations - be efficient
+7. When generate_image returns a URL, ALWAYS include the actual URL in your final answer using markdown image syntax: ![description](URL)
+8. NEVER say "[Image Link]" or hide URLs - always show them directly
 
 USER QUERY: ${userQuery}
 
