@@ -29,6 +29,7 @@ export const users = mysqlTable("users", {
   // Age verification for adult content
   ageVerified: boolean("ageVerified").default(false).notNull(),
   ageVerifiedAt: timestamp("ageVerifiedAt"),
+  dateOfBirth: date("dateOfBirth"), // For age verification
   // NSFW subscription add-on ($7.99/month)
   nsfwSubscriptionId: varchar("nsfwSubscriptionId", { length: 64 }),
   nsfwSubscriptionStatus: mysqlEnum("nsfwSubscriptionStatus", ["active", "canceled", "past_due", "none"]).default("none").notNull(),
