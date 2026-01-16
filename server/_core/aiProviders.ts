@@ -185,9 +185,21 @@ export const PROVIDER_CONFIGS: Record<AIProvider, ProviderConfig> = {
     displayName: "Puter.js (Client-side)",
     apiUrl: "https://js.puter.com/v2/",
     models: [
+      // OpenAI Models (FREE)
       { id: "gpt-4.1-nano", name: "GPT-4.1 Nano", provider: "puter", contextWindow: 128000, isFree: true, tier: "free" },
+      
+      // Anthropic Claude Models (FREE & UNLIMITED)
+      { id: "claude-sonnet-4-5", name: "Claude Sonnet 4.5", provider: "puter", contextWindow: 200000, isFree: true, tier: "free" },
+      { id: "claude-opus-4-5", name: "Claude Opus 4.5", provider: "puter", contextWindow: 200000, isFree: true, tier: "free" },
+      { id: "claude-opus-4-1", name: "Claude Opus 4.1", provider: "puter", contextWindow: 200000, isFree: true, tier: "free" },
+      { id: "claude-opus-4", name: "Claude Opus 4", provider: "puter", contextWindow: 200000, isFree: true, tier: "free" },
       { id: "claude-sonnet-4", name: "Claude Sonnet 4", provider: "puter", contextWindow: 200000, isFree: true, tier: "free" },
+      { id: "claude-haiku-4-5", name: "Claude Haiku 4.5", provider: "puter", contextWindow: 200000, isFree: true, tier: "free" },
+      
+      // Google Models (FREE)
       { id: "google/gemini-2.5-flash", name: "Gemini 2.5 Flash", provider: "puter", contextWindow: 1000000, isFree: true, tier: "free" },
+      
+      // Other Models (FREE)
       { id: "deepseek-chat", name: "DeepSeek Chat", provider: "puter", contextWindow: 64000, isFree: true, tier: "free" },
       { id: "llama-3.3-70b", name: "Llama 3.3 70B", provider: "puter", contextWindow: 128000, isFree: true, tier: "free" },
     ],
