@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, bigint, boolean } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, bigint, boolean, index } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -894,3 +894,96 @@ export const userInstallations = mysqlTable("user_installations", {
 
 export type UserInstallation = typeof userInstallations.$inferSelect;
 export type InsertUserInstallation = typeof userInstallations.$inferInsert;
+
+/**
+ * Agent Short-Term Memory table
+ * Stores recent conversation messages for context (last 20 messages per conversation)
+ */
+export const agentShortTermMemory = mysqlTable("agent_short_term_memory", {
+  id: int("id").autoincrement().primaryKey(),
+  conversationId: varchar("conversationId", { length: 64 }).notNull(),
+  userId: int("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  role: mysqlEnum("role", ["user", "assistant", "system"]).notNull(),
+  content: text("content").notNull(),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+}, (table) => ({
+  conversationIdx: index("conversation_idx").on(table.conversationId),
+  userIdx: index("user_idx").on(table.userId),
+  timestampIdx: index("timestamp_idx").on(table.timestamp),
+}));
+
+export type AgentShortTermMemory = typeof agentShortTermMemory.$inferSelect;
+export type InsertAgentShortTermMemory = typeof agentShortTermMemory.$inferInsert;
+
+/**
+ * Agent Long-Term Memory table
+ * Stores user preferences, past interactions, and learned patterns
+ */
+export const agentLongTermMemory = mysqlTable("agent_long_term_memory", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").references(() => users.id, { onDelete: "cascade" }).notNull().unique(),
+  // User preferences
+  preferredResponseStyle: varchar("preferredResponseStyle", { length: 50 }), // e.g., "detailed", "concise", "technical"
+  preferredLanguage: varchar("preferredLanguage", { length: 10 }), // e.g., "en", "es", "fr"
+  // Interaction history (stored as JSON)
+  recentInteractions: text("recentInteractions"), // JSON array of last 100 interactions
+  toolUsageStats: text("toolUsageStats"), // JSON object with tool success rates
+  // Learning data
+  commonTopics: text("commonTopics"), // JSON array of frequently asked topics
+  learningPatterns: text("learningPatterns"), // JSON object with learned patterns
+  // Timestamps
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  userIdx: index("user_long_term_idx").on(table.userId),
+}));
+
+export type AgentLongTermMemory = typeof agentLongTermMemory.$inferSelect;
+export type InsertAgentLongTermMemory = typeof agentLongTermMemory.$inferInsert;
+
+/**
+ * Agent Episodic Memory table
+ * Stores specific experiences and outcomes for learning
+ */
+export const agentEpisodicMemory = mysqlTable("agent_episodic_memory", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  episodeType: varchar("episodeType", { length: 50 }).notNull(), // e.g., "search", "calculation", "image_generation"
+  context: text("context").notNull(), // What was the situation
+  action: text("action").notNull(), // What action was taken
+  result: text("result").notNull(), // What was the outcome
+  outcome: mysqlEnum("outcome", ["success", "partial", "failure"]).notNull(),
+  confidence: int("confidence").default(50).notNull(), // 0-100 confidence score
+  toolsUsed: text("toolsUsed"), // JSON array of tools used
+  duration: int("duration"), // Time taken in milliseconds
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+}, (table) => ({
+  userIdx: index("user_episodic_idx").on(table.userId),
+  typeIdx: index("episode_type_idx").on(table.episodeType),
+  timestampIdx: index("episodic_timestamp_idx").on(table.timestamp),
+}));
+
+export type AgentEpisodicMemory = typeof agentEpisodicMemory.$inferSelect;
+export type InsertAgentEpisodicMemory = typeof agentEpisodicMemory.$inferInsert;
+
+/**
+ * Agent Tool Preferences table
+ * Tracks which tools work best for each user
+ */
+export const agentToolPreferences = mysqlTable("agent_tool_preferences", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  toolName: varchar("toolName", { length: 50 }).notNull(),
+  usageCount: int("usageCount").default(0).notNull(),
+  successCount: int("successCount").default(0).notNull(),
+  failureCount: int("failureCount").default(0).notNull(),
+  averageDuration: int("averageDuration").default(0).notNull(), // Average time in ms
+  lastUsed: timestamp("lastUsed").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  userToolIdx: index("user_tool_idx").on(table.userId, table.toolName),
+}));
+
+export type AgentToolPreference = typeof agentToolPreferences.$inferSelect;
+export type InsertAgentToolPreference = typeof agentToolPreferences.$inferInsert;
