@@ -80,8 +80,7 @@ import {
   Bot,
   Crown,
   Rocket,
-  Mic,
-  MicOff,
+  // Mic, MicOff, // Voice disabled
   Plus,
   Volume2,
   VolumeX,
@@ -1453,18 +1452,7 @@ export default function Chat() {
 
 
                   {/* Voice Output Toggle */}
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Voice Output</Label>
-                      <p className="text-xs text-muted-foreground">
-                        Read responses aloud
-                      </p>
-                    </div>
-                    <Switch
-                      checked={voiceOutputEnabled}
-                      onCheckedChange={setVoiceOutputEnabled}
-                    />
-                  </div>
+                  {/* Voice output disabled */}
 
                   {/* Thinking Mode Toggle */}
                   <div className="flex items-center justify-between">
@@ -2081,17 +2069,7 @@ export default function Chat() {
                           Generate AI Image
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={toggleVoiceInput}
-                        className={isListening ? "bg-red-500/10 text-red-500" : ""}
-                      >
-                        {isListening ? (
-                          <MicOff className="w-4 h-4 mr-2" />
-                        ) : (
-                          <Mic className="w-4 h-4 mr-2" />
-                        )}
-                        {isListening ? "Stop Voice Input" : "Voice Input"}
-                      </DropdownMenuItem>
+                      {/* Voice input disabled */}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
