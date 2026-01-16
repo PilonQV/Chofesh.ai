@@ -4746,25 +4746,15 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
 
     // Verify age (18+)
     verifyAge: protectedProcedure
-      .input(z.object({ dateOfBirth: z.string() }))
+      .input(z.object({ confirmed: z.boolean() }).optional())
       .mutation(async ({ ctx, input }) => {
         const db = await getDb();
         
-        // Parse date of birth
-        const dob = new Date(input.dateOfBirth);
-        const today = new Date();
-        let age = today.getFullYear() - dob.getFullYear();
-        const monthDiff = today.getMonth() - dob.getMonth();
-        
-        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
-          age--;
-        }
-        
-        // Must be 18 or older
-        if (age < 18) {
+        // User must confirm they are 18+
+        if (input?.confirmed === false) {
           throw new TRPCError({
             code: "FORBIDDEN",
-            message: "You must be 18 or older to access uncensored features.",
+            message: "You must confirm you are 18 or older to access uncensored features.",
           });
         }
         
@@ -4773,7 +4763,6 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
           .set({
             ageVerified: true,
             ageVerifiedAt: new Date(),
-            dateOfBirth: input.dateOfBirth,
           })
           .where(eq(users.id, ctx.user.id));
         
@@ -4827,6 +4816,7 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
         model: z.string().default("lustify-sdxl"),
         size: z.string().default("1024x1024"),
         negativePrompt: z.string().optional(),
+        batchCount: z.number().int().min(1).max(4).default(1),
       }))
       .mutation(async ({ ctx, input }) => {
         const startTime = Date.now();
@@ -4844,8 +4834,9 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
             });
           }
           
-          // Credits-based system - deduct credits for uncensored images (8-10 credits)
-          const creditCost = 3; // 3 credits per image
+          // Credits-based system - deduct credits for uncensored images
+          // 1 image = 3 credits, 4 images = 10 credits (save 2 credits!)
+          const creditCost = input.batchCount === 4 ? 10 : 3 * input.batchCount;
           const creditsService = await import("./_core/credits");
           const hasCredits = await creditsService.hasEnoughCredits(ctx.user.id, creditCost);
           if (!hasCredits) {
@@ -4860,29 +4851,39 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
         }
         
         try {
-          const result = await generateVeniceImage({
-            prompt: input.prompt,
-            model: input.model as any,
-            size: input.size as any,
-            nsfw: isNsfw,
-            negativePrompt: input.negativePrompt,
-          });
+          // Generate images in parallel for batch requests
+          const generatePromises = Array.from({ length: input.batchCount }, () =>
+            generateVeniceImage({
+              prompt: input.prompt,
+              model: input.model as any,
+              size: input.size as any,
+              nsfw: isNsfw,
+              negativePrompt: input.negativePrompt,
+            })
+          );
           
-          // Save to database
-          await createGeneratedImage({
-            userId: ctx.user.id,
-            imageUrl: result.url,
-            prompt: input.prompt,
-            negativePrompt: input.negativePrompt,
-            model: input.model,
-            aspectRatio: input.size,
-            status: "completed",
-            metadata: JSON.stringify({
-              type: isNsfw ? "nsfw_image" : "venice_image",
-              duration: Date.now() - startTime,
-              isNsfw,
-            }),
-          });
+          const results = await Promise.all(generatePromises);
+          
+          // Save all images to database
+          await Promise.all(
+            results.map((result) =>
+              createGeneratedImage({
+                userId: ctx.user.id,
+                imageUrl: result.url,
+                prompt: input.prompt,
+                negativePrompt: input.negativePrompt,
+                model: input.model,
+                aspectRatio: input.size,
+                status: "completed",
+                metadata: JSON.stringify({
+                  type: isNsfw ? "nsfw_image" : "venice_image",
+                  duration: Date.now() - startTime,
+                  isNsfw,
+                  batchCount: input.batchCount,
+                }),
+              })
+            )
+          );
           
           // Create audit log
           await createAuditLog({
@@ -4898,30 +4899,35 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
               type: isNsfw ? "nsfw_image" : "venice_image",
               size: input.size,
               isNsfw,
+              batchCount: input.batchCount,
             }),
             timestamp: new Date(),
           });
           
-          // Log for admin review
+          // Log for admin review (first image)
           auditLogImageAccess({
             userId: ctx.user.id,
             userEmail: ctx.user.email || undefined,
-            imageUrl: result.url,
+            imageUrl: results[0].url,
             prompt: input.prompt,
             actionType: "generate",
             ipAddress: getClientIp(ctx.req),
           });
           
+          // Return all generated images
           return {
-            url: result.url,
-            model: result.model,
-            size: result.size,
-            isNsfw: result.isNsfw,
+            images: results.map((result) => ({
+              url: result.url,
+              model: result.model,
+              size: result.size,
+              isNsfw: result.isNsfw,
+            })),
+            batchCount: input.batchCount,
           };
         } catch (error: any) {
           // Refund credits on failure
           if (isNsfw) {
-            const creditCost = 3;
+            const creditCost = input.batchCount === 4 ? 10 : 3 * input.batchCount;
             await refundCredits(
               ctx.user.id,
               creditCost,
