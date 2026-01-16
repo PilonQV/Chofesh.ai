@@ -32,10 +32,15 @@ export const PUTER_TEXT_MODELS = [
   { id: "o3", name: "o3", description: "Latest reasoning model", provider: "OpenAI" },
   { id: "o3-mini", name: "o3 Mini", description: "Efficient o3", provider: "OpenAI" },
   
-  // Anthropic Models
-  { id: "claude-sonnet-4", name: "Claude Sonnet 4", description: "Latest Claude model", provider: "Anthropic" },
-  { id: "claude-3-5-sonnet-20241022", name: "Claude 3.5 Sonnet", description: "Powerful Claude model", provider: "Anthropic" },
-  { id: "claude-3-haiku-20240307", name: "Claude 3 Haiku", description: "Fast Claude model", provider: "Anthropic" },
+  // Anthropic Models (All FREE & UNLIMITED via Puter)
+  { id: "claude-sonnet-4-5", name: "Claude Sonnet 4.5", description: "Latest & most capable Claude", provider: "Anthropic" },
+  { id: "claude-opus-4-5", name: "Claude Opus 4.5", description: "Most powerful Claude model", provider: "Anthropic" },
+  { id: "claude-opus-4-1", name: "Claude Opus 4.1", description: "Powerful Claude Opus", provider: "Anthropic" },
+  { id: "claude-opus-4", name: "Claude Opus 4", description: "Advanced Claude Opus", provider: "Anthropic" },
+  { id: "claude-sonnet-4", name: "Claude Sonnet 4", description: "Balanced Claude model", provider: "Anthropic" },
+  { id: "claude-haiku-4-5", name: "Claude Haiku 4.5", description: "Fastest Claude model", provider: "Anthropic" },
+  { id: "claude-3-5-sonnet-20241022", name: "Claude 3.5 Sonnet", description: "Previous gen Claude", provider: "Anthropic" },
+  { id: "claude-3-haiku-20240307", name: "Claude 3 Haiku", description: "Fast Claude 3", provider: "Anthropic" },
   
   // Google Models
   { id: "google/gemini-2.5-flash", name: "Gemini 2.5 Flash", description: "Latest Gemini model", provider: "Google" },
