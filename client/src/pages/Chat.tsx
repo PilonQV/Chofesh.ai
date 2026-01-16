@@ -719,11 +719,6 @@ export default function Chat() {
       const content = typeof response.content === 'string' ? response.content : JSON.stringify(response.content);
       addMessage(conv.id, "assistant", content);
       
-      // Automatically trigger age verification modal if required
-      if ((response as any).requiresAgeVerification) {
-        setShowAgeVerification(true);
-      }
-      
       // Voice output
       if (voiceOutputEnabled) {
         speakText(content);

@@ -955,12 +955,17 @@ export const appRouter = router({
         }
         
         // Check if user is requesting NSFW content without being age-verified
-        // Return a special flag to trigger age verification modal automatically
+        // Direct user to Settings to complete age verification
         if (!userAgeVerified && isNsfwContentRequest(promptContent)) {
           return {
             content: `🔒 **Age Verification Required**
 
-This content requires age verification (18+). Please verify your age to access uncensored features.
+To access adult/NSFW content, please verify your age (18+):
+
+1. Click the **Settings** gear (⚙️) in the top right
+2. Go to **AI Settings** tab
+3. Enable **Uncensored Mode** and verify you're 18+
+4. Once verified, return and retry your request
 
 *Chofesh.ai offers uncensored AI capabilities for verified adult users. Your privacy is always protected.*`,
             model: 'system',
@@ -968,7 +973,6 @@ This content requires age verification (18+). Please verify your age to access u
             complexity: 'simple' as const,
             cost: 0,
             nsfwBlocked: true,
-            requiresAgeVerification: true, // Trigger age verification modal in frontend
           };
         }
         
