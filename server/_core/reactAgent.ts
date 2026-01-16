@@ -16,6 +16,13 @@
 import { searchDuckDuckGo } from "./duckduckgo";
 import { enhancedWebSearch } from "./webSearchEnhanced";
 import { searchWithGemini } from "./geminiSearch";
+import { generateVeniceImage } from "./veniceImage";
+import { exec } from "child_process";
+import { promisify } from "util";
+import * as fs from "fs/promises";
+import * as path from "path";
+
+const execAsync = promisify(exec);
 
 // ============================================================================
 // TYPES
@@ -82,6 +89,72 @@ const TOOLS: Tool[] = [
     description: "Use this to think through a problem step-by-step without taking any external action. Input should be your reasoning about the problem.",
     execute: async (reasoning: string) => {
       return `Thought process recorded: ${reasoning}`;
+    }
+  },
+  {
+    name: "generate_image",
+    description: "Generate an image from a text description. Use this when the user asks to create, generate, or draw an image. Input should be a detailed description of the image to generate.",
+    execute: async (prompt: string) => {
+      try {
+        console.log("[ReAct Tool] Generating image:", prompt);
+        const result = await generateVeniceImage({
+          prompt,
+          model: 'hidream',
+          nsfw: false,
+          size: '1024x1024',
+        });
+        return `Image generated successfully! URL: ${result.url}\nYou can show this to the user.`;
+      } catch (error: any) {
+        return `Error generating image: ${error.message}`;
+      }
+    }
+  },
+  {
+    name: "execute_code",
+    description: "Execute Python or JavaScript code safely in a sandbox. Use this for data analysis, calculations, or running code snippets. Input should be a JSON string with 'language' (python or javascript) and 'code' fields.",
+    execute: async (input: string) => {
+      try {
+        const { language, code } = JSON.parse(input);
+        console.log(`[ReAct Tool] Executing ${language} code`);
+        
+        if (language === 'python') {
+          // Create temp file for Python code
+          const tempFile = path.join('/tmp', `react_agent_${Date.now()}.py`);
+          await fs.writeFile(tempFile, code);
+          
+          try {
+            const { stdout, stderr } = await execAsync(`python3 ${tempFile}`, {
+              timeout: 10000, // 10 second timeout
+              maxBuffer: 1024 * 1024, // 1MB max output
+            });
+            await fs.unlink(tempFile); // Clean up
+            return stdout || stderr || "Code executed successfully (no output)";
+          } catch (execError: any) {
+            await fs.unlink(tempFile); // Clean up even on error
+            return `Execution error: ${execError.message}`;
+          }
+        } else if (language === 'javascript') {
+          // Execute JavaScript in Node.js
+          const tempFile = path.join('/tmp', `react_agent_${Date.now()}.js`);
+          await fs.writeFile(tempFile, code);
+          
+          try {
+            const { stdout, stderr } = await execAsync(`node ${tempFile}`, {
+              timeout: 10000,
+              maxBuffer: 1024 * 1024,
+            });
+            await fs.unlink(tempFile);
+            return stdout || stderr || "Code executed successfully (no output)";
+          } catch (execError: any) {
+            await fs.unlink(tempFile);
+            return `Execution error: ${execError.message}`;
+          }
+        } else {
+          return `Unsupported language: ${language}. Use 'python' or 'javascript'.`;
+        }
+      } catch (error: any) {
+        return `Error parsing code execution request: ${error.message}. Expected JSON with 'language' and 'code' fields.`;
+      }
     }
   },
   {

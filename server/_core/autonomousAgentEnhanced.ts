@@ -12,7 +12,7 @@
  */
 
 import { runReActAgent, createLLMFunction } from "./reactAgent";
-import { AgentMemory } from "./agentMemory";
+import { AgentMemoryDB } from "./agentMemoryDB";
 import { searchWithGemini } from "./geminiSearch";
 import { searchDuckDuckGo } from "./duckduckgo";
 
@@ -71,10 +71,10 @@ export async function runEnhancedAutonomousAgent(
   // ============================================================================
   
   // Add user message to short-term memory
-  AgentMemory.shortTerm.addMessage(conversationId, 'user', userMessage);
+  await AgentMemoryDB.shortTerm.addMessage(conversationId, userId, 'user', userMessage);
   
   // Get full context from memory
-  const memoryContext = AgentMemory.getFullContext(userId, conversationId, userMessage);
+  const memoryContext = await AgentMemoryDB.getFullContext(userId, conversationId, userMessage);
   console.log("[Enhanced Agent] Memory context loaded:", {
     recentMessages: memoryContext.recentMessages.length,
     pastInteractions: memoryContext.relevantPastInteractions.length,
@@ -125,11 +125,11 @@ export async function runEnhancedAutonomousAgent(
   // ============================================================================
   
   // Add assistant response to short-term memory
-  AgentMemory.shortTerm.addMessage(conversationId, 'assistant', reactResult.finalAnswer);
+  await AgentMemoryDB.shortTerm.addMessage(conversationId, userId, 'assistant', reactResult.finalAnswer);
   
   // Record interaction in long-term memory
   const duration = Date.now() - startTime;
-  AgentMemory.longTerm.recordInteraction(
+  await AgentMemoryDB.longTerm.recordInteraction(
     userId,
     userMessage,
     reactResult.finalAnswer,
@@ -140,14 +140,21 @@ export async function runEnhancedAutonomousAgent(
   
   // Record episode if significant
   if (reactResult.toolsUsed.length > 0) {
-    AgentMemory.episodic.recordEpisode(
+    await AgentMemoryDB.episodic.recordEpisode(
       userId,
+      reactResult.toolsUsed[0], // Use first tool as episode type
       `User asked: "${userMessage}"`,
-      userMessage,
       `Used tools: ${reactResult.toolsUsed.join(', ')}`,
       reactResult.finalAnswer,
-      wasSuccessful ? 'success' : 'partial'
+      wasSuccessful ? 'success' : 'partial',
+      reactResult.toolsUsed,
+      duration
     );
+  }
+  
+  // Record tool usage statistics
+  for (const tool of reactResult.toolsUsed) {
+    await AgentMemoryDB.toolPreferences.recordUsage(userId, tool, wasSuccessful, duration);
   }
   
   // ============================================================================
