@@ -209,7 +209,7 @@ export default function VideoGen() {
     if (!prompt.trim() || queueMutation.isPending) return;
 
     // Check age verification for NSFW
-    if (nsfwMode && !nsfwStatus?.ageVerified) {
+    if (nsfwMode && !user?.ageVerified) {
       toast.error("Age verification required. Go to Settings to verify you're 18+.");
       setShowNsfwModal(true);
       return;
@@ -591,14 +591,14 @@ export default function VideoGen() {
                   size="sm"
                   className={`gap-2 ${nsfwMode ? "bg-pink-500 hover:bg-pink-600" : ""}`}
                   onClick={() => {
-                    if (!nsfwStatus?.ageVerified) {
+                    if (!user?.ageVerified) {
                       setShowNsfwModal(true);
                     } else {
                       setNsfwMode(!nsfwMode);
                     }
                   }}
                 >
-                  {nsfwStatus?.ageVerified ? (
+                  {user?.ageVerified ? (
                     <ShieldAlert className="w-4 h-4" />
                   ) : (
                     <Lock className="w-4 h-4" />
@@ -607,7 +607,7 @@ export default function VideoGen() {
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                {nsfwStatus?.ageVerified
+                {user?.ageVerified
                   ? `Uncensored: ${nsfwMode ? "ON" : "OFF"}`
                   : "Unlock Uncensored Video Generation"}
               </TooltipContent>

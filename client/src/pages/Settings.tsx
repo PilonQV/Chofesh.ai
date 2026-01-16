@@ -129,8 +129,10 @@ export default function Settings() {
   });
   
   // Credit balance query
-  const { data: creditBalance } = trpc.credits.balance.useQuery(undefined, {
+  const { data: creditBalance, isLoading: creditBalanceLoading, error: creditBalanceError } = trpc.credits.balance.useQuery(undefined, {
     enabled: !!user,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
   });
   
   // GitHub integration queries
@@ -648,64 +650,6 @@ export default function Settings() {
                   </p>
                 </div>
 
-                {/* Prompt Guard Status */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Shield className="h-5 w-5 text-green-500" />
-                      Prompt Guard 2
-                    </CardTitle>
-                    <CardDescription>
-                      AI-powered protection against prompt injection attacks using Llama Guard 2 86M
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between p-4 rounded-lg bg-green-500/10 border border-green-500/20">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-full bg-green-500/20">
-                          <CheckCircle2 className="h-5 w-5 text-green-500" />
-                        </div>
-                        <div>
-                          <p className="font-medium">Active Protection</p>
-                          <p className="text-sm text-muted-foreground">All messages are automatically scanned</p>
-                        </div>
-                      </div>
-                      <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/30">
-                        Enabled
-                      </Badge>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <h4 className="text-sm font-medium">Protection Features</h4>
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-sm">
-                          <CheckCircle2 className="h-4 w-4 text-green-500" />
-                          <span>Prompt injection detection</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm">
-                          <CheckCircle2 className="h-4 w-4 text-green-500" />
-                          <span>Jailbreak attempt blocking</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm">
-                          <CheckCircle2 className="h-4 w-4 text-green-500" />
-                          <span>Real-time threat analysis</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm">
-                          <CheckCircle2 className="h-4 w-4 text-green-500" />
-                          <span>Audit logging</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="pt-4 border-t">
-                      <p className="text-sm text-muted-foreground">
-                        Prompt Guard 2 runs automatically on all chat messages to protect against malicious prompts. 
-                        Your conversations remain private while being protected.
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-
                 {/* Additional Security Features */}
                 <Card>
                   <CardHeader>
@@ -729,13 +673,7 @@ export default function Settings() {
                       </div>
                       <Badge variant="outline" className="text-green-500 border-green-500/30">Active</Badge>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <FileText className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">Audit Logging</span>
-                      </div>
-                      <Badge variant="outline" className="text-green-500 border-green-500/30">Active</Badge>
-                    </div>
+
                   </CardContent>
                 </Card>
               </div>
@@ -952,30 +890,19 @@ export default function Settings() {
                     <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                       <span className="text-muted-foreground">Current Balance</span>
                       <span className="font-semibold text-lg">
-                        {creditBalance?.credits?.toLocaleString() ?? "--"} credits
+                        {creditBalanceLoading ? (
+                          <Loader2 className="h-4 w-4 animate-spin inline" />
+                        ) : creditBalanceError ? (
+                          <span className="text-red-500">Error loading</span>
+                        ) : (
+                          `${creditBalance?.credits?.toLocaleString() ?? "0"} credits`
+                        )}
                       </span>
                     </div>
                     <Link href="/credits">
                       <Button className="w-full">
                         <CreditCard className="h-4 w-4 mr-2" />
                         Manage Credits
-                      </Button>
-                    </Link>
-                  </CardContent>
-                </Card>
-
-                {/* Usage */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <BarChart3 className="h-5 w-5" />
-                      Usage
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Link href="/usage">
-                      <Button variant="outline" className="w-full">
-                        View Usage Dashboard
                       </Button>
                     </Link>
                   </CardContent>
