@@ -15,6 +15,7 @@ if (!GEMINI_API_KEY) {
   console.warn('⚠️ GEMINI_API_KEY not set - Gemini search grounding will not work');
 }
 
+// Initialize with API key
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
 export interface GeminiSearchResult {
@@ -37,16 +38,24 @@ export async function searchWithGemini(
   model: string = 'gemini-2.5-flash'
 ): Promise<GeminiSearchResult> {
   try {
+    // Configure grounding tool (correct format from official docs)
+    const groundingTool = {
+      googleSearch: {},
+    };
+
+    const config = {
+      tools: [groundingTool],
+    };
+
+    // Make API call with correct structure
     const response = await ai.models.generateContent({
       model,
       contents: query,
-      config: {
-        tools: [{ googleSearch: {} }],  // Enable Google Search grounding
-      },
+      config,
     });
     
-    // Extract text (text is a property, not a method)
-    const text = response.text;
+    // Extract text
+    const text = response.text || '';
     
     // Extract grounding metadata if available
     let groundingMetadata: any = undefined;
@@ -57,6 +66,10 @@ export async function searchWithGemini(
           webSearchQueries: candidate.groundingMetadata.webSearchQueries || [],
           searchEntryPoint: candidate.groundingMetadata.searchEntryPoint,
         };
+        
+        // Log successful grounding
+        console.log('[Gemini Search] Grounded response with', 
+          groundingMetadata.webSearchQueries?.length || 0, 'search queries');
       }
     }
 
@@ -65,7 +78,7 @@ export async function searchWithGemini(
       groundingMetadata,
     };
   } catch (error: any) {
-    console.error('Gemini search error:', error);
+    console.error('[Gemini Search] Error:', error.message);
     throw new Error(`Gemini search failed: ${error.message}`);
   }
 }
