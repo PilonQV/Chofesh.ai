@@ -288,7 +288,7 @@ export default function Chat() {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [responseFormat, setResponseFormat] = useState<"auto" | "detailed" | "concise" | "bullet" | "table">("auto");
   const [deepResearchEnabled, setDeepResearchEnabled] = useState(false);
-  const [agentModeEnabled, setAgentModeEnabled] = useState(true); // Agent mode enabled by default
+  // Agent mode is always enabled (autonomous by default)
   const imageInputRef = useRef<HTMLInputElement>(null);
   
   // Voice features
@@ -710,7 +710,7 @@ export default function Chat() {
         imageUrls: uploadedImages.length > 0 ? uploadedImages.map(img => img.url) : undefined,
         responseFormat: responseFormat !== "auto" ? responseFormat : undefined,
         deepResearch: deepResearchEnabled,
-        agentMode: agentModeEnabled,
+        agentMode: true, // Always autonomous
       });
       
       // Clear uploaded images after sending
@@ -718,6 +718,11 @@ export default function Chat() {
 
       const content = typeof response.content === 'string' ? response.content : JSON.stringify(response.content);
       addMessage(conv.id, "assistant", content);
+      
+      // Automatically trigger age verification modal if required
+      if ((response as any).requiresAgeVerification) {
+        setShowAgeVerification(true);
+      }
       
       // Voice output
       if (voiceOutputEnabled) {
@@ -1499,22 +1504,7 @@ export default function Chat() {
                     />
                   </div>
 
-                  {/* Autonomous Agent Toggle */}
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label className="flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-cyan-500" />
-                        Autonomous Agent
-                      </Label>
-                      <p className="text-xs text-muted-foreground">
-                        AI thinks, plans, researches & offers solutions automatically
-                      </p>
-                    </div>
-                    <Switch
-                      checked={agentModeEnabled}
-                      onCheckedChange={setAgentModeEnabled}
-                    />
-                  </div>
+
                 </div>
               </DialogContent>
             </Dialog>
@@ -1702,7 +1692,7 @@ export default function Chat() {
         </div>
 
         {/* Active Settings Indicators */}
-        {(selectedPersona || systemPrompt || showThinking || !includeMemories || temperature !== 0.7 || agentModeEnabled) && (
+        {(selectedPersona || systemPrompt || showThinking || !includeMemories || temperature !== 0.7) && (
           <div className="px-4 py-2 border-b border-border bg-muted/30 flex items-center gap-2 text-xs">
             <span className="text-muted-foreground">Active:</span>
             {selectedPersona && (
@@ -1733,12 +1723,7 @@ export default function Chat() {
                 Thinking Mode
               </Badge>
             )}
-            {agentModeEnabled && (
-              <Badge variant="outline" className="text-xs bg-cyan-500/10 text-cyan-400 border-cyan-500/30">
-                <Sparkles className="w-3 h-3 mr-1" />
-                Autonomous Agent
-              </Badge>
-            )}
+
             {!includeMemories && (
               <Badge variant="outline" className="text-xs bg-muted text-muted-foreground">
                 <Brain className="w-3 h-3 mr-1" />
