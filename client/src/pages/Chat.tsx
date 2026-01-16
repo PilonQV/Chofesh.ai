@@ -1665,13 +1665,7 @@ export default function Chat() {
           </div>
         </header>
 
-        {/* Security Indicator - Always Visible */}
-        <div className="px-4 py-1.5 border-b border-border bg-green-500/5 flex items-center gap-2 text-xs">
-          <Shield className="w-3 h-3 text-green-500" />
-          <span className="text-green-500 font-medium">Protected by Prompt Guard 2</span>
-          <span className="text-muted-foreground">•</span>
-          <span className="text-muted-foreground">All messages are automatically scanned for security threats</span>
-        </div>
+        {/* Security Indicator - Removed per user request */}
 
         {/* Active Settings Indicators */}
         {(selectedPersona || systemPrompt || showThinking || !includeMemories || temperature !== 0.7) && (
