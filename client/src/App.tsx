@@ -18,6 +18,7 @@ import Login from "./pages/Login";
 const Chat = lazy(() => import("./pages/Chat"));
 const Research = lazy(() => import("./pages/Research"));
 const ImageGen = lazy(() => import("./pages/ImageGen"));
+const VideoGen = lazy(() => import("./pages/VideoGen"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const Terms = lazy(() => import("./pages/Terms"));
@@ -76,6 +77,8 @@ function Router() {
         <Route path="/research" component={Research} />
         <Route path="/image" component={ImageGen} />
         <Route path="/images" component={ImageGen} />
+        <Route path="/video" component={VideoGen} />
+        <Route path="/videos" component={VideoGen} />
         <Route path="/admin" component={AdminDashboard} />
         <Route path="/admin/audit-logs" component={AdminAuditLogs} />
         <Route path="/admin/support" component={AdminSupport} />
