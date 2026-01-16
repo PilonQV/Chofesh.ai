@@ -137,6 +137,7 @@ import { needsRealtimeSearch, extractSearchQuery, getRealtimeQueryType } from ".
 import { notifyOwner } from "./_core/notification";
 import { getAgentTools, detectIntent, extractParams, type ToolResult } from "./_core/agentTools";
 import { runAutonomousAgent, understandUserGoal } from "./_core/autonomousAgent";
+import { runReActForChat, shouldUseReActAgent } from "./_core/reactIntegration";
 import { searchWithGemini, needsWebSearch as needsGeminiSearch, formatSearchResults } from "./_core/geminiSearch";
 import {
   isGitHubOAuthConfigured,
@@ -995,10 +996,33 @@ To access adult/NSFW content, please verify your age (18+):
         
         // Step 3: Run full autonomous agent if enabled (replaces old agent mode)
         // The autonomous agent will think, plan, research, and offer options
+        // NOW WITH REACT PATTERN - Thinks like Manus!
         if (input.agentMode && promptContent) {
-          console.log('[Autonomous Agent] Running full autonomous flow');
+          console.log('[Autonomous Agent] Running full autonomous flow with ReAct');
           
           try {
+            // Check if this query should use the advanced ReAct agent
+            const useReAct = shouldUseReActAgent(promptContent);
+            
+            if (useReAct) {
+              console.log('[ReAct Agent] Using Manus-like ReAct agent for complex query');
+              const reactResponse = await runReActForChat(
+                promptContent,
+                input.messages,
+                ctx.user.id
+              );
+              
+              return {
+                content: reactResponse.content,
+                model: 'react-agent',
+                cached: false,
+                complexity: 'simple' as const,
+                cost: 0,
+                thinking: reactResponse.reasoning,
+              };
+            }
+            
+            // Fall back to original autonomous agent for simpler queries
             const agentResponse = await runAutonomousAgent(promptContent, input.messages);
             
             // If agent has a complete result, return it
