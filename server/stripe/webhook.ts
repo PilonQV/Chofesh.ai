@@ -5,6 +5,7 @@ import { users } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { getTierFromPriceId, SUBSCRIPTION_TIERS } from "./products";
 import { sendSubscriptionConfirmationEmail } from "../_core/resend";
+import { sendCreditPurchaseEmail } from "../_core/creditPurchaseEmail";
 
 const router = Router();
 
@@ -96,6 +97,12 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   // Handle NSFW subscription separately
   if (subscriptionType === "nsfw_subscription") {
     await handleNsfwSubscriptionActivation(parseInt(userId), subscriptionId);
+    return;
+  }
+
+  // Handle credit purchase (one-time payment, not subscription)
+  if (session.metadata?.credits) {
+    await handleCreditPurchase(parseInt(userId), session);
     return;
   }
 
@@ -277,6 +284,34 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
     .where(eq(users.id, user.id));
 
   console.log(`[Stripe Webhook] User ${user.id} payment failed, marked as past_due`);
+}
+
+async function handleCreditPurchase(userId: number, session: Stripe.Checkout.Session) {
+  const db = await getDb();
+  if (!db) return;
+
+  const credits = parseInt(session.metadata?.credits || "0", 10);
+  const packName = session.metadata?.packName || "Credits";
+  const amountTotal = session.amount_total || 0;
+  const price = `$${(amountTotal / 100).toFixed(2)}`;
+
+  console.log(`[Stripe Webhook] Credit purchase: ${credits} credits for user ${userId}`);
+
+  // Get user details for email
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  if (user && user.email) {
+    // Send credit purchase confirmation email
+    sendCreditPurchaseEmail(user.email, user.name || "User", {
+      creditsAmount: credits,
+      price,
+      transactionId: session.payment_intent as string || session.id,
+    }).catch(err => console.error("[Stripe Webhook] Failed to send credit purchase email:", err));
+  }
 }
 
 async function handleNsfwSubscriptionActivation(userId: number, subscriptionId: string) {
