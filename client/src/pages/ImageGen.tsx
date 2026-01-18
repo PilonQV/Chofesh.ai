@@ -95,7 +95,7 @@ export default function ImageGen() {
   const [, setLocation] = useLocation();
   const [prompt, setPrompt] = useState("");
   const [negativePrompt, setNegativePrompt] = useState("");
-  const [model, setModel] = useState("flux");
+  const [model, setModel] = useState("stable-diffusion-xl");
   const [aspectRatio, setAspectRatio] = useState("1:1");
   const [seed, setSeed] = useState<number | undefined>(undefined);
   const [useSeed, setUseSeed] = useState(false);
