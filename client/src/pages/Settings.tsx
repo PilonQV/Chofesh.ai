@@ -365,6 +365,8 @@ export default function Settings() {
                       </div>
                     </div>
 
+                    {/* Uncensored Mode - HIDDEN (feature disabled) */}
+                    {false && (
                     <div className="border-t pt-6" id="nsfw-section">
                       {/* Uncensored Mode - CONSOLIDATED */}
                       <div className="space-y-4">
@@ -491,6 +493,7 @@ export default function Settings() {
                         )}
                       </div>
                     </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>

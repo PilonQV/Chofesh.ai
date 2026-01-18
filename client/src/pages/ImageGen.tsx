@@ -110,7 +110,7 @@ export default function ImageGen() {
   const editMutation = trpc.imageEdit.edit.useMutation();
   
   // NSFW state and queries
-  const [nsfwMode, setNsfwMode] = useState(false);
+  const [nsfwMode, setNsfwMode] = useState(false); // Always false - NSFW feature disabled
   const [showNsfwModal, setShowNsfwModal] = useState(false);
   const [confirmAge, setConfirmAge] = useState(false);
   const [batchCount, setBatchCount] = useState<1 | 4>(1);
@@ -638,6 +638,8 @@ export default function ImageGen() {
           </div>
           <div className="flex items-center gap-2">
             {/* Uncensored Toggle */}
+            {/* NSFW toggle hidden - feature disabled */}
+            {false && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -671,6 +673,7 @@ export default function ImageGen() {
                   : "Unlock Uncensored Image Generation"}
               </TooltipContent>
             </Tooltip>
+            )}
             
             <Select value={model} onValueChange={setModel}>
               <SelectTrigger className="w-40">
