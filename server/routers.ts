@@ -123,9 +123,9 @@ import { eq, desc, sql } from "drizzle-orm";
 import { invokeLLM } from "./_core/llm";
 import { invokeGrok, isGrokAvailable } from "./_core/grok";
 import { trackProviderUsage, estimateCostSaved } from "./_core/providerAnalytics";
-import { invokeDeepSeekR1, invokeVeniceUncensored, invokeOpenRouter, isComplexReasoningQuery, isRefusalResponse, isNsfwContentRequest, OPENROUTER_MODELS } from "./_core/openrouter";
+import { invokeDeepSeekR1, invokeOpenRouter, isComplexReasoningQuery, isRefusalResponse, isNsfwContentRequest, OPENROUTER_MODELS } from "./_core/openrouter";
 import { generateImage } from "./_core/imageGeneration";
-import { generateVeniceImage, isNsfwModel, VENICE_IMAGE_MODELS, VENICE_IMAGE_SIZES } from "./_core/veniceImage";
+// Venice image generation removed - using Runware instead
 import { transcribeAudio } from "./_core/voiceTranscription";
 import { generateSpeechBase64, getAllVoices, getVoicesForLanguage, isEdgeTTSAvailable } from "./_core/edgeTTS";
 import { addDocumentToChroma, searchSimilarChunks, deleteDocumentFromChroma, getCollectionStats, getRAGContext } from "./_core/chromaDB";
@@ -1124,20 +1124,9 @@ To access adult/NSFW content, please verify your age (18+):
           }
         }
         
-        // Map "uncensored" model alias to actual model id
+        // Removed uncensored model routing - no longer supporting uncensored content
         let effectiveModel = input.model;
-        if (input.model === "uncensored") {
-          effectiveModel = "venice-uncensored";
-        }
-        
-        // Smart NSFW routing: If age-verified user requests NSFW content, auto-switch to uncensored model
-        // This provides a seamless experience without requiring manual mode switching
         let autoSwitchedToUncensored = false;
-        if (!effectiveModel && userAgeVerified && isNsfwContentRequest(promptContent)) {
-          effectiveModel = "venice-uncensored";
-          autoSwitchedToUncensored = true;
-          console.log("Auto-routing to uncensored model for age-verified user");
-        }
         
         // Analyze complexity and select model
         const complexity = analyzeQueryComplexity(input.messages);
@@ -1463,16 +1452,7 @@ Provide a comprehensive, well-researched response.`;
             }
           }
           
-          if (selectedModel.provider === "openrouter" && selectedModel.id === "venice-uncensored") {
-            // Use Venice Uncensored via OpenRouter (FREE, unrestricted)
-            response = await invokeVeniceUncensored({
-              messages: messagesWithSearch.map(m => ({
-                role: m.role as "system" | "user" | "assistant",
-                content: m.content,
-              })),
-              temperature: input.temperature,
-            });
-          } else if (selectedModel.provider === "openrouter") {
+          if (selectedModel.provider === "openrouter") {
             // Use any OpenRouter model (FREE tier models)
             const openRouterModelMap: Record<string, string> = {
               "deepseek-r1-free": "deepseek/deepseek-r1-0528:free",
@@ -1573,30 +1553,7 @@ Provide a comprehensive, well-researched response.`;
           let fallbackMessage = '';
           let actualModelUsed = selectedModel;
           
-          // Check if the model refused to respond and auto-fallback to Venice Uncensored
-          if (isRefusalResponse(assistantContent) && selectedModel.id !== "venice-uncensored") {
-            try {
-              // Try again with Venice Uncensored (unrestricted model)
-              const fallbackResponse = await invokeVeniceUncensored({
-                messages: messagesWithSearch.map(m => ({
-                  role: m.role as "system" | "user" | "assistant",
-                  content: m.content,
-                })),
-                temperature: input.temperature,
-              });
-              
-              const fallbackContent = fallbackResponse.choices[0]?.message?.content;
-              if (fallbackContent && typeof fallbackContent === 'string' && fallbackContent.trim()) {
-                assistantContent = fallbackContent;
-                usedFallback = true;
-                fallbackMessage = "I found a different approach to help you with that.";
-                actualModelUsed = AVAILABLE_MODELS.find(m => m.id === "venice-uncensored") || selectedModel;
-              }
-            } catch (fallbackError) {
-              console.error("Venice Uncensored fallback failed:", fallbackError);
-              // Keep original response if fallback fails
-            }
-          }
+          // Removed Venice uncensored fallback - no longer using uncensored models
           
           const outputTokens = estimateTokens(assistantContent);
           const totalTokens = inputTokens + outputTokens;
@@ -2065,12 +2022,8 @@ Provide a comprehensive, well-researched response.`;
         
         try {
           // Generate new image with a random seed for variation
-          const result = await generateVeniceImage({
+          const result = await generateImage({
             prompt: input.prompt,
-            model: 'hidream',
-            nsfw: false,
-            size: '1024x1024',
-            seed: Math.floor(Math.random() * 1000000000),
           });
           
           // Save generated image to database
@@ -2079,7 +2032,7 @@ Provide a comprehensive, well-researched response.`;
             imageUrl: result.url,
             prompt: input.prompt,
             negativePrompt: null,
-            model: 'hidream',
+            model: 'runware-flux',
             aspectRatio: '1024x1024',
             seed: null,
             steps: null,
@@ -4730,347 +4683,6 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
       }),
   }),
 
-  // NSFW Subscription and Image Generation
-  nsfw: router({
-    // Get NSFW subscription status
-    getStatus: protectedProcedure.query(async ({ ctx }) => {
-      const status = await getNsfwSubscriptionStatus(ctx.user.id);
-      return status || {
-        hasNsfwSubscription: false,
-        nsfwSubscriptionStatus: "none",
-        nsfwImagesUsed: 0,
-        nsfwImagesLimit: 100,
-        ageVerified: false,
-      };
-    }),
-
-    // Verify age (18+)
-    verifyAge: protectedProcedure
-      .input(z.object({ confirmed: z.boolean() }).optional())
-      .mutation(async ({ ctx, input }) => {
-        const db = await getDb();
-        
-        // User must confirm they are 18+
-        if (input?.confirmed === false) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "You must confirm you are 18 or older to access uncensored features.",
-          });
-        }
-        
-        // Update user record
-        await db!.update(users)
-          .set({
-            ageVerified: true,
-            ageVerifiedAt: new Date(),
-          })
-          .where(eq(users.id, ctx.user.id));
-        
-        return { success: true, ageVerified: true };
-      }),
-
-    // Check if user can generate NSFW images (credits-based)
-    canGenerate: protectedProcedure.query(async ({ ctx }) => {
-      const status = await getNsfwSubscriptionStatus(ctx.user.id);
-      if (!status) {
-        return { canGenerate: false, reason: "User not found" };
-      }
-      if (!status.ageVerified) {
-        return { canGenerate: false, reason: "Age verification required" };
-      }
-      // Credits-based system - check if user has enough credits (10 per image)
-      const creditsService = await import("./_core/credits");
-      const hasCredits = await creditsService.hasEnoughCredits(ctx.user.id, 3);
-      if (!hasCredits) {
-        return { canGenerate: false, reason: "Insufficient credits (3 credits per image)" };
-      }
-      const balance = await creditsService.getUserCredits(ctx.user.id);
-      return { 
-        canGenerate: true, 
-        creditsRemaining: (balance?.freeCredits || 0) + (balance?.purchasedCredits || 0)
-      };
-    }),
-
-    // Get available Venice image models
-    getModels: publicProcedure.query(() => {
-      return {
-        nsfwModels: [
-          { id: VENICE_IMAGE_MODELS.LUSTIFY_SDXL, name: "Lustify SDXL", price: 0.01 },
-          { id: VENICE_IMAGE_MODELS.LUSTIFY_V7, name: "Lustify v7", price: 0.01 },
-        ],
-        sfwModels: [
-          { id: VENICE_IMAGE_MODELS.VENICE_SD35, name: "Venice SD35", price: 0.01 },
-          { id: VENICE_IMAGE_MODELS.HIDREAM, name: "HiDream", price: 0.01 },
-          { id: VENICE_IMAGE_MODELS.FLUX_2_PRO, name: "Flux 2 Pro", price: 0.04 },
-          { id: VENICE_IMAGE_MODELS.ANIME_WAI, name: "Anime (WAI)", price: 0.01 },
-          { id: VENICE_IMAGE_MODELS.Z_IMAGE_TURBO, name: "Z-Image Turbo", price: 0.01 },
-        ],
-        sizes: VENICE_IMAGE_SIZES,
-      };
-    }),
-
-    // Generate NSFW image via Venice API
-    generate: protectedProcedure
-      .input(z.object({
-        prompt: z.string().min(1).max(1500),
-        model: z.string().default("lustify-sdxl"),
-        size: z.string().default("1024x1024"),
-        negativePrompt: z.string().optional(),
-        batchCount: z.number().int().min(1).max(4).default(1),
-      }))
-      .mutation(async ({ ctx, input }) => {
-        const startTime = Date.now();
-        
-        // Check if model is NSFW
-        const isNsfw = isNsfwModel(input.model);
-        
-        if (isNsfw) {
-          // Verify age
-          const ageVerified = await isUserAgeVerified(ctx.user.id);
-          if (!ageVerified) {
-            throw new TRPCError({
-              code: "FORBIDDEN",
-              message: "Age verification required for NSFW content. Please verify you are 18+ in Settings.",
-            });
-          }
-          
-          // Credits-based system - deduct credits for uncensored images
-          // 1 image = 3 credits, 4 images = 10 credits (save 2 credits!)
-          const creditCost = input.batchCount === 4 ? 10 : 3 * input.batchCount;
-          const creditsService = await import("./_core/credits");
-          const hasCredits = await creditsService.hasEnoughCredits(ctx.user.id, creditCost);
-          if (!hasCredits) {
-            throw new TRPCError({
-              code: "FORBIDDEN",
-              message: "Insufficient credits. Images cost 3 credits each. Purchase more credits to continue.",
-            });
-          }
-          
-          // Deduct credits
-          await creditsService.deductCredits(ctx.user.id, creditCost, "uncensored_image", `Uncensored image: ${input.model}`);
-        }
-        
-        try {
-          // Generate images in parallel for batch requests
-          const generatePromises = Array.from({ length: input.batchCount }, () =>
-            generateVeniceImage({
-              prompt: input.prompt,
-              model: input.model as any,
-              size: input.size as any,
-              nsfw: isNsfw,
-              negativePrompt: input.negativePrompt,
-            })
-          );
-          
-          const results = await Promise.all(generatePromises);
-          
-          // Save all images to database
-          await Promise.all(
-            results.map((result) =>
-              createGeneratedImage({
-                userId: ctx.user.id,
-                imageUrl: result.url,
-                prompt: input.prompt,
-                negativePrompt: input.negativePrompt,
-                model: input.model,
-                aspectRatio: input.size,
-                status: "completed",
-                metadata: JSON.stringify({
-                  type: isNsfw ? "nsfw_image" : "venice_image",
-                  duration: Date.now() - startTime,
-                  isNsfw,
-                  batchCount: input.batchCount,
-                }),
-              })
-            )
-          );
-          
-          // Create audit log
-          await createAuditLog({
-            userId: ctx.user.id,
-            userOpenId: ctx.user.openId,
-            actionType: "image_generation",
-            ipAddress: getClientIp(ctx.req),
-            userAgent: ctx.req.headers["user-agent"] || null,
-            contentHash: hashContent(input.prompt),
-            modelUsed: input.model,
-            promptLength: input.prompt.length,
-            metadata: JSON.stringify({
-              type: isNsfw ? "nsfw_image" : "venice_image",
-              size: input.size,
-              isNsfw,
-              batchCount: input.batchCount,
-            }),
-            timestamp: new Date(),
-          });
-          
-          // Log for admin review (first image)
-          auditLogImageAccess({
-            userId: ctx.user.id,
-            userEmail: ctx.user.email || undefined,
-            imageUrl: results[0].url,
-            prompt: input.prompt,
-            actionType: "generate",
-            ipAddress: getClientIp(ctx.req),
-          });
-          
-          // Return all generated images
-          return {
-            images: results.map((result) => ({
-              url: result.url,
-              model: result.model,
-              size: result.size,
-              isNsfw: result.isNsfw,
-            })),
-            batchCount: input.batchCount,
-          };
-        } catch (error: any) {
-          // Refund credits on failure
-          if (isNsfw) {
-            const creditCost = input.batchCount === 4 ? 10 : 3 * input.batchCount;
-            await refundCredits(
-              ctx.user.id,
-              creditCost,
-              `Venice image generation failed: ${error.message || 'Unknown error'}`
-            );
-          }
-          
-          // Log failed attempt
-          await createGeneratedImage({
-            userId: ctx.user.id,
-            imageUrl: "",
-            prompt: input.prompt,
-            model: input.model,
-            status: "failed",
-            metadata: JSON.stringify({
-              type: isNsfw ? "nsfw_image" : "venice_image",
-              error: error.message,
-              duration: Date.now() - startTime,
-              refunded: isNsfw,
-            }),
-          });
-          
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: isNsfw 
-              ? `Image generation failed. Your credits have been refunded. Error: ${error.message || 'Unknown error'}`
-              : error.message || "Failed to generate image",
-          });
-        }
-      }),
-
-    // Create Stripe checkout for NSFW subscription
-    createCheckout: protectedProcedure.mutation(async ({ ctx }) => {
-      // Check if already subscribed
-      const status = await getNsfwSubscriptionStatus(ctx.user.id);
-      if (status?.hasNsfwSubscription) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "You already have an active NSFW subscription",
-        });
-      }
-      
-      // Check age verification
-      if (!status?.ageVerified) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Please verify your age (18+) before subscribing to NSFW content",
-        });
-      }
-      
-      const stripe = new Stripe(process.env.Secretkey_live_stripe || process.env.STRIPE_SECRET_KEY || "", {
-        apiVersion: "2025-12-15.clover",
-      });
-      
-      // Get or create Stripe customer
-      let customerId = ctx.user.stripeCustomerId;
-      if (!customerId) {
-        const customer = await stripe.customers.create({
-          email: ctx.user.email || undefined,
-          name: ctx.user.name || undefined,
-          metadata: {
-            userId: ctx.user.id.toString(),
-            openId: ctx.user.openId,
-          },
-        });
-        customerId = customer.id;
-        
-        // Update user with Stripe customer ID
-        const db = await getDb();
-        if (db) {
-          await db.update(users)
-            .set({ stripeCustomerId: customerId })
-            .where(eq(users.id, ctx.user.id));
-        }
-      }
-      
-      // Create checkout session for Uncensored add-on
-      // Price: $7.99/month - Uses STRIPE_UNCENSORED_PRICE_ID for billing privacy
-      const UNCENSORED_PRICE_ID = process.env.STRIPE_UNCENSORED_PRICE_ID;
-      
-      if (!UNCENSORED_PRICE_ID) {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Uncensored pricing not configured" });
-      }
-      
-      // Use origin from request for correct redirect
-      const origin = ctx.req.headers.origin || "https://chofesh.ai";
-      
-      const session = await stripe.checkout.sessions.create({
-        customer: customerId,
-        payment_method_types: ["card"],
-        line_items: [
-          {
-            price: UNCENSORED_PRICE_ID,
-            quantity: 1,
-          },
-        ],
-        mode: "subscription",
-        success_url: `${origin}/image?uncensored_subscribed=true`,
-        cancel_url: `${origin}/image?uncensored_canceled=true`,
-        metadata: {
-          userId: ctx.user.id.toString(),
-          type: "nsfw_subscription",
-        },
-      });
-      
-      return { checkoutUrl: session.url };
-    }),
-
-    // Cancel NSFW subscription
-    cancelSubscription: protectedProcedure.mutation(async ({ ctx }) => {
-      const db = await getDb();
-      if (!db) {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
-      }
-      
-      const userResult = await db.select()
-        .from(users)
-        .where(eq(users.id, ctx.user.id))
-        .limit(1);
-      
-      if (userResult.length === 0 || !userResult[0].nsfwSubscriptionId) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "No active NSFW subscription found",
-        });
-      }
-      
-      const stripe = new Stripe(process.env.Secretkey_live_stripe || process.env.STRIPE_SECRET_KEY || "", {
-        apiVersion: "2025-12-15.clover",
-      });
-      
-      // Cancel at period end
-      await stripe.subscriptions.update(userResult[0].nsfwSubscriptionId, {
-        cancel_at_period_end: true,
-      });
-      
-      await updateNsfwSubscription(ctx.user.id, {
-        nsfwSubscriptionStatus: "canceled",
-      });
-      
-      return { success: true, message: "Subscription will be canceled at the end of the billing period" };
-    }),
-  }),
   
   // Customer Support
   support: router({

@@ -116,7 +116,6 @@ export const PROVIDER_CONFIGS: Record<AIProvider, ProviderConfig> = {
       { id: "google/gemma-3-27b-it:free", name: "Gemma 3 27B", provider: "openrouter", contextWindow: 8192, isFree: true, tier: "free" },
       { id: "mistralai/mistral-small-3.1-24b-instruct:free", name: "Mistral Small 3.1 24B", provider: "openrouter", contextWindow: 32768, isFree: true, tier: "free" },
       { id: "qwen/qwen-2.5-vl-7b-instruct:free", name: "Qwen 2.5 VL 7B", provider: "openrouter", contextWindow: 32768, isFree: true, isVision: true, tier: "free" },
-      { id: "cognitivecomputations/dolphin-mistral-24b-venice-edition:free", name: "Venice Uncensored", provider: "openrouter", contextWindow: 32768, isFree: true, tier: "free" },
       { id: "nousresearch/hermes-3-llama-3.1-405b:free", name: "Hermes 3 405B", provider: "openrouter", contextWindow: 128000, isFree: true, tier: "free" },
       { id: "moonshotai/kimi-k2:free", name: "Kimi K2", provider: "openrouter", contextWindow: 128000, isFree: true, tier: "free" },
       // NEW models (January 2026)
