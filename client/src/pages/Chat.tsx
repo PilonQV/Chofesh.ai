@@ -1852,6 +1852,8 @@ export default function Chat() {
                     </div>
                     <p className="text-xs text-muted-foreground">GPT-4o, Claude - Best quality</p>
                   </button>
+                  {/* Uncensored tier hidden */}
+                  {false && (
                   <button
                     onClick={handleUncensoredClick}
                     className={`p-3 rounded-lg border text-left transition-all hover:scale-105 cursor-pointer ${isUncensoredMode ? "border-rose-500/50 bg-rose-500/10" : "border-border hover:border-rose-500/30 hover:bg-rose-500/5"}`}
@@ -1862,6 +1864,7 @@ export default function Chat() {
                     </div>
                     <p className="text-xs text-muted-foreground">No content filters</p>
                   </button>
+                  )}
                 </div>
               </div>
             )}
