@@ -11,7 +11,7 @@ const DEFAULT_CREDIT_COSTS: Record<string, Record<string, number>> = {
     uncensored: 3,
   },
   image_generation: {
-    standard: 8,
+    standard: 1, // Runware FLUX.2: $0.04 per image (~1 credit)
     premium: 20,
     uncensored: 10,
   },
