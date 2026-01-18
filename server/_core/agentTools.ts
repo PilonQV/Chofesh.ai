@@ -8,7 +8,7 @@
  * - Execute simple code/calculations
  */
 
-import { generateVeniceImage } from './veniceImage';
+import { generateImage } from './imageGeneration';
 import { searchWithSonar } from './perplexitySonar';
 import { executeCode as executeCodeWithWorkspace, getSupportedLanguages, checkLanguageSupport, formatExecutionResult } from './codeExecution';
 
@@ -68,20 +68,15 @@ export class AgentTools {
     console.log(`[AgentTools] Generating ${imageCount} images:`, params.prompt);
     
     try {
-      // Generate multiple images in parallel with unique seeds for variations
-      const baseSeed = Math.floor(Math.random() * 1000000000);
-      const imagePromises = Array.from({ length: imageCount }, (_, index) =>
-        generateVeniceImage({
+      // Generate multiple images in parallel using Runware
+      const imagePromises = Array.from({ length: imageCount }, () =>
+        generateImage({
           prompt: params.prompt,
-          model: 'hidream', // Use high-quality model
-          nsfw: false,
-          size: '1024x1024',
-          seed: baseSeed + index * 12345, // Different seed for each image to ensure variations
         })
       );
       
       const results = await Promise.all(imagePromises);
-      const urls = results.map(r => r.url);
+      const urls = results.map(r => r.url).filter((url): url is string => url !== undefined);
       
       console.log(`[AgentTools] Generated ${urls.length} images successfully`);
       
@@ -89,7 +84,7 @@ export class AgentTools {
         type: 'image',
         urls,
         prompt: params.prompt,
-        model: 'hidream',
+        model: 'runware-flux',
       };
     } catch (error: any) {
       console.error('[AgentTools] Image generation failed:', error);

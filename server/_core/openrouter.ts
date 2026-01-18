@@ -1,6 +1,6 @@
 /**
- * OpenRouter API Helper for DeepSeek R1 Free and Venice Uncensored
- * Provides access to DeepSeek R1 reasoning model and Venice Uncensored via OpenRouter's free tier
+ * OpenRouter API Helper for DeepSeek R1 Free
+ * Provides access to DeepSeek R1 reasoning model via OpenRouter's free tier
  */
 
 const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
@@ -38,7 +38,6 @@ export interface OpenRouterResponse {
 // OpenRouter model IDs
 export const OPENROUTER_MODELS = {
   DEEPSEEK_R1: "deepseek/deepseek-r1-0528:free",
-  VENICE_UNCENSORED: "cognitivecomputations/dolphin-mistral-24b-venice-edition:free",
 } as const;
 
 /**
@@ -87,13 +86,7 @@ export async function invokeDeepSeekR1(options: OpenRouterOptions): Promise<Open
   return invokeOpenRouter({ ...options, model: OPENROUTER_MODELS.DEEPSEEK_R1 });
 }
 
-/**
- * Invoke Venice Uncensored via OpenRouter's free tier
- * This model has no content filters and can handle unrestricted requests
- */
-export async function invokeVeniceUncensored(options: Omit<OpenRouterOptions, 'model'>): Promise<OpenRouterResponse> {
-  return invokeOpenRouter({ ...options, model: OPENROUTER_MODELS.VENICE_UNCENSORED });
-}
+
 
 /**
  * Common refusal patterns that indicate a model declined to respond

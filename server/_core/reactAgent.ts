@@ -16,7 +16,7 @@
 import { searchDuckDuckGo } from "./duckduckgo";
 import { enhancedWebSearch } from "./webSearchEnhanced";
 import { searchWithGemini } from "./geminiSearch";
-import { generateVeniceImage } from "./veniceImage";
+import { generateImage } from "./imageGeneration";
 import { exec } from "child_process";
 import { promisify } from "util";
 import * as fs from "fs/promises";
@@ -97,11 +97,8 @@ const TOOLS: Tool[] = [
     execute: async (prompt: string) => {
       try {
         console.log("[ReAct Tool] Generating image:", prompt);
-        const result = await generateVeniceImage({
+        const result = await generateImage({
           prompt,
-          model: 'hidream',
-          nsfw: false,
-          size: '1024x1024',
         });
         return `Image generated successfully! URL: ${result.url}\nYou can show this to the user.`;
       } catch (error: any) {

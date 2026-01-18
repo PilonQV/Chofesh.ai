@@ -39,7 +39,7 @@ const MODEL_TIERS: Record<string, string> = {
   "o1-mini": "premium",
   "o1-preview": "premium",
   // Uncensored tier
-  "venice-uncensored": "uncensored",
+
   "dolphin-mixtral": "uncensored",
 };
 
