@@ -33,7 +33,10 @@ export type GenerateImageResponse = {
 };
 
 /**
- * Generate image using Runware API (FLUX.2 model)
+ * Generate image using Runware API (FLUX.2 [klein] 4B model)
+ * - Model: runware:400@4
+ * - Cost: $0.0019 per image (95% cheaper than previous)
+ * - Includes automatic prompt enhancement
  */
 async function generateImageRunware(
   options: GenerateImageOptions
@@ -45,16 +48,55 @@ async function generateImageRunware(
   const taskUUID = randomUUID();
   const apiUrl = "https://api.runware.ai/v1";
 
-  // Prepare the request payload
+  // Step 1: Enhance prompt if enabled (default: true)
+  let enhancedPrompt = options.prompt;
+  const shouldEnhancePrompt = true; // Can be made configurable
+  
+  if (shouldEnhancePrompt && options.prompt.length > 10) {
+    try {
+      const enhancePayload = {
+        taskType: "promptEnhance",
+        taskUUID: randomUUID(),
+        prompt: options.prompt,
+        promptVersions: 1,
+      };
+      
+      const enhanceResponse = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${ENV.runwareApiKey}`,
+        },
+        body: JSON.stringify([enhancePayload]),
+      });
+      
+      if (enhanceResponse.ok) {
+        const enhanceResult = await enhanceResponse.json();
+        if (enhanceResult.data && enhanceResult.data.length > 0) {
+          enhancedPrompt = enhanceResult.data[0].enhancedPrompt || options.prompt;
+          console.log("[Image Generation] Prompt enhanced:", {
+            original: options.prompt,
+            enhanced: enhancedPrompt,
+          });
+        }
+      }
+    } catch (error) {
+      console.warn("[Image Generation] Prompt enhancement failed, using original:", error);
+      // Continue with original prompt if enhancement fails
+    }
+  }
+
+  // Step 2: Prepare the image generation request payload
   const payload: any = {
     taskType: "imageInference",
     taskUUID,
-    model: "bfl:2@1", // FLUX.2 model
-    positivePrompt: options.prompt,
+    model: "runware:400@4", // FLUX.2 [klein] 4B - 95% cost reduction!
+    positivePrompt: enhancedPrompt,
     width: 1024,
     height: 1024,
     steps: 4,
     numberResults: 1,
+    includeCost: true, // Track costs
   };
 
   // If original images are provided, use image-to-image mode
