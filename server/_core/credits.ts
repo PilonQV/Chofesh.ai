@@ -11,9 +11,9 @@ const DEFAULT_CREDIT_COSTS: Record<string, Record<string, number>> = {
     uncensored: 3,
   },
   image_generation: {
-    standard: 1, // Runware FLUX.2: $0.04 per image (~1 credit)
+    standard: 1, // Runware FLUX.2 [klein] 4B: $0.0019 per image (95% cost reduction!)
     premium: 20,
-    uncensored: 10,
+    uncensored: 10, // Deprecated - removed Venice API
   },
   document_chat: { default: 3 },
   image_upscale: { default: 4 },
