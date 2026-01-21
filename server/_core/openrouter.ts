@@ -38,6 +38,7 @@ export interface OpenRouterResponse {
 // OpenRouter model IDs
 export const OPENROUTER_MODELS = {
   DEEPSEEK_R1: "deepseek/deepseek-r1-0528:free",
+  KIMI_K2_THINKING: "moonshotai/kimi-k2-thinking",
 } as const;
 
 /**
