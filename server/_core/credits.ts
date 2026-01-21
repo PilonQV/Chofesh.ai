@@ -32,6 +32,7 @@ const MODEL_TIERS: Record<string, string> = {
   // Standard tier
   "gpt-4o-mini": "standard",
   "grok-3-fast": "standard",
+  "kimi-k2-thinking": "standard",
   // Premium tier
   "gpt-4o": "premium",
   "claude-3-5-sonnet": "premium",
@@ -387,7 +388,7 @@ export function getCheapestModel(complexity: "simple" | "medium" | "complex"): s
     case "medium":
       return "llama-3.3-70b"; // Free, powerful
     case "complex":
-      return "gpt-4o-mini"; // Cheap, capable
+      return "kimi-k2-thinking"; // Best for agentic research & deep reasoning
     default:
       return "llama-3.1-8b";
   }

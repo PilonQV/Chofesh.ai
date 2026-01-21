@@ -202,7 +202,7 @@ export function createAgentPlan(goal: UserGoal): AgentPlan {
       id: stepId++,
       action: "Search the web for real-time information",
       tool: "web-search",
-      reasoning: "User needs current data that I don't have in my training",
+      reasoning: "User needs current data. Using Kimi K2 Thinking for deep agentic research.",
       status: 'pending',
     });
     requiredTools.push("web-search");

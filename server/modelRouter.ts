@@ -241,6 +241,19 @@ export const AVAILABLE_MODELS: ModelDefinition[] = [
     supportsVision: false,
     speed: "medium",
   },
+  {
+    id: "kimi-k2-thinking",
+    name: "Kimi K2 Thinking",
+    description: "Best for agentic research & deep reasoning",
+    provider: "openrouter",
+    tier: "standard",
+    costPer1kInput: 0.0004,
+    costPer1kOutput: 0.00175,
+    maxTokens: 262144,
+    supportsVision: false,
+    speed: "medium",
+    isReasoningModel: true,
+  },
   // Cerebras FREE models - Ultra-fast inference
   {
     id: "llama-3.3-70b-cerebras",
@@ -494,8 +507,8 @@ export function selectModel(
       // Medium queries → Grok 3 Fast (cheap, most up-to-date)
       return AVAILABLE_MODELS.find(m => m.id === "grok-3-fast")!;
     case "complex":
-      // Complex reasoning → DeepSeek R1 (FREE, best for reasoning)
-      return AVAILABLE_MODELS.find(m => m.id === "deepseek-r1-free")!;
+      // Complex reasoning → Kimi K2 Thinking (Best for agentic research & deep reasoning)
+      return AVAILABLE_MODELS.find(m => m.id === "kimi-k2-thinking")!;
   }
 }
 
