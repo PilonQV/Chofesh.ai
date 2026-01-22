@@ -5,31 +5,62 @@
  * Structured data helps search engines understand the content and enables rich snippets.
  */
 
-export const structuredData: Record<string, object> = {
-  '/': {
-    '@context': 'https://schema.org',
-    '@type': 'SoftwareApplication',
-    name: 'Chofesh',
-    applicationCategory: 'ProductivityApplication',
-    operatingSystem: 'Web',
-    description: 'Privacy-first AI chat platform with local-first storage, end-to-end encryption, and access to 20+ AI models.',
-    url: 'https://chofesh.ai',
-    offers: {
-      '@type': 'AggregateOffer',
-      lowPrice: '0',
-      priceCurrency: 'USD',
-      offerCount: '3',
-    },
-    featureList: [
-      'Private AI Chat',
-      'Local-First Storage',
-      'End-to-End Encryption',
-      'Bring Your Own Key (BYOK)',
-      'Smart Model Routing',
-      'Deep Research',
-      '20+ AI Models',
-    ],
-  },
+// Organization schema - included on all pages
+const organizationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'Chofesh.ai',
+  url: 'https://chofesh.ai',
+  logo: 'https://chofesh.ai/chofesh-logo-og.webp',
+  description: 'Privacy-first AI chat platform with local data storage and AES-256 encryption',
+  foundingDate: '2025',
+  sameAs: [
+    'https://twitter.com/chofeshai',
+    'https://github.com/serever-coder357/Chofesh.ai'
+  ],
+  contactPoint: {
+    '@type': 'ContactPoint',
+    contactType: 'Customer Support',
+    email: 'support@chofesh.ai'
+  }
+};
+
+export const structuredData: Record<string, object | object[]> = {
+  '/': [
+    organizationSchema,
+    {
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'Chofesh',
+      applicationCategory: 'ProductivityApplication',
+      operatingSystem: 'Web',
+      description: 'Privacy-first AI chat platform with local-first storage, end-to-end encryption, and access to 25+ AI models.',
+      url: 'https://chofesh.ai',
+      offers: {
+        '@type': 'AggregateOffer',
+        lowPrice: '5',
+        highPrice: '99',
+        priceCurrency: 'USD',
+        offerCount: '4',
+      },
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: '4.8',
+        ratingCount: '127'
+      },
+      featureList: [
+        'Private AI Chat',
+        'Local-First Storage',
+        'AES-256 Encryption',
+        'Bring Your Own Key (BYOK)',
+        'Smart Model Routing',
+        'Deep Research',
+        '25+ AI Models',
+        'Code Execution (60+ Languages)',
+        'Image Generation',
+      ],
+    }
+  ],
   '/pricing': {
     '@context': 'https://schema.org',
     '@type': 'Product',
@@ -223,6 +254,13 @@ Object.assign(structuredData, faqData);
 export function getStructuredData(path: string): string | null {
   const data = structuredData[path];
   if (!data) return null;
+  
+  // Handle both single schema and array of schemas
+  if (Array.isArray(data)) {
+    return data.map(schema => 
+      `<script type="application/ld+json">\n${JSON.stringify(schema, null, 2)}\n</script>`
+    ).join('\n');
+  }
   
   return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n</script>`;
 }

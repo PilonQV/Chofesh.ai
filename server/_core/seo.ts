@@ -17,6 +17,7 @@ interface PageMetadata {
   description: string;
   canonical: string;
   ogType?: string;
+  keywords?: string[];
 }
 
 const pageMetadata: Record<string, PageMetadata> = {
@@ -24,23 +25,27 @@ const pageMetadata: Record<string, PageMetadata> = {
     title: 'Chofesh — Private AI Chat (Encrypted, Local-First, Multi-Model, BYOK)',
     description: 'Chofesh.ai - The AI platform that respects your creativity. Generate text and images freely. Your conversations stay on your device, always.',
     canonical: 'https://chofesh.ai/',
+    keywords: ['private AI chat', 'local AI storage', 'encrypted AI', 'BYOK AI', 'privacy-first AI', 'AI chat platform', 'local-first AI', 'zero data collection'],
   },
   '/features': {
     title: 'Features - Privacy-First AI Platform | Chofesh',
     description: 'Explore Chofesh\'s powerful features: private AI chat, BYOK support, local-first storage, smart model routing, and deep research capabilities.',
     canonical: 'https://chofesh.ai/features',
+    keywords: ['AI features', 'private AI', 'local storage', 'encryption', 'BYOK', 'code execution', 'model routing'],
   },
   '/features/private-ai-chat': {
     title: 'Private AI Chat - Encrypted & Local-First | Chofesh',
     description: 'Learn how Chofesh\'s private AI chat keeps your conversations secure with end-to-end encryption and on-device storage. No data retention, ever.',
     canonical: 'https://chofesh.ai/features/private-ai-chat',
     ogType: 'article',
+    keywords: ['private AI chat', 'encrypted chat', 'zero data collection', 'privacy AI', 'secure AI chat', 'confidential AI'],
   },
   '/features/byok': {
     title: 'Bring Your Own Key (BYOK) - Control Your AI Usage | Chofesh',
     description: 'Use your own API keys from OpenAI, Google, Anthropic, and more. Full control over billing, usage, and data with Chofesh\'s BYOK model.',
     canonical: 'https://chofesh.ai/features/byok',
     ogType: 'article',
+    keywords: ['BYOK', 'bring your own keys', 'AI API keys', 'OpenAI API', 'Anthropic API', 'own API key'],
   },
   '/features/local-storage': {
     title: 'Local-First Storage - Your Data Stays on Your Device | Chofesh',
@@ -64,12 +69,14 @@ const pageMetadata: Record<string, PageMetadata> = {
     title: 'Pricing - Simple, Transparent, Fair | Chofesh',
     description: 'Pay-as-you-go pricing with no subscriptions. Use your own API keys or purchase credits that never expire. Full transparency and control.',
     canonical: 'https://chofesh.ai/pricing',
+    keywords: ['AI pricing', 'AI chat pricing', 'affordable AI', 'pay-as-you-go AI', 'AI credits', 'no subscription AI'],
   },
   '/compare/chofesh-vs-chatgpt': {
     title: 'Chofesh vs ChatGPT - Privacy-First AI Comparison',
     description: 'Compare Chofesh\'s local-first, encrypted AI chat with hosted services like ChatGPT. See why privacy-conscious users choose Chofesh.',
     canonical: 'https://chofesh.ai/compare/chofesh-vs-chatgpt',
     ogType: 'article',
+    keywords: ['Chofesh vs ChatGPT', 'ChatGPT alternative', 'private ChatGPT', 'AI comparison', 'ChatGPT privacy'],
   },
   '/privacy': {
     title: 'Privacy Policy | Chofesh',
@@ -88,10 +95,12 @@ function generateMetaTags(path: string): string {
   if (!metadata) return '';
 
   const ogType = metadata.ogType || 'website';
+  const keywordsTag = metadata.keywords ? `<meta name="keywords" content="${metadata.keywords.join(', ')}" />` : '';
 
   return `
     <title>${metadata.title}</title>
     <meta name="description" content="${metadata.description}" />
+    ${keywordsTag}
     <link rel="canonical" href="${metadata.canonical}" />
     
     <meta property="og:type" content="${ogType}" />
