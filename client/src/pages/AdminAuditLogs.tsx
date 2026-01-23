@@ -320,6 +320,12 @@ export default function AdminAuditLogs() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
+                {console.log("[Render] Checking conditions:", {
+                  isLoading: apiCallLogsQuery.isLoading,
+                  dataLength: apiCallLogsQuery.data?.length,
+                  hasData: !!apiCallLogsQuery.data,
+                  firstLog: apiCallLogsQuery.data?.[0]
+                })}
                 {apiCallLogsQuery.isLoading ? (
                   <div className="text-center py-8 text-muted-foreground">
                     Loading logs...
