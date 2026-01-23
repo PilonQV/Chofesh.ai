@@ -71,6 +71,15 @@ export default function AdminAuditLogs() {
     offset: page * limit,
   });
 
+  // Debug logging
+  console.log("[AdminAuditLogs] API Call Logs Query:", {
+    isLoading: apiCallLogsQuery.isLoading,
+    isError: apiCallLogsQuery.isError,
+    error: apiCallLogsQuery.error,
+    dataLength: apiCallLogsQuery.data?.length,
+    data: apiCallLogsQuery.data,
+  });
+
   // Image Access Logs Query
   const imageLogsQuery = trpc.adminAudit.getImageAccessLogs.useQuery({
     userId: userIdFilter ? parseInt(userIdFilter) : undefined,
