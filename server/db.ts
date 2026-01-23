@@ -252,40 +252,49 @@ export async function getAuditLogs(options: {
   const { limit = 50, offset = 0, userId, actionType, startDate, endDate } = options;
 
   const conditions = [];
-  if (userId) conditions.push(eq(auditLogs.userId, userId));
-  if (actionType) conditions.push(eq(auditLogs.actionType, actionType as any));
-  if (startDate) conditions.push(gte(auditLogs.timestamp, startDate));
-  if (endDate) conditions.push(lte(auditLogs.timestamp, endDate));
+  if (userId) conditions.push(eq(apiCallLogs.userId, userId));
+  if (actionType) conditions.push(eq(apiCallLogs.actionType, actionType as any));
+  if (startDate) conditions.push(gte(apiCallLogs.createdAt, startDate));
+  if (endDate) conditions.push(lte(apiCallLogs.createdAt, endDate));
 
   const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
   const [logs, countResult] = await Promise.all([
     db.select({
-      id: auditLogs.id,
-      userId: auditLogs.userId,
-      userOpenId: auditLogs.userOpenId,
-      actionType: auditLogs.actionType,
-      ipAddress: auditLogs.ipAddress,
-      userAgent: auditLogs.userAgent,
-      contentHash: auditLogs.contentHash,
-      modelUsed: auditLogs.modelUsed,
-      promptLength: auditLogs.promptLength,
-      responseLength: auditLogs.responseLength,
-      metadata: auditLogs.metadata,
-      timestamp: auditLogs.timestamp,
+      id: apiCallLogs.id,
+      userId: apiCallLogs.userId,
+      userEmail: apiCallLogs.userEmail,
+      userName: apiCallLogs.userName,
+      actionType: apiCallLogs.actionType,
+      ipAddress: apiCallLogs.ipAddress,
+      userAgent: apiCallLogs.userAgent,
+      modelUsed: apiCallLogs.modelUsed,
+      prompt: apiCallLogs.prompt,
+      systemPrompt: apiCallLogs.systemPrompt,
+      response: apiCallLogs.response,
+      tokensInput: apiCallLogs.tokensInput,
+      tokensOutput: apiCallLogs.tokensOutput,
+      durationMs: apiCallLogs.durationMs,
+      status: apiCallLogs.status,
+      errorMessage: apiCallLogs.errorMessage,
+      isUncensored: apiCallLogs.isUncensored,
+      createdAt: apiCallLogs.createdAt,
     })
-      .from(auditLogs)
+      .from(apiCallLogs)
       .where(whereClause)
-      .orderBy(desc(auditLogs.timestamp))
+      .orderBy(desc(apiCallLogs.createdAt))
       .limit(limit)
       .offset(offset),
     db.select({ count: sql<number>`count(*)` })
-      .from(auditLogs)
+      .from(apiCallLogs)
       .where(whereClause),
   ]);
 
   return {
-    logs,
+    logs: logs.map(log => ({
+      ...log,
+      timestamp: log.createdAt, // Map createdAt to timestamp for backward compatibility
+    })),
     total: countResult[0]?.count ?? 0,
   };
 }
@@ -299,13 +308,13 @@ export async function getAuditLogStats() {
   const last7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
   const [total, last24hCount, last7dCount, byActionType] = await Promise.all([
-    db.select({ count: sql<number>`count(*)` }).from(auditLogs),
-    db.select({ count: sql<number>`count(*)` }).from(auditLogs).where(gte(auditLogs.timestamp, last24h)),
-    db.select({ count: sql<number>`count(*)` }).from(auditLogs).where(gte(auditLogs.timestamp, last7d)),
+    db.select({ count: sql<number>`count(*)` }).from(apiCallLogs),
+    db.select({ count: sql<number>`count(*)` }).from(apiCallLogs).where(gte(apiCallLogs.createdAt, last24h)),
+    db.select({ count: sql<number>`count(*)` }).from(apiCallLogs).where(gte(apiCallLogs.createdAt, last7d)),
     db.select({
-      actionType: auditLogs.actionType,
+      actionType: apiCallLogs.actionType,
       count: sql<number>`count(*)`,
-    }).from(auditLogs).groupBy(auditLogs.actionType),
+    }).from(apiCallLogs).groupBy(apiCallLogs.actionType),
   ]);
 
   return {
