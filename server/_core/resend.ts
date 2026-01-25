@@ -677,3 +677,240 @@ Manage your subscription at: https://chofesh.ai/subscription
     text,
   });
 }
+
+
+/**
+ * Send critical content alert to administrators
+ * Triggered when illegal_activity or self_harm content is detected
+ */
+export interface CriticalContentAlertDetails {
+  userId: number;
+  userEmail: string | null;
+  userName: string | null;
+  flagReason: "illegal_activity" | "self_harm";
+  flagDetails: string;
+  prompt: string;
+  contentType: "chat" | "image";
+  timestamp: Date;
+}
+
+export async function sendCriticalContentAlert(
+  adminEmails: string[],
+  alertDetails: CriticalContentAlertDetails
+): Promise<{ success: boolean; error?: string }> {
+  if (adminEmails.length === 0) {
+    console.warn("[Resend] No admin emails configured for critical content alerts");
+    return { success: false, error: "No admin emails configured" };
+  }
+
+  const severityColor = alertDetails.flagReason === "illegal_activity" ? "#dc2626" : "#ea580c";
+  const severityLabel = alertDetails.flagReason === "illegal_activity" ? "ILLEGAL ACTIVITY" : "SELF-HARM";
+  const severityIcon = alertDetails.flagReason === "illegal_activity" ? "⚠️" : "🚨";
+  
+  const formattedDate = alertDetails.timestamp.toLocaleString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZoneName: "short",
+  });
+
+  // Truncate prompt for email (keep first 500 chars)
+  const truncatedPrompt = alertDetails.prompt.length > 500 
+    ? alertDetails.prompt.substring(0, 500) + "..." 
+    : alertDetails.prompt;
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Critical Content Alert - Chofesh.ai</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #0a0a0f; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+  <table role="presentation" style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
+        <table role="presentation" style="max-width: 600px; width: 100%; border-collapse: collapse;">
+          <!-- Header -->
+          <tr>
+            <td align="center" style="padding-bottom: 30px;">
+              <img src="https://chofesh.ai/logo.webp" alt="Chofesh.ai" width="48" height="48" style="display: block;">
+              <h1 style="color: #ffffff; font-size: 24px; margin: 16px 0 0 0;">Chofesh.ai</h1>
+            </td>
+          </tr>
+          
+          <!-- Alert Banner -->
+          <tr>
+            <td style="background-color: ${severityColor}; border-radius: 8px 8px 0 0; padding: 16px; text-align: center;">
+              <h2 style="color: #ffffff; font-size: 20px; margin: 0; font-weight: 700;">
+                ${severityIcon} CRITICAL CONTENT ALERT ${severityIcon}
+              </h2>
+              <p style="color: #ffffff; font-size: 14px; margin: 8px 0 0 0; opacity: 0.9;">
+                ${severityLabel} DETECTED
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Main Content -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 0 0 16px 16px; padding: 32px;">
+              
+              <!-- User Info Section -->
+              <div style="background-color: rgba(255,255,255,0.05); border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+                <h3 style="color: #ffffff; font-size: 14px; margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 1px;">
+                  User Information
+                </h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                  <tr>
+                    <td style="color: #707080; font-size: 14px; padding: 4px 0;">User ID:</td>
+                    <td style="color: #ffffff; font-size: 14px; padding: 4px 0; text-align: right;">#${alertDetails.userId}</td>
+                  </tr>
+                  <tr>
+                    <td style="color: #707080; font-size: 14px; padding: 4px 0;">Email:</td>
+                    <td style="color: #ffffff; font-size: 14px; padding: 4px 0; text-align: right;">${alertDetails.userEmail || "Not provided"}</td>
+                  </tr>
+                  <tr>
+                    <td style="color: #707080; font-size: 14px; padding: 4px 0;">Name:</td>
+                    <td style="color: #ffffff; font-size: 14px; padding: 4px 0; text-align: right;">${alertDetails.userName || "Not provided"}</td>
+                  </tr>
+                  <tr>
+                    <td style="color: #707080; font-size: 14px; padding: 4px 0;">Content Type:</td>
+                    <td style="color: #ffffff; font-size: 14px; padding: 4px 0; text-align: right;">${alertDetails.contentType === "chat" ? "Chat Message" : "Image Generation"}</td>
+                  </tr>
+                  <tr>
+                    <td style="color: #707080; font-size: 14px; padding: 4px 0;">Timestamp:</td>
+                    <td style="color: #ffffff; font-size: 14px; padding: 4px 0; text-align: right;">${formattedDate}</td>
+                  </tr>
+                </table>
+              </div>
+              
+              <!-- Detection Details -->
+              <div style="background-color: rgba(220, 38, 38, 0.1); border: 1px solid ${severityColor}; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+                <h3 style="color: ${severityColor}; font-size: 14px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 1px;">
+                  Detection Details
+                </h3>
+                <p style="color: #ffffff; font-size: 14px; margin: 0;">
+                  ${alertDetails.flagDetails}
+                </p>
+              </div>
+              
+              <!-- Flagged Content -->
+              <div style="background-color: rgba(255,255,255,0.05); border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+                <h3 style="color: #ffffff; font-size: 14px; margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 1px;">
+                  Flagged Content
+                </h3>
+                <div style="background-color: rgba(0,0,0,0.3); border-radius: 4px; padding: 12px; font-family: monospace;">
+                  <p style="color: #a0a0b0; font-size: 13px; margin: 0; white-space: pre-wrap; word-break: break-word;">
+                    ${truncatedPrompt.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
+                  </p>
+                </div>
+              </div>
+              
+              <!-- Action Required -->
+              <div style="text-align: center; padding-top: 16px;">
+                <p style="color: #a0a0b0; font-size: 14px; margin: 0 0 16px 0;">
+                  Please review this content in the Admin Audit Logs.
+                </p>
+                <a href="https://chofesh.ai/admin/audit-logs" style="display: inline-block; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 600; padding: 12px 24px; border-radius: 8px;">
+                  View Audit Logs
+                </a>
+              </div>
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="padding-top: 30px; text-align: center;">
+              <p style="color: #505060; font-size: 12px; margin: 0;">
+                This is an automated alert from Chofesh.ai Content Moderation System
+              </p>
+              <p style="color: #404050; font-size: 11px; margin: 8px 0 0 0;">
+                © ${new Date().getFullYear()} Chofesh.ai - AI Without Limits
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`;
+
+  const text = `
+${severityIcon} CRITICAL CONTENT ALERT - ${severityLabel} DETECTED ${severityIcon}
+
+User Information:
+- User ID: #${alertDetails.userId}
+- Email: ${alertDetails.userEmail || "Not provided"}
+- Name: ${alertDetails.userName || "Not provided"}
+- Content Type: ${alertDetails.contentType === "chat" ? "Chat Message" : "Image Generation"}
+- Timestamp: ${formattedDate}
+
+Detection Details:
+${alertDetails.flagDetails}
+
+Flagged Content:
+${truncatedPrompt}
+
+Please review this content in the Admin Audit Logs:
+https://chofesh.ai/admin/audit-logs
+
+---
+This is an automated alert from Chofesh.ai Content Moderation System
+© ${new Date().getFullYear()} Chofesh.ai - AI Without Limits
+`;
+
+  // Send to all admin emails
+  const results = await Promise.all(
+    adminEmails.map(email => 
+      sendEmail({
+        to: email,
+        subject: `🚨 Critical Content Alert: ${severityLabel} - Chofesh.ai`,
+        html,
+        text,
+      })
+    )
+  );
+
+  const allSuccessful = results.every(r => r.success);
+  const errors = results.filter(r => !r.success).map(r => r.error).join(", ");
+
+  if (allSuccessful) {
+    console.log(`[Resend] Critical content alert sent to ${adminEmails.length} admin(s)`);
+    return { success: true };
+  } else {
+    console.error(`[Resend] Some critical content alerts failed: ${errors}`);
+    return { success: false, error: errors };
+  }
+}
+
+/**
+ * Get admin emails from database for alerts
+ */
+export async function getAdminEmailsForAlerts(): Promise<string[]> {
+  try {
+    const { getDb } = await import("../db");
+    const { users } = await import("../../drizzle/schema");
+    const { eq, isNotNull, and } = await import("drizzle-orm");
+    
+    const db = await getDb();
+    if (!db) return [];
+    
+    const admins = await db
+      .select({ email: users.email })
+      .from(users)
+      .where(and(eq(users.role, "admin"), isNotNull(users.email)));
+    
+    return admins
+      .map(a => a.email)
+      .filter((email): email is string => email !== null);
+  } catch (error) {
+    console.error("[Resend] Failed to get admin emails:", error);
+    return [];
+  }
+}

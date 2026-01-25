@@ -2828,3 +2828,16 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Add red flag indicator for censored command attempts
 - [x] Display flagged content prominently in audit logs UI
 - [x] Add filter option for flagged content only
+
+
+---
+
+## Admin Email Alerts for Critical Content - Jan 25 2026
+
+### Email Alert System
+- [x] Create email template for critical content alerts
+- [x] Implement sendCriticalContentAlert function
+- [x] Integrate alerts into logApiCall for illegal_activity and self_harm flags
+- [x] Integrate alerts into logImageAccess for illegal_activity and self_harm flags
+- [x] Add admin email configuration
+- [x] Add tests for email alert functionality
