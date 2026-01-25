@@ -319,10 +319,10 @@ describe("Phase 25 Part 2: Free AI Provider Integration", () => {
       expect(qwen?.supportsVision).toBe(true);
     });
 
-    it("should have Venice Uncensored model", () => {
-      const venice = AVAILABLE_MODELS.find(m => m.id === "venice-uncensored");
-      expect(venice).toBeDefined();
-      expect(venice?.isUncensored).toBe(true);
+    it("should have DeepSeek R1 model", () => {
+      const deepseek = AVAILABLE_MODELS.find(m => m.id === "deepseek-r1-free");
+      expect(deepseek).toBeDefined();
+      expect(deepseek?.isReasoningModel).toBe(true);
     });
   });
 

@@ -114,7 +114,7 @@ export class PistonWorkspace implements EnhancedWorkspaceProvider {
 
   async listDir(path: string): Promise<string[]> {
     const files: string[] = [];
-    for (const filePath of this.files.keys()) {
+    for (const filePath of Array.from(this.files.keys())) {
       if (filePath.startsWith(path) || path === '/') {
         files.push(filePath);
       }

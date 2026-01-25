@@ -95,7 +95,7 @@ export class WorkspaceManager implements IWorkspaceManager {
     }
 
     // Search all providers
-    for (const provider of this.providers.values()) {
+    for (const provider of Array.from(this.providers.values())) {
       const workspace = await provider.get(workspaceId);
       if (workspace) {
         this.workspaces.set(workspaceId, workspace);
@@ -112,7 +112,7 @@ export class WorkspaceManager implements IWorkspaceManager {
   async listWorkspaces(): Promise<WorkspaceInfo[]> {
     const allWorkspaces: WorkspaceInfo[] = [];
 
-    for (const provider of this.providers.values()) {
+    for (const provider of Array.from(this.providers.values())) {
       try {
         const workspaces = await provider.list();
         allWorkspaces.push(...workspaces);
@@ -185,7 +185,7 @@ export class WorkspaceManager implements IWorkspaceManager {
     console.log('[WorkspaceManager] Cleaning up all workspaces...');
 
     // Destroy all tracked workspaces
-    for (const workspace of this.workspaces.values()) {
+    for (const workspace of Array.from(this.workspaces.values())) {
       try {
         await workspace.destroy();
       } catch (error) {
@@ -195,7 +195,7 @@ export class WorkspaceManager implements IWorkspaceManager {
     this.workspaces.clear();
 
     // Cleanup all providers
-    for (const provider of this.providers.values()) {
+    for (const provider of Array.from(this.providers.values())) {
       try {
         await provider.cleanup();
       } catch (error) {
@@ -248,7 +248,7 @@ export class WorkspaceManager implements IWorkspaceManager {
       return this.findProviderForLanguage(language);
     }
 
-    for (const provider of this.providers.values()) {
+    for (const provider of Array.from(this.providers.values())) {
       const isAvailable = await provider.isAvailable();
       if (isAvailable) {
         return provider;

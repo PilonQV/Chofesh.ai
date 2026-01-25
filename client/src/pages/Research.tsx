@@ -43,7 +43,7 @@ export default function Research() {
 
     try {
       // Call Groq Compound API via tRPC
-      const response = await trpc.research.mutate({
+      const response = await (trpc.research as any).mutate({
         query: input,
         model: selectedModel,
       });

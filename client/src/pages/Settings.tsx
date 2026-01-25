@@ -118,10 +118,7 @@ export default function Settings() {
   
   const utils = trpc.useUtils();
   
-  // NSFW status query
-  const { data: nsfwStatus, isLoading: nsfwLoading } = trpc.nsfw.getStatus.useQuery(undefined, {
-    enabled: !!user,
-  });
+
   
   // API Keys query
   const { data: apiKeys, isLoading: keysLoading } = trpc.apiKeys.list.useQuery(undefined, {
@@ -154,17 +151,6 @@ export default function Settings() {
   });
   
   // Mutations
-  const verifyAgeMutation = trpc.nsfw.verifyAge.useMutation({
-    onSuccess: () => {
-      toast.success("Age verified! Uncensored mode unlocked for chat and images.");
-      setAgeVerifyOpen(false);
-      setConfirmAge(false);
-      utils.nsfw.getStatus.invalidate();
-    },
-    onError: (error) => {
-      toast.error(error.message || "Failed to verify age");
-    },
-  });
   
   const addKeyMutation = trpc.apiKeys.add.useMutation({
     onSuccess: () => {
@@ -191,9 +177,7 @@ export default function Settings() {
   // Handle URL hash for direct navigation
   useEffect(() => {
     const hash = window.location.hash;
-    if (hash === "#nsfw-section" || hash === "#uncensored") {
-      setActiveSection("ai");
-    } else if (hash === "#api-keys") {
+    if (hash === "#api-keys") {
       setActiveSection("privacy");
     } else if (hash === "#account") {
       setActiveSection("account");
@@ -365,135 +349,6 @@ export default function Settings() {
                       </div>
                     </div>
 
-                    {/* Uncensored Mode - HIDDEN (feature disabled) */}
-                    {false && (
-                    <div className="border-t pt-6" id="nsfw-section">
-                      {/* Uncensored Mode - CONSOLIDATED */}
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div className="space-y-0.5">
-                            <Label className="text-base flex items-center gap-2">
-                              <Shield className="h-4 w-4 text-pink-500" />
-                              Uncensored Mode
-                              {nsfwStatus?.ageVerified && (
-                                <span className="text-xs bg-green-500/20 text-green-500 px-2 py-0.5 rounded-full">
-                                  Active
-                                </span>
-                              )}
-                            </Label>
-                            <p className="text-sm text-muted-foreground">
-                              Access uncensored AI chat and image generation
-                            </p>
-                          </div>
-                          {nsfwLoading ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : nsfwStatus?.ageVerified ? (
-                            <div className="flex items-center gap-2 text-green-500">
-                              <CheckCircle2 className="h-5 w-5" />
-                              <span className="text-sm font-medium">Enabled</span>
-                            </div>
-                          ) : (
-                            <Dialog open={ageVerifyOpen} onOpenChange={setAgeVerifyOpen}>
-                              <DialogTrigger asChild>
-                                <Button variant="outline" className="border-pink-500/50 text-pink-500 hover:bg-pink-500/10">
-                                  <Lock className="w-4 h-4 mr-2" />
-                                  Enable
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent>
-                                <DialogHeader>
-                                  <DialogTitle className="flex items-center gap-2">
-                                    <Shield className="w-5 h-5 text-pink-500" />
-                                    Quick Age Check
-                                  </DialogTitle>
-                                  <DialogDescription>
-                                    One-time verification to unlock all uncensored features
-                                  </DialogDescription>
-                                </DialogHeader>
-                                <div className="py-4 space-y-4">
-                                  <div className="p-4 rounded-lg bg-pink-500/10 border border-pink-500/20">
-                                    <p className="text-sm font-medium text-pink-500 mb-2">
-                                      This unlocks:
-                                    </p>
-                                    <ul className="text-sm text-muted-foreground space-y-1">
-                                      <li className="flex items-center gap-2">
-                                        <MessageSquare className="h-3 w-3" />
-                                        Uncensored AI chat responses
-                                      </li>
-                                      <li className="flex items-center gap-2">
-                                        <ImageIcon className="h-3 w-3" />
-                                        Uncensored image generation
-                                      </li>
-                                      <li className="flex items-center gap-2">
-                                        <Sparkles className="h-3 w-3" />
-                                        Premium adult content models
-                                      </li>
-                                    </ul>
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <input
-                                      type="checkbox"
-                                      id="confirm-age"
-                                      checked={confirmAge}
-                                      onChange={(e) => setConfirmAge(e.target.checked)}
-                                      className="w-4 h-4 rounded border-gray-300"
-                                    />
-                                    <label htmlFor="confirm-age" className="text-sm">
-                                      I confirm I'm 18 years or older
-                                    </label>
-                                  </div>
-                                </div>
-                                <DialogFooter>
-                                  <Button variant="outline" onClick={() => setAgeVerifyOpen(false)}>
-                                    Cancel
-                                  </Button>
-                                  <Button
-                                    onClick={() => verifyAgeMutation.mutate({ confirmed: true })}
-                                    disabled={!confirmAge || verifyAgeMutation.isPending}
-                                    className="bg-pink-500 hover:bg-pink-600 text-white"
-                                  >
-                                    {verifyAgeMutation.isPending ? (
-                                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                                    ) : (
-                                      <CheckCircle2 className="w-4 h-4 mr-2" />
-                                    )}
-                                    Enable Uncensored Mode
-                                  </Button>
-                                </DialogFooter>
-                              </DialogContent>
-                            </Dialog>
-                          )}
-                        </div>
-
-                        {/* Show what's included when enabled */}
-                        {nsfwStatus?.ageVerified && (
-                          <div className="p-4 rounded-lg bg-muted/50 space-y-3">
-                            <div className="grid grid-cols-2 gap-4 text-sm">
-                              <div className="flex items-center gap-2">
-                                <CheckCircle2 className="h-4 w-4 text-green-500" />
-                                <span>Uncensored chat</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <CheckCircle2 className="h-4 w-4 text-green-500" />
-                                <span>Adult image generation</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <CheckCircle2 className="h-4 w-4 text-green-500" />
-                                <span>Premium models (Lustify)</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <CheckCircle2 className="h-4 w-4 text-green-500" />
-                                <span>Private generation</span>
-                              </div>
-                            </div>
-                            <p className="text-xs text-muted-foreground">
-                              Images: 3 credits each (or 10 for 4 variations)
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    )}
                   </CardContent>
                 </Card>
               </div>
@@ -758,7 +613,7 @@ export default function Settings() {
                           <Button 
                             variant="outline" 
                             onClick={() => disconnectGithub.mutate()}
-                            disabled={disconnectGithub.isLoading}
+                            disabled={disconnectGithub.isPending}
                           >
                             <LogOut className="h-4 w-4 mr-2" />
                             Disconnect
@@ -862,10 +717,10 @@ export default function Settings() {
                 <Card>
                   <CardContent className="pt-6">
                     <div className="flex items-center gap-4">
-                      {user?.picture ? (
+                      {(user as any)?.picture ? (
                         <img 
-                          src={user.picture} 
-                          alt={user.name || "Profile"} 
+                          src={(user as any).picture} 
+                          alt={user?.name || "Profile"} 
                           className="w-12 h-12 rounded-full object-cover"
                         />
                       ) : (

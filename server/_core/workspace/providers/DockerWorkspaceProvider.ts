@@ -261,7 +261,7 @@ class DockerWorkspace extends BaseWorkspace {
       }
 
       // Get execution command
-      const execCmd = this.getExecutionCommand(langId, request.code);
+      const execCmd = this.getDockerExecutionCommand(langId, request.code);
       if (!execCmd) {
         return this.createErrorResult(`Cannot execute ${request.language} code`, Date.now() - startTime);
       }
@@ -324,7 +324,7 @@ class DockerWorkspace extends BaseWorkspace {
       const langInfo = getLanguageInfo(request.language);
       const langId = langInfo?.id || request.language.toLowerCase();
 
-      const execCmd = this.getExecutionCommand(langId, request.code);
+      const execCmd = this.getDockerExecutionCommand(langId, request.code);
       if (!execCmd) {
         const error = `Cannot execute ${request.language} code`;
         onOutput({ type: 'stderr', data: error, timestamp: new Date() });
@@ -423,7 +423,7 @@ class DockerWorkspace extends BaseWorkspace {
   // Helper Methods
   // ============================================================================
 
-  private getExecutionCommand(language: string, code: string): string | null {
+  private getDockerExecutionCommand(language: string, code: string): string | null {
     // Escape single quotes in code
     const escapedCode = code.replace(/'/g, "'\\''");
 
@@ -498,14 +498,14 @@ export class DockerWorkspaceProvider implements IWorkspaceProvider {
 
   async list(): Promise<WorkspaceInfo[]> {
     const infos: WorkspaceInfo[] = [];
-    for (const workspace of this.workspaces.values()) {
+    for (const workspace of Array.from(this.workspaces.values())) {
       infos.push(await workspace.getInfo());
     }
     return infos;
   }
 
   async cleanup(): Promise<void> {
-    for (const workspace of this.workspaces.values()) {
+    for (const workspace of Array.from(this.workspaces.values())) {
       try {
         await workspace.destroy();
       } catch (error) {

@@ -643,7 +643,7 @@ export default function AdminDashboard() {
                               </TableCell>
                               <TableCell>
                                 <div className="text-sm font-mono">
-                                  {log.userOpenId?.slice(0, 8)}...
+                                  {(log as any).userOpenId?.slice(0, 8) || log.userId}...
                                 </div>
                               </TableCell>
                               <TableCell className="text-sm">
@@ -653,7 +653,7 @@ export default function AdminDashboard() {
                                 {log.ipAddress}
                               </TableCell>
                               <TableCell className="text-sm font-mono">
-                                {log.contentHash?.slice(0, 12)}...
+                                {(log as any).contentHash?.slice(0, 12) || '-'}...
                               </TableCell>
                               <TableCell className="text-sm text-muted-foreground">
                                 {new Date(log.timestamp).toLocaleString()}

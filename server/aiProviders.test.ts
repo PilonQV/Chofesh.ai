@@ -37,7 +37,6 @@ describe("AI Providers Integration", () => {
       // Check for specific OpenRouter models
       const modelIds = openRouterModels.map(m => m.id);
       expect(modelIds).toContain("deepseek-r1-free");
-      expect(modelIds).toContain("venice-uncensored");
     });
 
     it("should have Puter.js models configured", () => {

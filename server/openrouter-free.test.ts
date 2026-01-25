@@ -70,11 +70,10 @@ describe("OpenRouter Free Models Integration", () => {
       expect(model?.tier).toBe("free");
     });
 
-    it("should have Venice Uncensored model with uncensored flag", () => {
-      const model = AVAILABLE_MODELS.find(m => m.id === "venice-uncensored");
+    it("should have DeepSeek model available", () => {
+      const model = AVAILABLE_MODELS.find(m => m.id === "deepseek-r1-free");
       expect(model).toBeDefined();
       expect(model?.provider).toBe("openrouter");
-      expect(model?.isUncensored).toBe(true);
     });
   });
 
@@ -164,14 +163,9 @@ describe("OpenRouter Free Models Integration", () => {
     });
   });
 
-  describe("Uncensored Model Support", () => {
-    it("should have uncensored models marked correctly", () => {
-      const uncensoredModels = AVAILABLE_MODELS.filter(m => m.isUncensored);
-      expect(uncensoredModels.length).toBeGreaterThan(0);
-      
-      // Venice should be uncensored
-      const venice = AVAILABLE_MODELS.find(m => m.id === "venice-uncensored");
-      expect(venice?.isUncensored).toBe(true);
+  describe("Model Support", () => {
+    it("should have models available", () => {
+      expect(AVAILABLE_MODELS.length).toBeGreaterThan(0);
     });
   });
 });

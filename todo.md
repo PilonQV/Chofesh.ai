@@ -2788,3 +2788,27 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 ### General Cleanup
 - [ ] Search and remove all "nsfw", "uncensored", "age verification" references
 - [ ] Update any marketing copy mentioning these features
+
+
+---
+
+## Bug Fix - Jan 25 2026
+
+### NSFW/Uncensored Feature Removal
+- [x] Remove NSFW/uncensored references from ImageGen.tsx
+- [x] Remove NSFW section from Settings.tsx
+- [x] Remove uncensored navigation from CommandCenter.tsx
+- [x] Update FeaturesHub.tsx to use "private AI chat" instead of "uncensored"
+- [x] Update PrivateAiChat.tsx feature page content
+- [x] Remove markAsUncensored function from useConversations.ts
+- [x] Fix TypeScript errors in chart.tsx
+- [x] Fix TypeScript errors in AdminDashboard.tsx
+- [x] Fix TypeScript errors in Settings.tsx
+- [x] Fix TypeScript errors in GitLabSettings.tsx
+- [x] Fix TypeScript errors in Research.tsx
+- [x] Fix TypeScript errors in autonomousAgentEnhanced.ts
+- [x] Fix TypeScript errors in DockerWorkspaceProvider.ts
+- [x] Fix TypeScript errors in docker.ts
+- [x] Update test files to remove uncensored model references
+- [x] Remove nsfwSubscription.test.ts
+- [x] All 493 tests passing

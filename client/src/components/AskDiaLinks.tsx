@@ -208,7 +208,7 @@ function RenderWithImages({
         return next;
       });
       if (onImageRegenerated) {
-        onImageRegenerated(variables.originalUrl, data.url);
+        onImageRegenerated(variables.originalUrl, data.url || '');
       }
       toast.success('Image regenerated! (1 credit used)');
     },

@@ -103,7 +103,7 @@ describe("Personas Library", () => {
     });
 
     it("should find personas by description", () => {
-      const results = searchPersonas("uncensored");
+      const results = searchPersonas("developer");
       expect(results.length).toBeGreaterThan(0);
     });
 
@@ -121,9 +121,9 @@ describe("Personas Library", () => {
 
   describe("getPersonaById", () => {
     it("should return persona for valid ID", () => {
-      const persona = getPersonaById("uncensored-assistant");
+      const persona = getPersonaById("senior-developer");
       expect(persona).toBeDefined();
-      expect(persona?.name).toBe("Uncensored Assistant");
+      expect(persona?.name).toBe("Senior Developer");
     });
 
     it("should return undefined for invalid ID", () => {
@@ -133,11 +133,10 @@ describe("Personas Library", () => {
   });
 
   describe("Key Personas", () => {
-    it("should have an uncensored assistant persona", () => {
-      const persona = getPersonaById("uncensored-assistant");
+    it("should have a helpful assistant persona", () => {
+      const persona = getPersonaById("senior-developer");
       expect(persona).toBeDefined();
-      expect(persona?.systemPrompt).toContain("uncensored");
-      expect(persona?.isPopular).toBe(true);
+      expect(persona?.category).toBe("technical");
     });
 
     it("should have a senior developer persona", () => {

@@ -60,9 +60,6 @@ import {
   Upload,
   X,
   Lock,
-  ShieldAlert,
-  AlertCircle,
-  CheckCircle2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -109,31 +106,8 @@ export default function ImageGen() {
   const generateMutation = trpc.image.generate.useMutation();
   const editMutation = trpc.imageEdit.edit.useMutation();
   
-  // NSFW state and queries
-  const [nsfwMode, setNsfwMode] = useState(false); // Always false - NSFW feature disabled
-  const [showNsfwModal, setShowNsfwModal] = useState(false);
-  const [confirmAge, setConfirmAge] = useState(false);
+  // Batch count for image generation
   const [batchCount, setBatchCount] = useState<1 | 4>(1);
-  const { data: nsfwStatus } = trpc.nsfw.getStatus.useQuery(undefined, {
-    enabled: isAuthenticated,
-  });
-  const { data: nsfwModels } = trpc.nsfw.getModels.useQuery();
-  const nsfwGenerateMutation = trpc.nsfw.generate.useMutation();
-  const nsfwCheckoutMutation = trpc.nsfw.createCheckout.useMutation();
-  const utils = trpc.useUtils();
-  const verifyAgeMutation = trpc.nsfw.verifyAge.useMutation({
-    onSuccess: () => {
-      toast.success("Age verified! Uncensored mode unlocked.");
-      setConfirmAge(false);
-      setNsfwMode(true);
-      setModel("lustify-sdxl");
-      setShowNsfwModal(false);
-      utils.nsfw.getStatus.invalidate();
-    },
-    onError: (error) => {
-      toast.error(error.message || "Failed to verify age");
-    },
-  });
   
   // Image editing state
   const [editMode, setEditMode] = useState(false);
@@ -188,7 +162,7 @@ export default function ImageGen() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('credits_purchased') === 'true') {
-      toast.success('Credits purchased! You can now generate uncensored images.', {
+      toast.success('Credits purchased! You can now generate more images.', {
         duration: 5000,
       });
       // Clean up URL
@@ -206,79 +180,11 @@ export default function ImageGen() {
   };
 
   const handleGenerate = async () => {
-    if (!prompt.trim() || generateMutation.isPending || nsfwGenerateMutation.isPending) return;
+    if (!prompt.trim() || generateMutation.isPending) return;
 
     const currentSeed = useSeed ? (seed || Math.floor(Math.random() * 2147483647)) : undefined;
     if (useSeed && !seed) {
       setSeed(currentSeed);
-    }
-
-    // Check if using NSFW/uncensored model
-    const isNsfwModel = nsfwMode || model.includes('lustify') || 
-      model === 'hidream' || model === 'flux-2-pro' || model === 'wai-Illustrious' || model === 'z-image-turbo';
-    
-    if (isNsfwModel) {
-      // Check if user has access to uncensored features
-      if (!nsfwStatus?.ageVerified) {
-        toast.error("Age verification required. Go to Settings to verify you're 18+.");
-        setShowNsfwModal(true);
-        return;
-      }
-      // Credits-based system - just need age verification, credits will be deducted on generation
-      
-      try {
-        // Map aspect ratio to size format
-        const sizeMap: Record<string, string> = {
-          '1:1': '1024x1024',
-          '16:9': '1536x1024',
-          '9:16': '1024x1536',
-          '4:3': '1024x1024',
-          '3:4': '1024x1024',
-          '21:9': '1792x1024',
-        };
-        const imageSize = sizeMap[aspectRatio] || '1024x1024';
-        
-        const result = await nsfwGenerateMutation.mutateAsync({
-          prompt: prompt.trim(),
-          model,
-          size: imageSize,
-          negativePrompt: negativePrompt.trim() || undefined,
-          batchCount,
-        });
-
-        // Handle batch generation response
-        const newImages: GeneratedImage[] = result.images.map((img: any) => ({
-          id: crypto.randomUUID(),
-          url: img.url,
-          prompt: prompt.trim(),
-          negativePrompt: negativePrompt.trim() || undefined,
-          aspectRatio,
-          seed: currentSeed,
-          steps,
-          cfgScale,
-          timestamp: Date.now(),
-          model: `${img.model}${img.isNsfw ? ' (NSFW)' : ''}`,
-        }));
-
-        saveImages([...newImages, ...images]);
-        setSelectedImage(newImages[0]);
-        toast.success(`${result.batchCount} image${result.batchCount > 1 ? 's' : ''} generated successfully!`);
-        return;
-      } catch (error: any) {
-        console.error("Image generation error:", error);
-        // Provide specific error messages based on error type
-        if (error.message?.includes('credits') || error.message?.includes('insufficient')) {
-          toast.error("Insufficient credits. Purchase more credits to continue.");
-        } else if (error.message?.includes('age') || error.message?.includes('verify')) {
-          toast.error("Age verification required. Go to Settings to verify.");
-          setShowNsfwModal(true);
-        } else if (error.message?.includes('VENICE_API_KEY') || error.message?.includes('not configured')) {
-          toast.error("Uncensored image service is temporarily unavailable. Please try again later.");
-        } else {
-          toast.error(error.message || "Failed to generate uncensored image. Please try again.");
-        }
-        return;
-      }
     }
 
     // Check if using Puter.js image model
@@ -637,86 +543,28 @@ export default function ImageGen() {
             <h1 className="font-semibold">Image Generation</h1>
           </div>
           <div className="flex items-center gap-2">
-            {/* Uncensored Toggle */}
-            {/* NSFW toggle hidden - feature disabled */}
-            {false && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant={nsfwMode ? "default" : "outline"}
-                  size="sm"
-                  className={`gap-2 ${nsfwMode ? "bg-pink-500 hover:bg-pink-600" : ""}`}
-                  onClick={() => {
-                    if (!nsfwStatus?.ageVerified) {
-                      setShowNsfwModal(true);
-                    } else {
-                      setNsfwMode(!nsfwMode);
-                      if (!nsfwMode) {
-                        setModel("lustify-sdxl");
-                      } else {
-                        setModel("flux");
-                      }
-                    }
-                  }}
-                >
-                  {nsfwStatus?.ageVerified ? (
-                    <ShieldAlert className="w-4 h-4" />
-                  ) : (
-                    <Lock className="w-4 h-4" />
-                  )}
-                  18+
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                {nsfwStatus?.ageVerified
-                  ? `Uncensored: ${nsfwMode ? "ON" : "OFF"} (3 credits/image)`
-                  : "Unlock Uncensored Image Generation"}
-              </TooltipContent>
-            </Tooltip>
-            )}
-            
             <Select value={model} onValueChange={setModel}>
               <SelectTrigger className="w-40">
                 <SelectValue placeholder="Model" />
               </SelectTrigger>
               <SelectContent>
-                {/* Uncensored Models - Only Lustify models support NSFW content */}
-                {nsfwMode && nsfwModels && (
-                  <>
-                    <div className="px-2 py-1.5 text-xs font-semibold text-pink-500 border-b mb-1 pb-2">
-                      🔞 Uncensored Models
-                    </div>
-                    {nsfwModels.nsfwModels.map((m: { id: string; name: string }) => (
-                      <SelectItem key={m.id} value={m.id}>
-                        {m.name}
-                      </SelectItem>
-                    ))}
-                    <div className="px-2 py-1.5 text-xs text-muted-foreground/70 border-t mt-1 pt-2 italic">
-                      Only Lustify models support uncensored content
-                    </div>
-                  </>
-                )}
                 {/* Standard models */}
-                {!nsfwMode && (
+                {models?.map((m) => (
+                  <SelectItem key={m.id} value={m.id}>
+                    {m.name}
+                  </SelectItem>
+                ))}
+                {/* Puter.js FREE image models */}
+                {isPuterAvailable() && (
                   <>
-                    {models?.map((m) => (
-                      <SelectItem key={m.id} value={m.id}>
-                        {m.name}
+                    <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground border-t mt-1 pt-2">
+                      Free via Puter.js
+                    </div>
+                    {PUTER_IMAGE_MODELS.map((m) => (
+                      <SelectItem key={`puter-${m.id}`} value={`puter-${m.id}`}>
+                        {m.name} (Free)
                       </SelectItem>
                     ))}
-                    {/* Puter.js FREE image models */}
-                    {isPuterAvailable() && (
-                      <>
-                        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground border-t mt-1 pt-2">
-                          Free via Puter.js
-                        </div>
-                        {PUTER_IMAGE_MODELS.map((m) => (
-                          <SelectItem key={`puter-${m.id}`} value={`puter-${m.id}`}>
-                            {m.name} (Free)
-                          </SelectItem>
-                        ))}
-                      </>
-                    )}
                   </>
                 )}
               </SelectContent>
@@ -898,9 +746,9 @@ export default function ImageGen() {
               ) : (
                 <Button
                   onClick={handleGenerate}
-                  disabled={!prompt.trim() || generateMutation.isPending || nsfwGenerateMutation.isPending}
+                  disabled={!prompt.trim() || generateMutation.isPending}
                 >
-                  {(generateMutation.isPending || nsfwGenerateMutation.isPending) ? (
+                  {generateMutation.isPending ? (
                     <>
                       <img src="/chofesh-logo-48.webp" alt="Generating" className="w-4 h-4 animate-pulse" />
                       <span className="ml-2">Generating...</span>
@@ -1039,158 +887,6 @@ export default function ImageGen() {
           </div>
         </div>
       </main>
-      
-      {/* Uncensored Unlock Modal */}
-      <Dialog open={showNsfwModal} onOpenChange={setShowNsfwModal}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <ShieldAlert className="w-5 h-5 text-pink-500" />
-              Uncensored Image Generation
-            </DialogTitle>
-            <DialogDescription>
-              Generate uncensored images using your credits. 3 credits per image.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4 space-y-4">
-            {/* Age Verification Status */}
-            <div className={`p-4 rounded-lg border ${
-              nsfwStatus?.ageVerified 
-                ? "border-green-500/30 bg-green-500/10" 
-                : "border-yellow-500/30 bg-yellow-500/10"
-            }`}>
-              <div className="flex items-center gap-3">
-                {nsfwStatus?.ageVerified ? (
-                  <CheckCircle2 className="w-5 h-5 text-green-500" />
-                ) : (
-                  <AlertCircle className="w-5 h-5 text-yellow-500" />
-                )}
-                <div>
-                  <p className="font-medium">
-                    {nsfwStatus?.ageVerified ? "Age Verified (18+)" : "Age Verification Required"}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {nsfwStatus?.ageVerified 
-                      ? "You've confirmed you're 18 or older" 
-                      : "Go to Settings to verify your age"}
-                  </p>
-                </div>
-              </div>
-            </div>
-            
-            {/* Batch Selection */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Number of Images</Label>
-              <div className="grid grid-cols-2 gap-2">
-                <Button
-                  variant={batchCount === 1 ? "default" : "outline"}
-                  onClick={() => setBatchCount(1)}
-                  className="flex flex-col h-auto py-3"
-                >
-                  <span className="font-semibold">1 Image</span>
-                  <span className="text-xs opacity-70">3 credits</span>
-                </Button>
-                <Button
-                  variant={batchCount === 4 ? "default" : "outline"}
-                  onClick={() => setBatchCount(4)}
-                  className="flex flex-col h-auto py-3"
-                >
-                  <span className="font-semibold">4 Images</span>
-                  <span className="text-xs opacity-70">10 credits (save 2!)</span>
-                </Button>
-              </div>
-            </div>
-            
-            {/* Credits Info */}
-            <div className="p-4 rounded-lg border border-pink-500/30 bg-pink-500/10">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <ImageIcon className="w-5 h-5 text-pink-500" />
-                  <div>
-                    <p className="font-medium">Pay with Credits</p>
-                    <p className="text-sm text-muted-foreground">
-                      {batchCount === 1 ? "3 credits per image" : "10 credits for 4 images (save 17%)"}
-                    </p>
-                  </div>
-                </div>
-                <Link href="/credits">
-                  <Button variant="outline" size="sm">Buy Credits</Button>
-                </Link>
-              </div>
-            </div>
-            
-            {/* Features */}
-            <div className="space-y-2">
-              <p className="text-sm font-medium">What you get:</p>
-              <ul className="text-sm text-muted-foreground space-y-1">
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-pink-500" />
-                  Lustify SDXL & v7 models
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-pink-500" />
-                  Private generation (no logging)
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-pink-500" />
-                  Pay only for what you use
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="flex flex-col gap-2">
-            {/* If not age verified, show inline age verification */}
-            {!nsfwStatus?.ageVerified && (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
-                  <input
-                    type="checkbox"
-                    id="confirm-age-nsfw"
-                    checked={confirmAge}
-                    onChange={(e) => setConfirmAge(e.target.checked)}
-                    className="w-4 h-4 rounded border-gray-300"
-                  />
-                  <label htmlFor="confirm-age-nsfw" className="text-sm">
-                    I confirm I'm 18 years or older
-                  </label>
-                </div>
-                <Button 
-                  className="w-full bg-yellow-500 hover:bg-yellow-600 text-black"
-                  disabled={!confirmAge || verifyAgeMutation.isPending}
-                  onClick={() => verifyAgeMutation.mutate({ confirmed: true })}
-                >
-                  {verifyAgeMutation.isPending ? (
-                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                  ) : (
-                    <CheckCircle2 className="w-4 h-4 mr-2" />
-                  )}
-                  Verify Age & Enable
-                </Button>
-              </div>
-            )}
-            
-            {/* If age verified, show enable button */}
-            {nsfwStatus?.ageVerified && (
-              <Button 
-                className="w-full bg-pink-500 hover:bg-pink-600 text-white"
-                onClick={() => {
-                  setNsfwMode(true);
-                  setModel("lustify-sdxl");
-                  setShowNsfwModal(false);
-                  toast.success("Uncensored mode enabled! 3 credits per image.");
-                }}
-              >
-                <ShieldAlert className="w-4 h-4 mr-2" />
-                Enable Uncensored Mode
-              </Button>
-            )}
-            
-            <Button variant="outline" onClick={() => setShowNsfwModal(false)} className="w-full">
-              Cancel
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
