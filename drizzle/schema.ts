@@ -422,8 +422,16 @@ export const apiCallLogs = mysqlTable("api_call_logs", {
   status: mysqlEnum("status", ["success", "error", "rate_limited"]).default("success").notNull(),
   errorMessage: text("errorMessage"),
   
-  // Uncensored/NSFW flag
+  // Uncensored/NSFW flag (legacy)
   isUncensored: boolean("isUncensored").default(false).notNull(),
+  
+  // Content moderation flags
+  isFlagged: boolean("isFlagged").default(false).notNull(),
+  flagReason: mysqlEnum("flagReason", [
+    "nsfw_content", "violence", "hate_speech", "illegal_activity", 
+    "self_harm", "spam", "harassment", "other"
+  ]),
+  flagDetails: text("flagDetails"),
   
   // Timestamps
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -450,6 +458,14 @@ export const imageAccessLogs = mysqlTable("image_access_logs", {
   
   // Context
   ipAddress: varchar("ipAddress", { length: 45 }),
+  
+  // Content moderation flags
+  isFlagged: boolean("isFlagged").default(false).notNull(),
+  flagReason: mysqlEnum("flagReason", [
+    "nsfw_content", "violence", "hate_speech", "illegal_activity", 
+    "self_harm", "spam", "harassment", "other"
+  ]),
+  flagDetails: text("flagDetails"),
   
   // Timestamps
   createdAt: timestamp("createdAt").defaultNow().notNull(),
