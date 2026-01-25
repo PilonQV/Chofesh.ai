@@ -1,0 +1,45 @@
+{
+  "query": "SELECT id, userId, actionType, prompt, createdAt FROM api_call_logs ORDER BY createdAt DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 48hnjcx4CHbyzt9.87573283f85b --database ffmn4BbJe88bt6JMq4xy2a --execute SELECT id, userId, actionType, prompt, createdAt FROM api_call_logs ORDER BY createdAt DESC LIMIT 5;",
+  "rows": [
+    {
+      "id": "990001",
+      "userId": "5880003",
+      "actionType": "chat",
+      "prompt": "Artificial intelligence is transforming industries worldwide. From healthcare to finance, AI systems are automating tasks, improving decision-making, and creating new opportunities for innovation.",
+      "createdAt": "2026-01-16 19:47:24"
+    },
+    {
+      "id": "960001",
+      "userId": "2520003",
+      "actionType": "chat",
+      "prompt": "yes",
+      "createdAt": "2026-01-16 01:40:13"
+    },
+    {
+      "id": "930002",
+      "userId": "5340001",
+      "actionType": "chat",
+      "prompt": "Ues",
+      "createdAt": "2026-01-15 21:21:12"
+    },
+    {
+      "id": "930001",
+      "userId": "5340001",
+      "actionType": "chat",
+      "prompt": "Coat her tongue with cum and make it dripping down her chin and down to her breasts",
+      "createdAt": "2026-01-15 21:17:46"
+    },
+    {
+      "id": "900001",
+      "userId": "2520003",
+      "actionType": "chat",
+      "prompt": "yes",
+      "createdAt": "2026-01-15 15:30:33"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tuserId\tactionType\tprompt\tcreatedAt\n990001\t5880003\tchat\tArtificial intelligence is transforming industries worldwide. From healthcare to finance, AI systems are automating tasks, improving decision-making, and creating new opportunities for innovation.\t2026-01-16 19:47:24\n960001\t2520003\tchat\tyes\t2026-01-16 01:40:13\n930002\t5340001\tchat\tUes\t2026-01-15 21:21:12\n930001\t5340001\tchat\tCoat her tongue with cum and make it dripping down her chin and down to her breasts\t2026-01-15 21:17:46\n900001\t2520003\tchat\tyes\t2026-01-15 15:30:33\n",
+  "stderr": "",
+  "execution_time_ms": 57
+}

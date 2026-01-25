@@ -2841,3 +2841,42 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Integrate alerts into logImageAccess for illegal_activity and self_harm flags
 - [x] Add admin email configuration
 - [x] Add tests for email alert functionality
+
+
+---
+
+## Bug Fix - API Call Logging Not Working - Jan 25 2026
+
+- [ ] Investigate why new API calls are not appearing in admin audit logs
+- [ ] Fix the logApiCall implementation
+- [ ] Verify logs appear in the admin dashboard
+- [ ] Test with actual chat interactions
+
+
+---
+
+## Bug Fix - Jan 25 2026
+
+### Refresh Functionality Fix
+- [x] Fix audit logs refresh button not responding
+- [x] Ensure new logs are captured and displayed
+
+### Content Moderation Flagging System
+- [x] Implement content moderation detection for policy violations
+- [x] Add red flag indicator for NSFW/inappropriate content attempts
+- [x] Add red flag indicator for censored command attempts
+- [x] Display flagged content prominently in audit logs UI
+- [x] Add filter option for flagged content only
+
+### Email Alert System
+- [x] Create email template for critical content alerts
+- [x] Implement sendCriticalContentAlert function
+- [x] Integrate alerts into logApiCall for illegal_activity and self_harm flags
+- [x] Integrate alerts into logImageAccess for illegal_activity and self_harm flags
+- [x] Add admin email configuration
+- [x] Add tests for email alert functionality
+
+### API Call Logging Issue
+- [x] Investigate why new API calls are not appearing in admin audit logs
+- [x] Fix the logging implementation (added audit logging to ReAct agent)
+- [x] Test and verify logs appear correctly

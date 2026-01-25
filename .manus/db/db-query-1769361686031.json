@@ -1,0 +1,14 @@
+{
+  "query": "SELECT COUNT(*) as total_logs, MAX(createdAt) as latest_log FROM api_call_logs;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 48hnjcx4CHbyzt9.87573283f85b --database ffmn4BbJe88bt6JMq4xy2a --execute SELECT COUNT(*) as total_logs, MAX(createdAt) as latest_log FROM api_call_logs;",
+  "rows": [
+    {
+      "total_logs": "96",
+      "latest_log": "2026-01-16 19:47:24"
+    }
+  ],
+  "messages": [],
+  "stdout": "total_logs\tlatest_log\n96\t2026-01-16 19:47:24\n",
+  "stderr": "",
+  "execution_time_ms": 78
+}
