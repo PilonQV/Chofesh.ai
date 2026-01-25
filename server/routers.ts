@@ -923,6 +923,22 @@ export const appRouter = router({
                 ctx.user.id
               );
               
+              // Audit log for ReAct agent
+              await auditLogApiCall({
+                userId: ctx.user.id,
+                userEmail: ctx.user.email || undefined,
+                userName: ctx.user.name || undefined,
+                actionType: 'chat',
+                modelUsed: 'react-agent',
+                prompt: promptContent,
+                response: reactResponse.content,
+                durationMs: Date.now() - startTime,
+                ipAddress: getClientIp(ctx.req),
+                userAgent: getUserAgent(ctx.req),
+                status: 'success',
+                isUncensored: false,
+              });
+              
             return {
               content: reactResponse.content,
               model: 'react-agent',
