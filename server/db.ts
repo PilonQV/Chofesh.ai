@@ -1616,7 +1616,24 @@ export async function logApiCall(log: InsertApiCallLog): Promise<void> {
   }
   
   try {
-    await db.insert(apiCallLogs).values(log);
+    // Apply content moderation to the prompt
+    const { moderateContent } = await import("./_core/contentModeration");
+    const moderationResult = moderateContent(log.prompt || "");
+    
+    // Add moderation flags to the log
+    const logWithModeration = {
+      ...log,
+      isFlagged: moderationResult.isFlagged,
+      flagReason: moderationResult.flagReason as any,
+      flagDetails: moderationResult.flagDetails,
+    };
+    
+    await db.insert(apiCallLogs).values(logWithModeration);
+    
+    // Log flagged content for admin awareness
+    if (moderationResult.isFlagged) {
+      console.warn(`[Content Moderation] Flagged content from user ${log.userId}: ${moderationResult.flagReason} - ${moderationResult.flagDetails}`);
+    }
   } catch (error) {
     console.error("[Database] Failed to log API call:", error);
   }
@@ -1627,6 +1644,7 @@ export async function getApiCallLogs(options: {
   userEmail?: string;
   actionType?: string;
   isUncensored?: boolean;
+  isFlagged?: boolean;
   startDate?: Date;
   endDate?: Date;
   limit?: number;
@@ -1648,6 +1666,9 @@ export async function getApiCallLogs(options: {
   }
   if (options.isUncensored !== undefined) {
     conditions.push(eq(apiCallLogs.isUncensored, options.isUncensored));
+  }
+  if (options.isFlagged !== undefined) {
+    conditions.push(eq(apiCallLogs.isFlagged, options.isFlagged));
   }
   if (options.startDate) {
     conditions.push(gte(apiCallLogs.createdAt, options.startDate));
@@ -1730,7 +1751,24 @@ export async function logImageAccess(log: InsertImageAccessLog): Promise<void> {
   }
   
   try {
-    await db.insert(imageAccessLogs).values(log);
+    // Apply content moderation to the prompt
+    const { moderateContent } = await import("./_core/contentModeration");
+    const moderationResult = moderateContent(log.prompt || "");
+    
+    // Add moderation flags to the log
+    const logWithModeration = {
+      ...log,
+      isFlagged: moderationResult.isFlagged,
+      flagReason: moderationResult.flagReason as any,
+      flagDetails: moderationResult.flagDetails,
+    };
+    
+    await db.insert(imageAccessLogs).values(logWithModeration);
+    
+    // Log flagged content for admin awareness
+    if (moderationResult.isFlagged) {
+      console.warn(`[Content Moderation] Flagged image prompt from user ${log.userId}: ${moderationResult.flagReason} - ${moderationResult.flagDetails}`);
+    }
   } catch (error) {
     console.error("[Database] Failed to log image access:", error);
   }

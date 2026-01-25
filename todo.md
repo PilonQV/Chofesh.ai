@@ -2812,3 +2812,19 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [x] Update test files to remove uncensored model references
 - [x] Remove nsfwSubscription.test.ts
 - [x] All 493 tests passing
+
+
+---
+
+## Audit Logs Enhancement - Jan 25 2026
+
+### Refresh Functionality Fix
+- [x] Fix audit logs refresh button not responding
+- [x] Ensure new logs are captured and displayed
+
+### Content Moderation Flagging System
+- [x] Implement content moderation detection for policy violations
+- [x] Add red flag indicator for NSFW/inappropriate content attempts
+- [x] Add red flag indicator for censored command attempts
+- [x] Display flagged content prominently in audit logs UI
+- [x] Add filter option for flagged content only

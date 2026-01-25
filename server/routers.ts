@@ -4604,7 +4604,7 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
         userId: z.number().optional(),
         userEmail: z.string().optional(),
         actionType: z.string().optional(),
-
+        isFlagged: z.boolean().optional(),
         startDate: z.string().optional(),
         endDate: z.string().optional(),
         limit: z.number().min(1).max(500).optional(),
@@ -4620,7 +4620,7 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
           userId: input.userId,
           userEmail: input.userEmail,
           actionType: input.actionType,
-
+          isFlagged: input.isFlagged,
           startDate: input.startDate ? new Date(input.startDate) : undefined,
           endDate: input.endDate ? new Date(input.endDate) : undefined,
           limit: input.limit || 100,
