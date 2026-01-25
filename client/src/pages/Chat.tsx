@@ -81,7 +81,6 @@ import {
   Crown,
   Rocket,
   // Mic, MicOff, // Voice disabled
-  Plus,
   Volume2,
   VolumeX,
   Globe,

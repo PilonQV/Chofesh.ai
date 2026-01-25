@@ -41,8 +41,8 @@ export const marketplaceRouter = router({
       name: z.string(),
       shortDescription: z.string(),
       description: z.string(),
-      itemType: z.string(),
-      category: z.string(),
+      itemType: z.enum(["agent", "workflow", "template", "integration"]),
+      category: z.enum(["productivity", "development", "marketing", "sales", "support", "analytics", "automation", "content", "research", "other"]).default("other"),
       configuration: z.string(),
     }))
     .mutation(async ({ ctx, input }) => {
