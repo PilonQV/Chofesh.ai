@@ -23,13 +23,11 @@ describe("Credits System", () => {
       const freeTierModels = ["llama-3.1-8b-instant", "llama-3.2-3b-preview"];
       const standardModels = ["gpt-4o-mini", "gemini-1.5-flash"];
       const premiumModels = ["gpt-4o", "claude-3-5-sonnet"];
-      const uncensoredModels = ["venice-uncensored"];
       
       // These are the expected costs from our pricing model
       expect(freeTierModels.length).toBeGreaterThan(0);
       expect(standardModels.length).toBeGreaterThan(0);
       expect(premiumModels.length).toBeGreaterThan(0);
-      expect(uncensoredModels.length).toBeGreaterThan(0);
     });
 
     it("should have correct credit costs for image generation", () => {
@@ -167,17 +165,12 @@ describe("Credits System", () => {
       });
     });
 
-    it("should correctly classify uncensored models", () => {
-      const uncensoredModels = [
-        "venice-uncensored",
-        "dolphin-mixtral",
-      ];
+    it("should correctly classify model tiers", () => {
+      const freeTierModels = ["llama-3.1-8b-instant", "deepseek-r1-free"];
       
-      uncensoredModels.forEach(model => {
-        const isUncensored = model.includes("venice") || 
-                            model.includes("dolphin") ||
-                            model.includes("uncensored");
-        expect(isUncensored).toBe(true);
+      freeTierModels.forEach(model => {
+        const isFree = model.includes("free") || model.includes("instant");
+        expect(isFree).toBe(true);
       });
     });
   });

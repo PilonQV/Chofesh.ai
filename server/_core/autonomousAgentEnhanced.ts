@@ -86,7 +86,8 @@ export async function runEnhancedAutonomousAgent(
   // ============================================================================
   
   // Build context-aware prompt that includes memory
-  const enhancedPrompt = buildEnhancedPrompt(userMessage, memoryContext);
+  const resolvedMemoryContext = await memoryContext;
+  const enhancedPrompt = buildEnhancedPrompt(userMessage, resolvedMemoryContext);
   
   // ============================================================================
   // STEP 3: RUN REACT AGENT
@@ -191,7 +192,7 @@ export async function runEnhancedAutonomousAgent(
  */
 function buildEnhancedPrompt(
   userMessage: string,
-  memoryContext: ReturnType<typeof AgentMemory.getFullContext>
+  memoryContext: Awaited<ReturnType<typeof AgentMemoryDB.getFullContext>>
 ): string {
   let prompt = userMessage;
   
@@ -199,7 +200,7 @@ function buildEnhancedPrompt(
   if (memoryContext.recentMessages.length > 0) {
     const recentContext = memoryContext.recentMessages
       .slice(-5)
-      .map(m => `${m.role}: ${m.content}`)
+      .map((m: any) => `${m.role}: ${m.content}`)
       .join('\n');
     prompt += `\n\nRecent conversation:\n${recentContext}`;
   }
@@ -207,7 +208,7 @@ function buildEnhancedPrompt(
   // Add relevant past interactions
   if (memoryContext.relevantPastInteractions.length > 0) {
     const pastContext = memoryContext.relevantPastInteractions
-      .map(i => `Past: User asked "${i.userQuery}" and we ${i.wasSuccessful ? 'successfully' : 'partially'} resolved it using ${i.toolsUsed.join(', ')}`)
+      .map((i: any) => `Past: User asked "${i.userQuery}" and we ${i.wasSuccessful ? 'successfully' : 'partially'} resolved it using ${i.toolsUsed.join(', ')}`)
       .join('\n');
     prompt += `\n\nRelevant past experience:\n${pastContext}`;
   }
@@ -219,7 +220,7 @@ function buildEnhancedPrompt(
   
   // Add preferred tools
   if (memoryContext.preferredTools.length > 0) {
-    const toolNames = memoryContext.preferredTools.map(t => t.toolName).join(', ');
+    const toolNames = memoryContext.preferredTools.map((t: any) => t.toolName).join(', ');
     prompt += `\n\nUser has had success with these tools: ${toolNames}`;
   }
   

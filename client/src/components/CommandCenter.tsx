@@ -223,10 +223,7 @@ function CommandCenterDialog() {
             <span>Settings</span>
             <CommandShortcut>⌘,</CommandShortcut>
           </CommandItem>
-          <CommandItem onSelect={() => navigateTo("/settings#nsfw-section")}>
-            <Shield className="mr-2 h-4 w-4 text-pink-500" />
-            <span>Uncensored Mode</span>
-          </CommandItem>
+
           <CommandItem onSelect={() => navigateTo("/credits")}>
             <CreditCard className="mr-2 h-4 w-4" />
             <span>Buy Credits</span>

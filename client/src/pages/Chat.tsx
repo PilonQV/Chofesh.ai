@@ -1946,12 +1946,6 @@ export default function Chat() {
         </div>
       </main>
       
-      {/* Age Verification Modal */}
-      <AgeVerificationModal
-        open={showAgeVerification}
-        onConfirm={handleAgeVerificationConfirm}
-        onCancel={handleAgeVerificationCancel}
-      />
     </div>
   );
 }

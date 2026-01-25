@@ -26,7 +26,7 @@ export default function FeaturesHub() {
         <ol>
           <li><strong>Privacy by Design:</strong> We don't collect or store your data. Period. Everything is encrypted and stored locally.</li>
           <li><strong>Unmatched Flexibility:</strong> With BYOK and smart model routing, you have complete control over your AI experience.</li>
-          <li><strong>Powerful Tools:</strong> From uncensored chat to deep research, we provide the tools you need to get things done.</li>
+          <li><strong>Powerful Tools:</strong> From private AI chat to deep research, we provide the tools you need to get things done.</li>
         </ol>
 
         <p>Ready to experience AI freedom? <Link href="/login">Get started for free</Link> and see the Chofesh difference.</p>

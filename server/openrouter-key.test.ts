@@ -61,8 +61,8 @@ describe("OpenRouter API Key Validation", () => {
     });
 
     // Free tier may have rate limits or availability issues
-    // Accept 200 (success) or 429 (rate limited) or 503 (service unavailable)
-    const acceptableStatuses = [200, 429, 503];
+    // Accept 200 (success) or 429 (rate limited) or 503 (service unavailable) or 402 (payment required)
+    const acceptableStatuses = [200, 402, 429, 503];
     expect(acceptableStatuses).toContain(response.status);
     
     if (response.ok) {

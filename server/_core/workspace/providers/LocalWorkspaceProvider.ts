@@ -405,14 +405,14 @@ export class LocalWorkspaceProvider implements IWorkspaceProvider {
 
   async list(): Promise<WorkspaceInfo[]> {
     const infos: WorkspaceInfo[] = [];
-    for (const workspace of this.workspaces.values()) {
+    for (const workspace of Array.from(this.workspaces.values())) {
       infos.push(await workspace.getInfo());
     }
     return infos;
   }
 
   async cleanup(): Promise<void> {
-    for (const workspace of this.workspaces.values()) {
+    for (const workspace of Array.from(this.workspaces.values())) {
       try {
         await workspace.destroy();
       } catch (error) {

@@ -56,7 +56,7 @@ export default function AdminAuditLogs() {
   const [userIdFilter, setUserIdFilter] = useState("");
   const [userEmailFilter, setUserEmailFilter] = useState("");
   const [actionTypeFilter, setActionTypeFilter] = useState("all");
-  const [uncensoredFilter, setUncensoredFilter] = useState("all");
+
   const [selectedLog, setSelectedLog] = useState<any>(null);
   const [page, setPage] = useState(0);
   const limit = 50;
@@ -66,7 +66,7 @@ export default function AdminAuditLogs() {
     userId: userIdFilter ? parseInt(userIdFilter) : undefined,
     userEmail: userEmailFilter || undefined,
     actionType: actionTypeFilter !== "all" ? actionTypeFilter : undefined,
-    isUncensored: uncensoredFilter === "uncensored" ? true : uncensoredFilter === "normal" ? false : undefined,
+
     limit,
     offset: page * limit,
   });
@@ -256,25 +256,7 @@ export default function AdminAuditLogs() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex-1 min-w-[200px]">
-                <Label htmlFor="uncensoredFilter">Content Filter</Label>
-                <Select
-                  value={uncensoredFilter}
-                  onValueChange={(value) => {
-                    setUncensoredFilter(value);
-                    setPage(0);
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="All content" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Content</SelectItem>
-                    <SelectItem value="uncensored">Uncensored Only</SelectItem>
-                    <SelectItem value="normal">Normal Only</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+
               <div className="flex items-end gap-2">
                 <Button
                   variant="outline"
@@ -282,7 +264,7 @@ export default function AdminAuditLogs() {
                     setUserIdFilter("");
                     setUserEmailFilter("");
                     setActionTypeFilter("all");
-                    setUncensoredFilter("all");
+
                     setPage(0);
                   }}
                 >
@@ -320,12 +302,6 @@ export default function AdminAuditLogs() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {console.log("[Render] Checking conditions:", {
-                  isLoading: apiCallLogsQuery.isLoading,
-                  dataLength: apiCallLogsQuery.data?.length,
-                  hasData: !!apiCallLogsQuery.data,
-                  firstLog: apiCallLogsQuery.data?.[0]
-                })}
                 {apiCallLogsQuery.isLoading ? (
                   <div className="text-center py-8 text-muted-foreground">
                     Loading logs...
@@ -340,11 +316,7 @@ export default function AdminAuditLogs() {
                       {apiCallLogsQuery.data?.map((log: any) => (
                         <div
                           key={log.id}
-                          className={`border rounded-lg p-4 hover:bg-accent/50 cursor-pointer transition-colors ${
-                            log.isUncensored 
-                              ? "border-rose-500/50 bg-rose-500/5 hover:bg-rose-500/10" 
-                              : ""
-                          }`}
+                          className="border rounded-lg p-4 hover:bg-accent/50 cursor-pointer transition-colors"
                           onClick={() => setSelectedLog(log)}
                         >
                           <div className="flex items-start justify-between">
@@ -352,12 +324,7 @@ export default function AdminAuditLogs() {
                               <div className="flex items-center gap-2 mb-2">
                                 <Badge variant="outline">{log.actionType}</Badge>
                                 <Badge variant="secondary">{log.modelUsed}</Badge>
-                                {log.isUncensored && (
-                                  <Badge variant="destructive" className="gap-1">
-                                    <AlertTriangle className="h-3 w-3" />
-                                    Uncensored
-                                  </Badge>
-                                )}
+
                                 <span className="text-xs text-muted-foreground">
                                   {log.durationMs}ms
                                 </span>

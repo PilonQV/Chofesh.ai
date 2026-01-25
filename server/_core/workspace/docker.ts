@@ -76,7 +76,7 @@ export class DockerWorkspace implements WorkspaceProvider {
       });
       stream.on("end", async () => {
         const { ExitCode } = await exec.inspect();
-        resolve({ stdout, stderr, exitCode: ExitCode });
+        resolve({ stdout, stderr, exitCode: ExitCode ?? 0 });
       });
     });
   }

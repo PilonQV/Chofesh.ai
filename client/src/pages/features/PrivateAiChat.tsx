@@ -20,8 +20,8 @@ export default function PrivateAiChat() {
       answer: "While other platforms may offer similar features, their business models often rely on collecting user data. Chofesh is different because our business model is aligned with your privacy. We offer a premium, privacy-focused service, not a free product where you are the product."
     },
     {
-      question: "What is uncensored chat?",
-      answer: "Uncensored chat means that we do not impose arbitrary content restrictions on your conversations, as long as they are within legal parameters. This allows for more natural and open discussions."
+      question: "What is private AI chat?",
+      answer: "Private AI chat means your conversations are stored locally on your device with end-to-end encryption. We don't log, monitor, or store your conversations on our servers."
     }
   ];
 
@@ -74,7 +74,7 @@ export default function PrivateAiChat() {
         <p>The difference between Chofesh and other AI chat platforms is fundamental. With Chofesh, you can:</p>
         <ul>
           <li><strong>Discuss sensitive information with confidence:</strong> Whether you're a developer working on proprietary code, a writer drafting a confidential manuscript, or a professional handling sensitive client information, you can use Chofesh without fear of data leaks or corporate surveillance.</li>
-          <li><strong>Explore ideas freely:</strong> Our uncensored chat (within legal parameters) allows you to have genuine, unrestricted conversations. You can explore creative and controversial topics without worrying about your data being used to train models or build a profile on you.</li>
+          <li><strong>Explore ideas freely:</strong> Our private AI chat allows you to have genuine conversations without worrying about your data being used to train models or build a profile on you.</li>
           <li><strong>Maintain compliance:</strong> For professionals in fields like healthcare, law, and finance, data privacy is not just a preference; it's a legal requirement. Chofesh provides a compliant environment for AI-powered work.</li>
         </ul>
 
