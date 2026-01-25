@@ -19,6 +19,7 @@ import {
   upsertUserSettings,
   addUserApiKey,
   getUserApiKeys,
+  getDecryptedApiKey,
   deleteUserApiKey,
   toggleUserApiKey,
   createUsageRecord,
@@ -893,6 +894,7 @@ export const appRouter = router({
         responseFormat: z.enum(["detailed", "concise", "bullet", "table", "auto"]).optional(), // Response formatting mode
         deepResearch: z.boolean().optional(), // Enable deep research mode
         agentMode: z.boolean().optional(), // Enable agent mode with tool calling
+        conversationId: z.string().optional(), // Conversation ID for audit logging
       }))
       .mutation(async ({ ctx, input }) => {
         const startTime = Date.now();
@@ -1044,7 +1046,7 @@ To access adult/NSFW content, please verify your age (18+):
                     tokensInput: 0,
                     tokensOutput: 0,
                     durationMs: imageDuration,
-                    conversationId: conversationId,
+                    conversationId: input.conversationId || undefined,
                     personaUsed: undefined,
                     ipAddress: ctx.req?.ip || ctx.req?.socket?.remoteAddress || 'unknown',
                     userAgent: ctx.req?.headers?.['user-agent'] || 'unknown',
@@ -1085,7 +1087,7 @@ To access adult/NSFW content, please verify your age (18+):
                     tokensInput: 0,
                     tokensOutput: 0,
                     durationMs: batchDuration,
-                    conversationId: conversationId,
+                    conversationId: input.conversationId || undefined,
                     personaUsed: undefined,
                     ipAddress: ctx.req?.ip || ctx.req?.socket?.remoteAddress || 'unknown',
                     userAgent: ctx.req?.headers?.['user-agent'] || 'unknown',
@@ -1115,7 +1117,7 @@ To access adult/NSFW content, please verify your age (18+):
                     tokensInput: 0,
                     tokensOutput: 0,
                     durationMs: searchDuration,
-                    conversationId: conversationId,
+                    conversationId: input.conversationId || undefined,
                     personaUsed: undefined,
                     ipAddress: ctx.req?.ip || ctx.req?.socket?.remoteAddress || 'unknown',
                     userAgent: ctx.req?.headers?.['user-agent'] || 'unknown',
@@ -1145,7 +1147,7 @@ To access adult/NSFW content, please verify your age (18+):
                     tokensInput: 0,
                     tokensOutput: 0,
                     durationMs: docDuration,
-                    conversationId: conversationId,
+                    conversationId: input.conversationId || undefined,
                     personaUsed: undefined,
                     ipAddress: ctx.req?.ip || ctx.req?.socket?.remoteAddress || 'unknown',
                     userAgent: ctx.req?.headers?.['user-agent'] || 'unknown',
@@ -1175,7 +1177,7 @@ To access adult/NSFW content, please verify your age (18+):
                     tokensInput: 0,
                     tokensOutput: 0,
                     durationMs: codeDuration,
-                    conversationId: conversationId,
+                    conversationId: input.conversationId || undefined,
                     personaUsed: undefined,
                     ipAddress: ctx.req?.ip || ctx.req?.socket?.remoteAddress || 'unknown',
                     userAgent: ctx.req?.headers?.['user-agent'] || 'unknown',
@@ -1921,7 +1923,7 @@ Provide a comprehensive, well-researched response.`;
           if (result.url) {
             await createGeneratedImage({
               userId: ctx.user.id,
-              imageUrl: result.url,
+              imageUrl: result.url || '',
               prompt: input.prompt,
               negativePrompt: input.negativePrompt || null,
               model: input.model || "flux",
@@ -1970,7 +1972,7 @@ Provide a comprehensive, well-researched response.`;
             auditLogImageAccess({
               userId: ctx.user.id,
               userEmail: ctx.user.email || undefined,
-              imageUrl: result.url,
+              imageUrl: result.url || '',
               prompt: input.prompt,
               actionType: "generate",
               ipAddress: getClientIp(ctx.req),
@@ -2149,7 +2151,7 @@ Provide a comprehensive, well-researched response.`;
           // Save generated image to database
           await createGeneratedImage({
             userId: ctx.user.id,
-            imageUrl: result.url,
+            imageUrl: result.url || '',
             prompt: input.prompt,
             negativePrompt: null,
             model: 'runware-flux',
@@ -3291,14 +3293,13 @@ IMPORTANT RULES:
         // Use Groq Whisper V3 Turbo if specified
         if (input.provider === "groq") {
           const { transcribeWithGroq } = await import("./_core/groqWhisper");
-          const userApiKeys = await getUserApiKeys(ctx.user.id);
-          const groqKey = userApiKeys.find(k => k.provider === "groq" && k.isActive);
+          const groqApiKey = await getDecryptedApiKey(ctx.user.id, "groq");
           
           result = await transcribeWithGroq({
             audioUrl: input.audioUrl,
             language: input.language,
             prompt: input.prompt,
-            apiKey: groqKey?.apiKey,
+            apiKey: groqApiKey || undefined,
           });
         } else {
           // Use default transcription service
@@ -3492,7 +3493,7 @@ IMPORTANT RULES:
           if (result.url) {
             await createGeneratedImage({
               userId: ctx.user.id,
-              imageUrl: result.url,
+              imageUrl: result.url || '',
               prompt: input.prompt,
               model: "flux-edit",
               isEdit: true,
@@ -3537,7 +3538,7 @@ IMPORTANT RULES:
             auditLogImageAccess({
               userId: ctx.user.id,
               userEmail: ctx.user.email || undefined,
-              imageUrl: result.url,
+              imageUrl: result.url || '',
               prompt: input.prompt,
               actionType: "generate",
               ipAddress: getClientIp(ctx.req),
@@ -4997,28 +4998,63 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
       const { callGroqCompound } = await import("./_core/groqCompound");
       
       // Get user's Groq API key if they have one
-      const userApiKeys = await getUserApiKeys(ctx.user.id);
-      const groqKey = userApiKeys.find(k => k.provider === "groq" && k.isActive);
+      const groqApiKey = await getDecryptedApiKey(ctx.user.id, "groq");
       
       const response = await callGroqCompound({
         query: input.query,
         model: input.model,
-        apiKey: groqKey?.apiKey,
+        apiKey: groqApiKey || undefined,
       });
       
       // Record usage
       await createUsageRecord({
         userId: ctx.user.id,
-        provider: "groq",
+        actionType: "chat",
         model: input.model,
-        promptTokens: Math.ceil(input.query.length / 4),
-        completionTokens: Math.ceil(response.content.length / 4),
+        inputTokens: Math.ceil(input.query.length / 4),
+        outputTokens: Math.ceil(response.content.length / 4),
         totalTokens: Math.ceil((input.query.length + response.content.length) / 4),
-        cost: 0, // Free for now
+        estimatedCost: "0",
+        keySource: "platform",
         timestamp: new Date(),
       });
       
       return response;
     }),
+
+  // NSFW router (stub - feature disabled)
+  nsfw: router({
+    getStatus: protectedProcedure.query(async () => {
+      return { enabled: false, verified: false };
+    }),
+    getModels: publicProcedure.query(async () => {
+      return [];
+    }),
+    generate: protectedProcedure
+      .input(z.object({ prompt: z.string(), model: z.string().optional() }))
+      .mutation(async () => {
+        throw new TRPCError({ code: "FORBIDDEN", message: "NSFW feature is disabled" });
+      }),
+    createCheckout: protectedProcedure
+      .input(z.object({ priceId: z.string() }))
+      .mutation(async () => {
+        throw new TRPCError({ code: "FORBIDDEN", message: "NSFW feature is disabled" });
+      }),
+    verifyAge: protectedProcedure.mutation(async () => {
+      throw new TRPCError({ code: "FORBIDDEN", message: "NSFW feature is disabled" });
+    }),
+  }),
+
+  // GitLab router (stub - feature not yet implemented)
+  gitlab: router({
+    getConnection: protectedProcedure.query(async () => {
+      return null;
+    }),
+    connect: protectedProcedure
+      .input(z.object({ token: z.string(), url: z.string().optional() }))
+      .mutation(async () => {
+        throw new TRPCError({ code: "NOT_IMPLEMENTED", message: "GitLab integration coming soon" });
+      }),
+  }),
 });
 export type AppRouter = typeof appRouter;

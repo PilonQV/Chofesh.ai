@@ -47,7 +47,7 @@ export const skillsRouter = router({
       prompt: z.string(),
       systemPrompt: z.string().optional(),
       parameters: z.string().optional(),
-      category: z.string(),
+      category: z.enum(["coding", "writing", "analysis", "research", "creative", "business", "education", "productivity", "other"]).default("other"),
       tags: z.array(z.string()).optional(),
       isPublic: z.boolean().default(false),
     }))
@@ -55,6 +55,7 @@ export const skillsRouter = router({
       const slug = input.name.toLowerCase().replace(/\s+/g, "-");
       const newSkill = await db.createSkill({
         ...input,
+        tags: input.tags ? JSON.stringify(input.tags) : null,
         authorId: ctx.user.id,
         slug,
       });

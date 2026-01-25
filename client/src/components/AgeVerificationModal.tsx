@@ -19,7 +19,7 @@ export function AgeVerificationModal({ open, onConfirm, onCancel }: AgeVerificat
   const [error, setError] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
 
-  const verifyAgeMutation = trpc.verifyAge.useMutation({
+  const verifyAgeMutation = trpc.auth.verifyAge.useMutation({
     onSuccess: () => {
       onConfirm();
     },

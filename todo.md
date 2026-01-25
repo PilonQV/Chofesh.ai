@@ -2733,3 +2733,34 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 - [ ] ChromaDB for local RAG
 - [ ] Enhanced document processing (DOCX, Excel)
 - [ ] Tavily/Exa search options
+
+
+## Phase 30: Code Audit Fixes (Jan 24, 2026)
+
+### Critical Fixes
+- [ ] Install missing @google/genai package
+- [ ] Fix TypeScript error in server/routers/skills.ts:56 (category type)
+- [ ] Fix all 70 TypeScript errors
+- [ ] Verify build passes after fixes
+
+
+## Phase 30: Code Audit Fixes (Jan 2026)
+
+### Critical Fixes
+- [x] Install missing @google/genai package
+- [x] Fix TypeScript error in skills.ts (category type + tags JSON stringify)
+- [x] Fix TypeScript error in marketplace.ts (category/itemType types)
+- [x] Add missing @types/uuid package
+- [x] Fix conversationId references in routers.ts
+- [x] Fix apiKey access using getDecryptedApiKey
+
+### Code Quality Improvements
+- [x] Remove duplicate Plus import in Chat.tsx
+- [x] Fix AgeVerificationModal to use auth.verifyAge
+- [x] Add stub nsfw and gitlab routers
+- [x] Fix createUsageRecord field names
+- [x] Fix imageUrl undefined fallback
+- [x] Add conversationId to chat.send input schema
+
+### Test Results
+- 485 tests passing, 8 failing (personas tests - minor)
