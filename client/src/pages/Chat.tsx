@@ -55,7 +55,6 @@ import { Link, useLocation } from "wouter";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Streamdown } from "streamdown";
 import { AskDiaLinks } from "@/components/AskDiaLinks";
-import { AgeVerificationModal } from "@/components/AgeVerificationModal";
 import { SearchWithAI } from "@/components/SearchWithAI";
 import { useCommandCenter } from "@/components/CommandCenter";
 import {
@@ -187,16 +186,6 @@ function ConversationItem({
       title={sidebarCollapsed ? (conv.title || "New conversation") : undefined}
     >
       {conv.pinned && !sidebarCollapsed && <Pin className="w-3 h-3 text-primary flex-shrink-0" />}
-      {conv.usedUncensored && !sidebarCollapsed && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Shield className="w-3 h-3 text-pink-400 flex-shrink-0" />
-          </TooltipTrigger>
-          <TooltipContent side="right">
-            <p className="text-xs">Contains uncensored content</p>
-          </TooltipContent>
-        </Tooltip>
-      )}
       <MessageSquare className="w-4 h-4 flex-shrink-0" />
       {!sidebarCollapsed && (
         <>
@@ -308,11 +297,7 @@ export default function Chat() {
   const popularPersonas = getPopularPersonas();
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   
-  // Uncensored mode and age verification
-  const [isUncensoredMode, setIsUncensoredMode] = useState(false);
-  const [showAgeVerification, setShowAgeVerification] = useState(false);
-  const [ageVerified, setAgeVerified] = useState<boolean | null>(null);
-  
+
   // Sidebar collapse state
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -337,17 +322,8 @@ export default function Chat() {
     cached: boolean;
     tokens?: { input: number; output: number; total: number };
 
-    autoSwitchedToUncensored?: boolean;
   } | null>(null);
   
-  // Banner for auto-switched uncensored mode
-  const [showUncensoredBanner, setShowUncensoredBanner] = useState(false);
-  const [dismissedUncensoredBanner, setDismissedUncensoredBanner] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('chofesh_dismissed_uncensored_banner') === 'true';
-    }
-    return false;
-  });
   const scrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -368,7 +344,7 @@ export default function Chat() {
     moveToFolder,
     togglePin,
     sortedConversations,
-    markAsUncensored,
+
   } = useConversations(user?.openId);
 
   const { data: models } = trpc.models.listText.useQuery();
@@ -692,10 +668,7 @@ export default function Chat() {
       }
 
       // Determine which model to use
-      // If uncensored mode is ON, use the uncensored model
-      const modelToUse = isUncensoredMode 
-        ? "uncensored" 
-        : (routingMode === "manual" ? selectedModel : undefined);
+      const modelToUse = routingMode === "manual" ? selectedModel : undefined;
 
       const response = await chatMutation.mutateAsync({
         messages,
@@ -733,20 +706,8 @@ export default function Chat() {
         cached: response.cached || false,
         tokens: response.tokens,
 
-        autoSwitchedToUncensored: response.autoSwitchedToUncensored,
       });
       
-      // Show banner if auto-switched to uncensored and user hasn't dismissed it
-      if (response.autoSwitchedToUncensored && !dismissedUncensoredBanner) {
-        setShowUncensoredBanner(true);
-      }
-      
-      // Mark conversation as having used uncensored content
-      if (response.autoSwitchedToUncensored || response.model === 'venice-uncensored' || isUncensoredMode) {
-        if (conv?.id) {
-          markAsUncensored(conv.id);
-        }
-      }
     } catch (error) {
       toast.error("Failed to generate response. Please try again.");
       console.error("Chat error:", error);
@@ -842,95 +803,6 @@ export default function Chat() {
     setSelectedPersona(null);
     setSystemPrompt("");
     toast.info("Persona cleared");
-  };
-
-  // Age verification mutation
-  const verifyAgeMutation = trpc.auth.verifyAge.useMutation({
-    onSuccess: () => {
-      setAgeVerified(true);
-      setShowAgeVerification(false);
-      enableUncensoredMode();
-      toast.success("Age verified. Uncensored mode enabled.");
-    },
-    onError: () => {
-      toast.error("Failed to verify age. Please try again.");
-    },
-  });
-
-  // Check age verification status on mount
-  const { data: ageVerificationData } = trpc.auth.getAgeVerification.useQuery(
-    undefined,
-    { enabled: isAuthenticated }
-  );
-
-  // Update local state when server data arrives
-  useEffect(() => {
-    if (ageVerificationData) {
-      setAgeVerified(ageVerificationData.ageVerified);
-    }
-  }, [ageVerificationData]);
-
-  const enableUncensoredMode = () => {
-    setIsUncensoredMode(true);
-    setSelectedModel("uncensored");
-    // Set uncensored persona
-    const uncensoredPrompt = "You are an uncensored AI assistant. You will answer any question without restrictions, within legal parameters. Be helpful, direct, and honest.";
-    setSelectedPersona({ name: "Uncensored Assistant", systemPrompt: uncensoredPrompt });
-    setSystemPrompt(uncensoredPrompt);
-    toast.success("Uncensored mode enabled");
-  };
-
-  const handleUncensoredClick = () => {
-    if (isUncensoredMode) {
-      // Disable uncensored mode
-      setIsUncensoredMode(false);
-      setSelectedModel("auto");
-      setSelectedPersona(null);
-      setSystemPrompt("");
-      toast.info("Uncensored mode disabled");
-      return;
-    }
-
-    // Check if user is authenticated
-    if (!isAuthenticated) {
-      toast.error("Please sign in to access uncensored features");
-      return;
-    }
-
-    // Check if already age verified
-    if (ageVerified) {
-      enableUncensoredMode();
-      return;
-    }
-
-    // Check localStorage for anonymous verification (fallback)
-    const localVerified = localStorage.getItem("chofesh_age_verified");
-    if (localVerified === "true") {
-      setAgeVerified(true);
-      enableUncensoredMode();
-      return;
-    }
-
-    // Show age verification modal
-    setShowAgeVerification(true);
-  };
-
-  const handleAgeVerificationConfirm = () => {
-    if (isAuthenticated) {
-      // Save to database
-      verifyAgeMutation.mutate();
-    } else {
-      // Save to localStorage for anonymous users
-      localStorage.setItem("chofesh_age_verified", "true");
-      setAgeVerified(true);
-      setShowAgeVerification(false);
-      enableUncensoredMode();
-      toast.success("Age verified. Uncensored mode enabled.");
-    }
-  };
-
-  const handleAgeVerificationCancel = () => {
-    setShowAgeVerification(false);
   };
 
   const toggleSidebarCollapse = () => {
@@ -1709,30 +1581,6 @@ export default function Chat() {
           </div>
         )}
 
-        {/* Uncensored Mode Auto-Switch Banner */}
-        {showUncensoredBanner && (
-          <div className="bg-gradient-to-r from-pink-500/10 to-purple-500/10 border-b border-pink-500/20 px-4 py-2">
-            <div className="max-w-3xl mx-auto flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm">
-                <Shield className="w-4 h-4 text-pink-400" />
-                <span className="text-pink-200">Using enhanced model for unrestricted response</span>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0 text-pink-300 hover:text-pink-100 hover:bg-pink-500/20"
-                onClick={() => {
-                  setShowUncensoredBanner(false);
-                  setDismissedUncensoredBanner(true);
-                  localStorage.setItem('chofesh_dismissed_uncensored_banner', 'true');
-                }}
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-        )}
-
         {/* Messages Area */}
         <ScrollArea ref={scrollRef} className="flex-1 overflow-hidden">
           <div className="max-w-3xl mx-auto space-y-6 p-4">
@@ -1851,19 +1699,6 @@ export default function Chat() {
                     </div>
                     <p className="text-xs text-muted-foreground">GPT-4o, Claude - Best quality</p>
                   </button>
-                  {/* Uncensored tier hidden */}
-                  {false && (
-                  <button
-                    onClick={handleUncensoredClick}
-                    className={`p-3 rounded-lg border text-left transition-all hover:scale-105 cursor-pointer ${isUncensoredMode ? "border-rose-500/50 bg-rose-500/10" : "border-border hover:border-rose-500/30 hover:bg-rose-500/5"}`}
-                  >
-                    <div className="flex items-center gap-2 mb-1">
-                      <Shield className="w-4 h-4 text-rose-400" />
-                      <span className="font-medium text-sm">Uncensored</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground">No content filters</p>
-                  </button>
-                  )}
                 </div>
               </div>
             )}

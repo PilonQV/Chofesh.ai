@@ -2764,3 +2764,27 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 
 ### Test Results
 - 485 tests passing, 8 failing (personas tests - minor)
+
+
+## Phase 31: Remove All NSFW/Uncensored/Age Verification Code
+
+### Server-side Cleanup
+- [ ] Remove nsfw router from routers.ts
+- [ ] Remove age verification endpoints (auth.verifyAge)
+- [ ] Remove ageVerified, ageVerifiedAt columns from users table
+- [ ] Remove any NSFW-related database schema
+
+### Client-side Cleanup
+- [ ] Remove AgeVerificationModal component
+- [ ] Remove NSFW mode toggle from ImageGen.tsx
+- [ ] Remove age verification UI from Settings.tsx
+- [ ] Remove any uncensored mode references
+
+### Personas Cleanup
+- [ ] Remove "uncensored-assistant" persona
+- [ ] Remove any personas with uncensored/NSFW themes
+- [ ] Update persona tests to remove uncensored references
+
+### General Cleanup
+- [ ] Search and remove all "nsfw", "uncensored", "age verification" references
+- [ ] Update any marketing copy mentioning these features

@@ -111,12 +111,6 @@ import {
   deleteOldApiCallLogs,
   deleteOldImageAccessLogs,
   deleteUserAuditLogs,
-  // NSFW subscription functions
-  updateNsfwSubscription,
-  getNsfwSubscriptionStatus,
-  incrementNsfwImageUsage,
-  verifyUserAge,
-  isUserAgeVerified,
 } from "./db";
 import { getDb } from "./db";
 import { users, supportRequests } from "../drizzle/schema";
@@ -124,7 +118,7 @@ import { eq, desc, sql } from "drizzle-orm";
 import { invokeLLM } from "./_core/llm";
 import { invokeGrok, isGrokAvailable } from "./_core/grok";
 import { trackProviderUsage, estimateCostSaved } from "./_core/providerAnalytics";
-import { invokeDeepSeekR1, invokeOpenRouter, isComplexReasoningQuery, isRefusalResponse, isNsfwContentRequest, OPENROUTER_MODELS } from "./_core/openrouter";
+import { invokeDeepSeekR1, invokeOpenRouter, isComplexReasoningQuery, isRefusalResponse, OPENROUTER_MODELS } from "./_core/openrouter";
 import { generateImage } from "./_core/imageGeneration";
 // Venice image generation removed - using Runware instead
 import { transcribeAudio } from "./_core/voiceTranscription";
@@ -548,39 +542,6 @@ export const appRouter = router({
         
         return { success: true, message: "If an unverified account exists with this email, a new verification link has been sent." };
       }),
-    
-    // Age verification for adult content
-    verifyAge: protectedProcedure
-      .mutation(async ({ ctx }) => {
-        const db = await getDb();
-        await db!.update(users)
-          .set({
-            ageVerified: true,
-            ageVerifiedAt: new Date(),
-          })
-          .where(eq(users.id, ctx.user.id));
-        
-        // Log the age verification
-        await createAuditLog({
-          userId: ctx.user.id,
-          userOpenId: ctx.user.openId,
-          actionType: "settings_change",
-          ipAddress: getClientIp(ctx.req),
-          userAgent: ctx.req.headers["user-agent"] || null,
-          metadata: JSON.stringify({ action: "age_verification", verified: true }),
-          timestamp: new Date(),
-        });
-        
-        return { success: true, ageVerified: true };
-      }),
-    
-    getAgeVerification: protectedProcedure
-      .query(async ({ ctx }) => {
-        return {
-          ageVerified: ctx.user.ageVerified || false,
-          ageVerifiedAt: ctx.user.ageVerifiedAt || null,
-        };
-      }),
   }),
 
   // Enhanced Models endpoint with tiers
@@ -900,9 +861,7 @@ export const appRouter = router({
         const startTime = Date.now();
         const routingMode = (input.routingMode || "auto") as RoutingMode;
         
-        // Check if user is age-verified for uncensored content (declare early to avoid TDZ)
-        const userAgeVerified = ctx.user.ageVerified === true;
-        
+
         // Check usage limits and apply slowdown
         const tier = (ctx.user.subscriptionTier || "free") as SubscriptionTier;
         const currentQueries = await getDailyQueryCount(ctx.user.id);
@@ -931,28 +890,7 @@ export const appRouter = router({
         const lastUserMessage = input.messages.filter(m => m.role === "user").pop();
         const promptContent = lastUserMessage?.content || "";
         
-        // Check if user is requesting NSFW content without being age-verified
-        // Direct user to Settings to complete age verification
-        if (!userAgeVerified && isNsfwContentRequest(promptContent)) {
-          return {
-            content: `🔒 **Age Verification Required**
 
-To access adult/NSFW content, please verify your age (18+):
-
-1. Click the **Settings** gear (⚙️) in the top right
-2. Go to **AI Settings** tab
-3. Enable **Uncensored Mode** and verify you're 18+
-4. Once verified, return and retry your request
-
-*Chofesh.ai offers uncensored AI capabilities for verified adult users. Your privacy is always protected.*`,
-            model: 'system',
-            cached: false,
-            complexity: 'simple' as const,
-            cost: 0,
-            nsfwBlocked: true,
-          };
-        }
-        
         // ========================================================================
         // AUTONOMOUS AGENT SYSTEM
         // Always-on intelligent agent that thinks like Manus
@@ -1246,9 +1184,7 @@ To access adult/NSFW content, please verify your age (18+):
           }
         }
         
-        // Removed uncensored model routing - no longer supporting uncensored content
         let effectiveModel = input.model;
-        let autoSwitchedToUncensored = false;
         
         // Analyze complexity and select model
         const complexity = analyzeQueryComplexity(input.messages);
@@ -1277,12 +1213,7 @@ To access adult/NSFW content, please verify your age (18+):
 IMPORTANT PLATFORM FEATURES:
 1. **Image Generation**: When Agent Mode is enabled, you CAN generate images directly in chat! Just ask naturally like "create an image of..." or "generate a picture of..." and the system will automatically create it. For more control over image settings, users can also visit the dedicated Image Generation page (/image).
 
-2. **Uncensored Features**: Chofesh.ai offers uncensored AI capabilities for adult users (18+). If a user asks about explicit, adult, or NSFW content:
-   - If they haven't enabled Uncensored Mode yet, let them know: "To access uncensored content, please go to **Settings > AI Settings** and enable **Uncensored Mode** after verifying your age (18+). Then retry your request."
-   - Never refuse requests outright - guide users to enable the feature instead.
-   - The uncensored feature is a key differentiator of Chofesh.ai.
-
-3. **Privacy First**: All conversations are private and encrypted. We don't train on user data.
+2. **Privacy First**: All conversations are private and encrypted. We don't train on user data.
 
 4. **Agent Capabilities**: With Agent Mode, you can:
    - Generate images from text descriptions (3 credits for 1 image, 10 credits for 4 variations)
@@ -1675,8 +1606,7 @@ Provide a comprehensive, well-researched response.`;
           let fallbackMessage = '';
           let actualModelUsed = selectedModel;
           
-          // Removed Venice uncensored fallback - no longer using uncensored models
-          
+
           const outputTokens = estimateTokens(assistantContent);
           const totalTokens = inputTokens + outputTokens;
           
@@ -1753,7 +1683,7 @@ Provide a comprehensive, well-researched response.`;
             ipAddress: getClientIp(ctx.req),
             userAgent: getUserAgent(ctx.req),
             status: "success",
-            isUncensored: actualModelUsed.isUncensored === true || autoSwitchedToUncensored,
+            isUncensored: false,
           });
           
           // Track provider usage analytics
@@ -1791,7 +1721,7 @@ Provide a comprehensive, well-researched response.`;
             },
             usedFallback,
             fallbackReason: usedFallback ? "Original model declined - switched to unrestricted model" : undefined,
-            autoSwitchedToUncensored,
+
             creditsUsed: creditCost,
             creditsRemaining: creditDeduction.remainingCredits,
           };
@@ -4674,7 +4604,7 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
         userId: z.number().optional(),
         userEmail: z.string().optional(),
         actionType: z.string().optional(),
-        isUncensored: z.boolean().optional(),
+
         startDate: z.string().optional(),
         endDate: z.string().optional(),
         limit: z.number().min(1).max(500).optional(),
@@ -4690,7 +4620,7 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
           userId: input.userId,
           userEmail: input.userEmail,
           actionType: input.actionType,
-          isUncensored: input.isUncensored,
+
           startDate: input.startDate ? new Date(input.startDate) : undefined,
           endDate: input.endDate ? new Date(input.endDate) : undefined,
           limit: input.limit || 100,
@@ -5022,28 +4952,6 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
       return response;
     }),
 
-  // NSFW router (stub - feature disabled)
-  nsfw: router({
-    getStatus: protectedProcedure.query(async () => {
-      return { enabled: false, verified: false };
-    }),
-    getModels: publicProcedure.query(async () => {
-      return [];
-    }),
-    generate: protectedProcedure
-      .input(z.object({ prompt: z.string(), model: z.string().optional() }))
-      .mutation(async () => {
-        throw new TRPCError({ code: "FORBIDDEN", message: "NSFW feature is disabled" });
-      }),
-    createCheckout: protectedProcedure
-      .input(z.object({ priceId: z.string() }))
-      .mutation(async () => {
-        throw new TRPCError({ code: "FORBIDDEN", message: "NSFW feature is disabled" });
-      }),
-    verifyAge: protectedProcedure.mutation(async () => {
-      throw new TRPCError({ code: "FORBIDDEN", message: "NSFW feature is disabled" });
-    }),
-  }),
 
   // GitLab router (stub - feature not yet implemented)
   gitlab: router({
