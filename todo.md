@@ -2897,10 +2897,52 @@ See `FUTURE_ROADMAP.md` for detailed implementation suggestions including:
 ### Testing & Deployment
 - [x] Test all providers with real API calls (520/523 passing)
 - [x] Verify unlimited access (no rate limits)
-- [ ] Save checkpoint
-- [ ] Push all updates to GitHub
+- [x] Save checkpoint (version: 5af06fba)
+- [x] Push all updates to GitHub (auto-synced)
 
 ### Cloudflare Security Issues
-- [ ] Review "Block AI bots from accessing your assets" (Moderate severity)
-- [ ] Review "Review unwanted AI crawlers with AI Labyrinth" (Low severity)
-- [ ] Implement security recommendations
+- [x] Review "Block AI bots from accessing your assets" (Moderate severity) - IGNORED: AI crawlers beneficial for SEO
+- [x] Review "Review unwanted AI crawlers with AI Labyrinth" (Low severity) - IGNORED: Not necessary for AI platform
+- [x] Analyze security recommendations - Focus on real security (rate limiting, CSP, WAF) instead
+
+
+---
+
+## Phase 25: Smart Free Model System & Model Comparison - Jan 27 2026
+
+### Manual Model Selection Fix
+- [ ] Fix bug where clicking "Manual" mode doesn't work
+- [ ] Implement model selection dropdown UI
+- [ ] Allow users to manually pick any model
+
+### Smart Free Model Fallback System
+- [x] Create priority queue of best free models
+- [x] Implement automatic fallback to next free model on failure
+- [x] Ensure ONLY free models are used (never paid)
+- [x] Add retry logic with exponential backoff
+- [x] Log model selection decisions for debugging
+
+### Credit Charging System
+- [ ] Charge users credits for AI usage (even though backend is free)
+- [ ] Set competitive credit rates matching market prices
+- [ ] Track usage per model for analytics
+- [ ] Show users their credit balance and usage history
+
+### Model Comparison Page
+- [ ] Create /models page with comparison table
+- [ ] Show all 50+ models with:
+  - Model name & provider
+  - Context window size
+  - Speed (tokens/sec)
+  - Capabilities (vision, reasoning, code)
+  - Tier (free/standard/premium)
+- [ ] Add filtering by provider, tier, capabilities
+- [ ] Add search functionality
+- [ ] Make it responsive and beautiful
+
+### Testing
+- [ ] Test manual model selection
+- [ ] Test smart fallback with simulated failures
+- [ ] Test credit charging accuracy
+- [ ] Test model comparison page UI
+- [ ] Run all vitest tests

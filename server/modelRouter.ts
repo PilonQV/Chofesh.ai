@@ -483,33 +483,16 @@ export function selectModel(
     if (model) return model;
   }
   
-  // Free mode - only use free models (Groq + DeepSeek R1)
-  if (mode === "free") {
-    switch (complexity) {
-      case "simple":
-        // Simple queries → Llama 3.1 8B (fast, free)
-        return AVAILABLE_MODELS.find(m => m.id === "llama-3.1-8b")!;
-      case "medium":
-        // Medium queries → Mixtral (good balance, free)
-        return AVAILABLE_MODELS.find(m => m.id === "mixtral-8x7b")!;
-      case "complex":
-        // Complex reasoning → DeepSeek R1 (best for reasoning, free)
-        return AVAILABLE_MODELS.find(m => m.id === "deepseek-r1-free")!;
-    }
-  }
+  // ALL MODES NOW USE ONLY FREE MODELS
+  // We charge users credits, but backend uses free APIs
   
-  // Auto mode - smart routing prioritizing free tiers when appropriate
-  switch (complexity) {
-    case "simple":
-      // Simple queries → Llama 3.1 8B (FREE, fast)
-      return AVAILABLE_MODELS.find(m => m.id === "llama-3.1-8b")!;
-    case "medium":
-      // Medium queries → Grok 3 Fast (cheap, most up-to-date)
-      return AVAILABLE_MODELS.find(m => m.id === "grok-3-fast")!;
-    case "complex":
-      // Complex reasoning → Kimi K2 Thinking (Best for agentic research & deep reasoning)
-      return AVAILABLE_MODELS.find(m => m.id === "kimi-k2-thinking")!;
-  }
+  // Import the free model fallback system
+  const { getBestFreeModel } = require("./_core/freeModelFallback");
+  
+  // Get the best free model for this complexity
+  const bestFreeModel = getBestFreeModel(complexity, false, false);
+  
+  return bestFreeModel;
 }
 
 /**
