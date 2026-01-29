@@ -9,7 +9,7 @@
  */
 
 import { ENV } from "./env";
-import { interceptImageUrls } from "./imageUrlInterceptor";
+import { interceptAndGenerateImages } from "./imageUrlInterceptorEnhanced";
 
 // ============================================================================
 // Types
@@ -509,8 +509,8 @@ export async function invokeAICompletion(
   if (provider && provider !== "puter") {
     try {
       const response = await providerInvokers[provider](completionOptions);
-      // Intercept and store any temporary image URLs
-      response.content = await interceptImageUrls(response.content);
+      // Intercept fake/temporary image URLs and generate/store real images
+      response.content = await interceptAndGenerateImages(response.content);
       return response;
     } catch (error) {
       markProviderUnhealthy(provider, error instanceof Error ? error.message : "Unknown error");
@@ -526,8 +526,8 @@ export async function invokeAICompletion(
     
     try {
       const response = await providerInvokers[fallbackProvider](completionOptions);
-      // Intercept and store any temporary image URLs
-      response.content = await interceptImageUrls(response.content);
+      // Intercept fake/temporary image URLs and generate/store real images
+      response.content = await interceptAndGenerateImages(response.content);
       return response;
     } catch (error) {
       markProviderUnhealthy(fallbackProvider, error instanceof Error ? error.message : "Unknown error");
