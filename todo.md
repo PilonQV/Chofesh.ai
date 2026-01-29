@@ -3225,3 +3225,39 @@ Build a comprehensive autonomous agent that can complete complex tasks end-to-en
 - [ ] Task execution history viewer
 - [ ] Cron expression builder/validator UI
 - [ ] Integration guides (Zapier, Make.com, n8n)
+
+
+---
+
+## Phase 27: Automation UI, Security & Integration Guides
+
+### Frontend UI
+- [x] Create /automation page with tabs (Webhooks, Scheduled Tasks, History)
+- [x] Build webhooks management interface (create, edit, delete, test)
+- [x] Build scheduled tasks management interface (create, edit, delete, run now)
+- [x] Create visual cron expression builder with presets
+- [x] Build webhook delivery history viewer with filtering
+- [x] Build task execution history viewer with logs
+- [x] Add real-time status indicators for active webhooks/tasks
+- [x] Add webhook event selector with descriptions
+
+### Webhook Security
+- [x] Implement IP whitelisting for webhooks
+- [x] Add rate limiting per webhook (configurable)
+- [x] Create webhook signature verification examples
+- [ ] Add webhook retry configuration UI
+- [ ] Build webhook testing sandbox
+
+### Integration Guides
+- [x] Create Zapier integration guide with examples
+- [x] Create Make.com integration guide with examples
+- [x] Create n8n integration guide with examples
+- [x] Add webhook payload examples for all events
+- [x] Create API documentation page
+- [x] Add code examples (cURL, JavaScript, Python)
+
+### Home Page Updates
+- [x] Add "Automation & Webhooks" feature card
+- [x] Add "Scheduled Tasks" feature card
+- [ ] Update hero section to mention automation capabilities
+- [ ] Add automation use cases section
