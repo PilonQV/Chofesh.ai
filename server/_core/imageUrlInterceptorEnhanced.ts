@@ -45,7 +45,7 @@ function isPermanentUrl(url: string): boolean {
 function isFakePlaceholderUrl(url: string): boolean {
   // Check for common placeholder patterns
   const placeholderPatterns = [
-    /api\.openai\.com\/v1\/images\/[a-z]{4}-\d{4}$/i, // abcd-1234 format
+    /api\.openai\.com\/v1\//i, // ANY OpenAI API URL (images, files, etc)
     /placeholder/i,
     /example\.com\/.*\.(png|jpg|jpeg)/i, // example.com image URLs
     /dummy/i,

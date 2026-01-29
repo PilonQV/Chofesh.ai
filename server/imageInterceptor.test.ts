@@ -83,4 +83,27 @@ Some text
     expect(result).toContain("https://cdn.example.com/permanent.png");
     expect(result).not.toContain("https://api.openai.com/v1/images/");
   });
+
+  it("should catch /v1/files/ URLs", async () => {
+    const input = `![Generated image](https://api.openai.com/v1/files/image-23456)`;
+
+    const result = await interceptAndGenerateImages(input);
+
+    expect(result).toContain("https://cdn.example.com/generated-image.png");
+    expect(result).not.toContain("https://api.openai.com/v1/files/");
+  });
+
+  it("should catch all OpenAI API URL patterns", async () => {
+    const input = `
+![Image 1](https://api.openai.com/v1/images/img-abc123)
+![Image 2](https://api.openai.com/v1/files/image-23456)
+![Image 3](https://api.openai.com/v1/anything/else)
+`;
+
+    const result = await interceptAndGenerateImages(input);
+
+    expect(result).not.toContain("https://api.openai.com/");
+    const matches = result.match(/https:\/\/cdn\.example\.com\/generated-image\.png/g);
+    expect(matches).toHaveLength(3);
+  });
 });
