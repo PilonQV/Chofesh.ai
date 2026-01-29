@@ -159,42 +159,52 @@ export async function deliverWebhook(deliveryId: string) {
  * This should be called periodically (e.g., every minute)
  */
 export async function processPendingWebhooks() {
-  const db = await getDb();
-  if (!db) return;
-  
-  const now = new Date();
-  
-  // Get all pending or retrying deliveries that are ready to be sent
-  const pendingDeliveries = await db
-    .select()
-    .from(webhookDeliveries)
-    .where(
-      and(
-        or(
-          eq(webhookDeliveries.status, "pending"),
-          eq(webhookDeliveries.status, "retrying")
-        ),
-        or(
-          isNull(webhookDeliveries.nextRetryAt),
-          lte(webhookDeliveries.nextRetryAt, now)
+  try {
+    const db = await getDb();
+    if (!db) {
+      console.warn("[Webhook Delivery] Database not available, skipping this cycle");
+      return;
+    }
+    
+    const now = new Date();
+    
+    // Get all pending or retrying deliveries that are ready to be sent
+    const pendingDeliveries = await db
+      .select()
+      .from(webhookDeliveries)
+      .where(
+        and(
+          or(
+            eq(webhookDeliveries.status, "pending"),
+            eq(webhookDeliveries.status, "retrying")
+          ),
+          or(
+            isNull(webhookDeliveries.nextRetryAt),
+            lte(webhookDeliveries.nextRetryAt, now)
+          )
         )
       )
-    )
-    .limit(100); // Process up to 100 at a time
+      .limit(100); // Process up to 100 at a time
   
-  if (pendingDeliveries.length === 0) {
-    return;
-  }
-  
-  console.log(`[Webhook Delivery] Processing ${pendingDeliveries.length} pending deliveries`);
-  
-  // Deliver webhooks in parallel (with concurrency limit)
-  const CONCURRENCY = 10;
-  for (let i = 0; i < pendingDeliveries.length; i += CONCURRENCY) {
-    const batch = pendingDeliveries.slice(i, i + CONCURRENCY);
-    await Promise.all(
-      batch.map(delivery => deliverWebhook(delivery.id))
-    );
+    if (pendingDeliveries.length === 0) {
+      return;
+    }
+    
+    console.log(`[Webhook Delivery] Processing ${pendingDeliveries.length} pending deliveries`);
+    
+    // Deliver webhooks in parallel (with concurrency limit)
+    const CONCURRENCY = 10;
+    for (let i = 0; i < pendingDeliveries.length; i += CONCURRENCY) {
+      const batch = pendingDeliveries.slice(i, i + CONCURRENCY);
+      await Promise.all(
+        batch.map(delivery => deliverWebhook(delivery.id).catch(err => {
+          console.error(`[Webhook Delivery] Error delivering webhook ${delivery.id}:`, err.message);
+        }))
+      );
+    }
+  } catch (error: any) {
+    console.error("[Webhook Delivery] Error in processPendingWebhooks:", error.message);
+    // Don't throw - let the worker continue
   }
 }
 
