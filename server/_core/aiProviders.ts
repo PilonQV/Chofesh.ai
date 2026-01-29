@@ -9,6 +9,7 @@
  */
 
 import { ENV } from "./env";
+import { interceptImageUrls } from "./imageUrlInterceptor";
 
 // ============================================================================
 // Types
@@ -507,7 +508,10 @@ export async function invokeAICompletion(
   // If specific provider requested, try it first
   if (provider && provider !== "puter") {
     try {
-      return await providerInvokers[provider](completionOptions);
+      const response = await providerInvokers[provider](completionOptions);
+      // Intercept and store any temporary image URLs
+      response.content = await interceptImageUrls(response.content);
+      return response;
     } catch (error) {
       markProviderUnhealthy(provider, error instanceof Error ? error.message : "Unknown error");
       console.error(`Provider ${provider} failed:`, error);
@@ -521,7 +525,10 @@ export async function invokeAICompletion(
     if (!providerHealth[fallbackProvider].isHealthy) continue;
     
     try {
-      return await providerInvokers[fallbackProvider](completionOptions);
+      const response = await providerInvokers[fallbackProvider](completionOptions);
+      // Intercept and store any temporary image URLs
+      response.content = await interceptImageUrls(response.content);
+      return response;
     } catch (error) {
       markProviderUnhealthy(fallbackProvider, error instanceof Error ? error.message : "Unknown error");
       console.error(`Fallback provider ${fallbackProvider} failed:`, error);
