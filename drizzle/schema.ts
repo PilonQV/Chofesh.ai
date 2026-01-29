@@ -1009,3 +1009,8 @@ export type InsertAgentToolPreference = typeof agentToolPreferences.$inferInsert
  * Export webhook and scheduled task tables
  */
 export * from "./schema-webhooks";
+
+/**
+ * Export projects tables
+ */
+export * from "./schema-projects";

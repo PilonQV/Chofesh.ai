@@ -3402,3 +3402,82 @@ Build a comprehensive autonomous agent that can complete complex tasks end-to-en
 - [x] Update Kids Book Creator to use permanent storage
 - [x] Update all image generation endpoints to store permanently
 - [x] Test image persistence after generation
+
+
+---
+
+## Phase 32: Image Gallery, PDF Export, Project History & Malena Autonomous Agent
+
+### Image Gallery for Projects
+- [x] Create image gallery component with grid layout
+- [x] Add lightbox for full-size image viewing
+- [x] Implement individual image download buttons
+- [ ] Add bulk download (ZIP) for all project images
+- [x] Show image metadata (prompt, model, dimensions)
+- [ ] Add image regeneration option
+- [ ] Integrate gallery into Kids Book Creator results
+- [ ] Integrate gallery into all project types
+
+### PDF Export for Kids Books
+- [x] Install PDF generation library (jsPDF or pdfkit)
+- [x] Design professional book layout template
+- [x] Implement page layout with text and images
+- [x] Add cover page with title and author
+- [x] Add page numbers and formatting
+- [ ] Support custom fonts and styling
+- [ ] Generate table of contents
+- [ ] Add download PDF button to Kids Book results
+- [ ] Test PDF generation with various book lengths
+
+### My Projects Page
+- [x] Create projects database schema (store all generated projects)
+- [x] Build My Projects page with grid/list view
+- [x] Show project thumbnails and metadata
+- [x] Add filtering by project type (books, websites, apps, marketing)
+- [ ] Add search functionality
+- [ ] Implement project regeneration (rerun with same inputs)
+- [x] Add project sharing (public links)
+- [x] Add project deletion
+- [x] Show project creation date and status
+- [ ] Add pagination for large project lists
+
+### Malena Autonomous Agent System
+- [ ] Analyze existing autonomous agent code
+- [ ] Design agent architecture (task detection, routing, execution)
+- [ ] Implement intent classification (what does user want?)
+- [ ] Build task router (route to appropriate builder/tool)
+- [ ] Add agent memory system (remember context across messages)
+- [ ] Implement multi-step workflow orchestration
+- [ ] Add agent tools (web search, code execution, file operations)
+- [ ] Build agent decision-making system (when to ask vs execute)
+- [ ] Implement progress tracking and status updates
+- [ ] Add error recovery and retry logic
+- [ ] Create agent personality and communication style
+- [ ] Test agent with diverse user requests
+
+### Agent Tools Integration
+- [ ] Web search tool (Brave, DuckDuckGo, SearXNG)
+- [ ] Code execution tool (Judge0, sandboxed environment)
+- [ ] File operations tool (upload, download, convert)
+- [ ] Image generation tool (already exists)
+- [ ] Data analysis tool (charts, statistics)
+- [ ] Email tool (send results, notifications)
+- [ ] Calendar tool (schedule tasks, reminders)
+- [ ] Payment tool (Stripe integration)
+
+### Agent Workflow Examples
+- [ ] "Create a kids book" → Detect intent → Generate story → Generate images → Create PDF → Deliver
+- [ ] "Build a website for my bakery" → Gather requirements → Generate design → Create code → Deploy → Deliver
+- [ ] "Analyze this data" → Upload file → Parse data → Generate insights → Create visualizations → Deliver
+- [ ] "Schedule a daily report" → Create scheduled task → Set up webhook → Configure delivery → Confirm
+
+### Testing & Polish
+- [ ] Test image gallery with multiple project types
+- [ ] Test PDF export with various book lengths and styles
+- [ ] Test My Projects page with 50+ projects
+- [ ] Test agent with 20+ diverse user requests
+- [ ] Test agent error handling and recovery
+- [ ] Test agent memory and context retention
+- [ ] Verify all downloads work correctly
+- [ ] Check mobile responsiveness
+- [ ] User acceptance testing
