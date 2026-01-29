@@ -3598,3 +3598,19 @@ Build a comprehensive autonomous agent that can complete complex tasks end-to-en
 - [x] Unit tests verify image generation from descriptions
 - [x] Unit tests verify permanent URLs are preserved
 - [x] Ready for production use
+
+
+---
+
+## ✅ FIXED: Interceptor Now Catches ALL OpenAI URL Patterns
+
+### Issue (RESOLVED)
+- [x] Interceptor only catches `/v1/images/` URLs
+- [x] AI is generating `/v1/files/image-*` URLs that are NOT being intercepted
+- [x] Need to catch ALL api.openai.com URLs regardless of path
+
+### Fix (COMPLETED)
+- [x] Update isFakePlaceholderUrl regex to catch all OpenAI API URLs
+- [x] Test with /v1/files/, /v1/images/, and other patterns
+- [x] Add comprehensive test coverage for all URL patterns (8/8 passing)
+- [x] Regex now matches ANY `/v1/*` path on api.openai.com
