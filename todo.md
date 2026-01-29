@@ -3384,3 +3384,21 @@ Build a comprehensive autonomous agent that can complete complex tasks end-to-en
 - [x] UI fully functional and tested
 - [x] Integration guides complete
 - [x] Security features implemented
+
+
+---
+
+## Phase 31: Fix Image Generation 404 Errors
+
+### Bug: Generated Images Return 404
+- [x] Images from Kids Book Creator are temporary OpenAI URLs that expire
+- [x] Need to download images immediately after generation
+- [x] Store images permanently in S3
+- [x] Return permanent S3 URLs instead of temporary URLs
+
+### Implementation
+- [x] Add image download utility function
+- [x] Integrate S3 storage for generated images
+- [x] Update Kids Book Creator to use permanent storage
+- [x] Update all image generation endpoints to store permanently
+- [x] Test image persistence after generation

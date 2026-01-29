@@ -137,11 +137,35 @@ async function generateImageRunware(
   if (result.data && result.data.length > 0) {
     const imageData = result.data[0];
     if (imageData.imageURL) {
-      // Runware returns a direct URL, we can return it directly
-      // or optionally download and re-upload to our S3
-      return {
-        url: imageData.imageURL,
-      };
+      // Download the image from Runware's temporary URL and upload to S3 for permanent storage
+      try {
+        console.log("[Image Generation] Downloading image from Runware:", imageData.imageURL);
+        const imageResponse = await fetch(imageData.imageURL);
+        if (!imageResponse.ok) {
+          throw new Error(`Failed to download image: ${imageResponse.status}`);
+        }
+        
+        const imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
+        const fileName = `generated/${Date.now()}-${randomUUID()}.png`;
+        
+        console.log("[Image Generation] Uploading to S3:", fileName);
+        const { url: permanentUrl } = await storagePut(
+          fileName,
+          imageBuffer,
+          "image/png"
+        );
+        
+        console.log("[Image Generation] Image stored permanently:", permanentUrl);
+        return {
+          url: permanentUrl,
+        };
+      } catch (error) {
+        console.error("[Image Generation] Failed to store image permanently:", error);
+        // Fall back to temporary URL if storage fails
+        return {
+          url: imageData.imageURL,
+        };
+      }
     }
   }
 
