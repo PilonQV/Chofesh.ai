@@ -5,6 +5,7 @@ import { skillsRouter } from "./routers/skills";
 import { sharingRouter } from "./routers/sharing";
 import { marketplaceRouter } from "./routers/marketplace";
 import { projectBuilderRouter } from "./routers/projectBuilder";
+import { automationRouter } from "./routers/automation";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
@@ -220,6 +221,7 @@ export const appRouter = router({
   marketplace: marketplaceRouter,
   system: systemRouter,
   projectBuilder: projectBuilderRouter,
+  automation: automationRouter,
   
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),

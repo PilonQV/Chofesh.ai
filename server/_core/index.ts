@@ -113,7 +113,31 @@ async function startServer() {
 
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
+    
+    // Start background workers
+    startBackgroundWorkers();
   });
+}
+
+/**
+ * Start background workers for automation
+ */
+async function startBackgroundWorkers() {
+  try {
+    // Import workers dynamically
+    const { startWebhookDeliveryWorker } = await import("../lib/webhookDelivery");
+    const { startTaskExecutionWorker } = await import("../lib/taskExecutor");
+    
+    // Start webhook delivery worker
+    startWebhookDeliveryWorker();
+    
+    // Start task execution worker
+    startTaskExecutionWorker();
+    
+    console.log("[Background Workers] All workers started successfully");
+  } catch (error) {
+    console.error("[Background Workers] Failed to start workers:", error);
+  }
 }
 
 startServer().catch(console.error);

@@ -1004,3 +1004,8 @@ export const agentToolPreferences = mysqlTable("agent_tool_preferences", {
 
 export type AgentToolPreference = typeof agentToolPreferences.$inferSelect;
 export type InsertAgentToolPreference = typeof agentToolPreferences.$inferInsert;
+
+/**
+ * Export webhook and scheduled task tables
+ */
+export * from "./schema-webhooks";
