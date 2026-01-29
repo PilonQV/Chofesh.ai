@@ -59,6 +59,7 @@ const ConversationSharing = lazy(() => import("./pages/ConversationSharing"));
 const AgentMarketplace = lazy(() => import("./pages/AgentMarketplace"));
 const Automation = lazy(() => import("./pages/Automation"));
 const MyProjects = lazy(() => import("./pages/MyProjects"));
+const ProjectDetail = lazy(() => import("./pages/ProjectDetail"));
 
 // Loading fallback component
 function PageLoader() {
@@ -120,6 +121,7 @@ function Router() {
         <Route path="/sharing" component={ConversationSharing} />
         <Route path="/marketplace" component={AgentMarketplace} />
               <Route path="/automation" component={Automation} />
+              <Route path="/projects/:id" component={ProjectDetail} />
               <Route path="/projects" component={MyProjects} />
         <Route path="/404" component={NotFound} />
         <Route component={NotFound} />

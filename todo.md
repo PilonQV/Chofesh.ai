@@ -3481,3 +3481,91 @@ Build a comprehensive autonomous agent that can complete complex tasks end-to-en
 - [ ] Verify all downloads work correctly
 - [ ] Check mobile responsiveness
 - [ ] User acceptance testing
+
+
+---
+
+## Phase 33: Malena Autonomous Agent System & Project Integration
+
+### Malena Autonomous Agent Enhancement
+- [ ] Analyze existing autonomous agent code (autonomousAgentEnhanced.ts)
+- [ ] Enhance task detection with 20+ task types (research, coding, writing, analysis, etc.)
+- [ ] Build intent recognition system with confidence scoring
+- [ ] Implement agent memory system for multi-turn conversations
+- [ ] Add agent tools (web search, code execution, file operations, API calls)
+- [ ] Build agent orchestration for complex multi-step workflows
+- [ ] Integrate agent with project builders (kids books, websites, apps, marketing)
+- [ ] Integrate agent with automation system (webhooks, scheduled tasks)
+- [ ] Add agent progress tracking and status updates
+- [ ] Implement agent error handling and recovery
+- [ ] Add agent learning from user feedback
+- [ ] Create agent configuration UI for customization
+
+### Project Detail Page
+- [ ] Create /projects/:id route and page component
+- [ ] Display project metadata (title, description, type, status, dates)
+- [ ] Integrate Image Gallery component for project images
+- [ ] Add PDF download button for Kids Books
+- [ ] Add project regeneration button
+- [ ] Show project files list with download links
+- [ ] Add project sharing controls
+- [ ] Add project editing capabilities
+- [ ] Show project generation logs/history
+- [ ] Add related projects suggestions
+
+### Chat Integration for Project Saving
+- [ ] Detect when projects are generated in chat
+- [ ] Automatically save projects to database
+- [ ] Extract project metadata from AI responses
+- [ ] Save all generated images to project_images table
+- [ ] Save all generated files to project_files table
+- [ ] Show "View in My Projects" link after generation
+- [ ] Add project thumbnail generation
+- [ ] Handle project updates and versioning
+- [ ] Add manual project save button in chat
+- [ ] Test with all project types (books, websites, apps, marketing)
+
+### Testing & Polish
+- [ ] Test Malena agent with 10+ different task types
+- [ ] Test project detail page with all project types
+- [ ] Test automatic project saving from chat
+- [ ] Test project regeneration functionality
+- [ ] Test PDF download for Kids Books
+- [ ] Verify all images are stored permanently
+- [ ] Test project sharing links
+- [ ] Check mobile responsiveness
+- [ ] Performance testing with large projects
+- [ ] User acceptance testing
+
+
+---
+
+## Phase 33: Malena Agent, Project Detail Page & Chat Integration ✅
+
+### Malena Autonomous Agent System
+- [x] Enhance task detection with 20+ task types
+- [x] Implement intent recognition with confidence scoring
+- [x] Build agent orchestration for multi-step workflows
+- [x] Integrate with project builders (Kids Books, Websites, Apps, Marketing)
+- [x] Integrate with automation system (Webhooks, Scheduled Tasks)
+- [ ] Add agent memory system for context retention (future)
+- [ ] Implement self-correction and learning (future)
+- [ ] Add agent tools (web search, code execution, file operations) (future)
+
+### Project Detail Page
+- [x] Create /projects/:id route
+- [x] Build project detail page with tabs (Overview, Images, Files, Details)
+- [x] Integrate Image Gallery component
+- [x] Add PDF download button for Kids Books
+- [x] Add project sharing functionality
+- [x] Add project regeneration option
+- [x] Show project metadata and creation date
+- [x] Add navigation back to My Projects
+
+### Chat Integration
+- [x] Detect project creation requests in chat
+- [x] Automatically save generated projects to database
+- [x] Add \"View in My Projects\" link to chat responses
+- [ ] Show project creation progress in chat (future)
+- [ ] Add project thumbnail to chat when created (future)
+- [ ] Enable project regeneration from chat history (future)
