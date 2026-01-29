@@ -183,6 +183,13 @@
       "when": 1769655559629,
       "tag": "0025_clammy_champions",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "5",
+      "when": 1769722773923,
+      "tag": "0026_foamy_dark_beast",
+      "breakpoints": true
     }
   ]
 }
