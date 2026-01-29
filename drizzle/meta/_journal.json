@@ -176,6 +176,13 @@
       "when": 1769359773240,
       "tag": "0024_broken_tomorrow_man",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "5",
+      "when": 1769655559629,
+      "tag": "0025_clammy_champions",
+      "breakpoints": true
     }
   ]
 }

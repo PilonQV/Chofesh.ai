@@ -3094,3 +3094,134 @@ Build a comprehensive autonomous agent that can complete complex tasks end-to-en
 - [ ] Verify all downloads work correctly
 - [ ] Check file quality and formatting
 - [ ] User acceptance testing with real users
+
+
+---
+
+## Phase 26: Webhooks API & Scheduled Tasks (Automation Platform)
+
+### Database Schema
+- [ ] Create webhooks table (user_id, url, events, secret, active, retry_config)
+- [ ] Create webhook_deliveries table (webhook_id, event_type, payload, status, attempts, response)
+- [ ] Create scheduled_tasks table (user_id, name, schedule_cron, task_type, config, active, last_run, next_run)
+- [ ] Create task_executions table (task_id, status, started_at, completed_at, result, error)
+- [ ] Add indexes for performance (user_id, next_run, status)
+
+### Webhooks Management System
+- [ ] Create webhook CRUD endpoints (create, list, update, delete)
+- [ ] Implement webhook secret generation and validation
+- [ ] Build event subscription system (task.completed, project.created, etc.)
+- [ ] Add webhook testing endpoint (send test payload)
+- [ ] Implement webhook signature verification (HMAC SHA-256)
+
+### Webhook Delivery System
+- [ ] Build webhook delivery queue with retry logic
+- [ ] Implement exponential backoff (1min, 5min, 15min, 1hr, 6hr)
+- [ ] Add webhook delivery status tracking
+- [ ] Create webhook logs viewer
+- [ ] Implement webhook timeout handling (30 seconds)
+- [ ] Add webhook failure notifications
+
+### Scheduled Tasks System
+- [ ] Create scheduled task CRUD endpoints
+- [ ] Implement cron expression parser and validator
+- [ ] Build task scheduler engine (check every minute)
+- [ ] Add task execution queue
+- [ ] Implement task types (chat_completion, project_builder, data_analysis)
+- [ ] Create task execution history viewer
+
+### Task Execution Engine
+- [ ] Build background worker for task execution
+- [ ] Implement task context isolation (separate from user sessions)
+- [ ] Add task result storage and retrieval
+- [ ] Create task cancellation system
+- [ ] Implement task timeout handling
+- [ ] Add task execution notifications (email, webhook)
+
+### Frontend UI - Webhooks
+- [ ] Create webhooks management page (/settings/webhooks)
+- [ ] Build webhook creation form with event selection
+- [ ] Add webhook testing interface
+- [ ] Create webhook delivery logs viewer
+- [ ] Implement webhook enable/disable toggle
+- [ ] Add webhook secret regeneration
+
+### Frontend UI - Scheduled Tasks
+- [ ] Create scheduled tasks page (/automation/tasks)
+- [ ] Build task creation wizard with cron builder
+- [ ] Add task execution history viewer
+- [ ] Create task enable/disable toggle
+- [ ] Implement task preview (show next 5 run times)
+- [ ] Add task templates (daily report, weekly summary, etc.)
+
+### Integration Examples
+- [ ] Create Zapier integration guide
+- [ ] Build Make.com integration template
+- [ ] Add n8n workflow examples
+- [ ] Create Slack notification example
+- [ ] Build Discord bot integration guide
+
+### Testing & Documentation
+- [ ] Test webhook delivery with real endpoints
+- [ ] Test scheduled tasks with various cron expressions
+- [ ] Verify retry logic and error handling
+- [ ] Test concurrent task execution
+- [ ] Create API documentation for webhooks
+- [ ] Write user guide for scheduled tasks
+- [ ] Add video tutorial for automation setup
+
+### Security & Rate Limiting
+- [ ] Implement webhook rate limiting (100 deliveries/hour per user)
+- [ ] Add scheduled task limits (10 active tasks per free user, unlimited for pro)
+- [ ] Implement webhook payload size limits (1MB max)
+- [ ] Add task execution time limits (5 minutes for free, 30 minutes for pro)
+- [ ] Create audit logs for webhook and task actions
+
+
+---
+
+## Phase 26: Webhooks API & Scheduled Tasks (Automation Platform)
+
+### Webhooks API
+- [x] Database schema for webhooks and deliveries
+- [x] Webhook CRUD operations
+- [x] HMAC signature generation and verification
+- [x] Webhook delivery worker with retry logic
+- [x] Exponential backoff (2, 4, 8, 16, 32 minutes)
+- [x] Delivery tracking and logging
+- [x] Test webhook functionality
+- [x] tRPC endpoints for webhook management
+
+### Scheduled Tasks / Cron Jobs
+- [x] Database schema for tasks and executions
+- [x] Task CRUD operations
+- [x] Cron expression parsing and validation
+- [x] Next run time calculation
+- [x] Task execution engine
+- [x] Support for 6 task types (chat, projects, analysis, summaries, scraping, scripts)
+- [x] Task lifecycle management (pending → running → completed/failed)
+- [x] Webhook triggers for task events
+- [x] Error handling and timeout management
+- [x] Execution history tracking
+- [x] tRPC endpoints for task management
+
+### Background Workers
+- [x] Webhook delivery worker (runs every minute)
+- [x] Task execution worker (runs every minute)
+- [x] Worker startup on server boot
+- [x] Worker error handling and recovery
+
+### Testing
+- [x] Webhook creation and management tests (13/13 passing)
+- [x] Scheduled task creation and management tests
+- [x] Cron expression validation tests
+- [x] Task execution tests
+- [x] Webhook delivery tests
+
+### Frontend UI (Future Phase)
+- [ ] Webhooks management page
+- [ ] Scheduled tasks management page
+- [ ] Webhook deliveries history viewer
+- [ ] Task execution history viewer
+- [ ] Cron expression builder/validator UI
+- [ ] Integration guides (Zapier, Make.com, n8n)
