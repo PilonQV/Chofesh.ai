@@ -313,14 +313,15 @@ export async function createTaskExecution(params: {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
-  const [execution] = await db.insert(taskExecutions).values({
+  const result = await db.insert(taskExecutions).values({
     taskId,
     status: "pending",
     startedAt: new Date(),
     triggeredBy,
   });
   
-  return execution;
+  // MySQL returns insertId in the result
+  return result;
 }
 
 /**

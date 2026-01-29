@@ -1,0 +1,28 @@
+{
+  "query": "SHOW TABLES LIKE 'webhook%'; SHOW TABLES LIKE 'task%'; SHOW TABLES LIKE 'scheduled%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host ***REMOVED*** --port 4000 --user ***REMOVED*** --database ***REMOVED*** --execute SHOW TABLES LIKE 'webhook%'; SHOW TABLES LIKE 'task%'; SHOW TABLES LIKE 'scheduled%';",
+  "rows": [
+    {
+      "Tables_in_***REMOVED*** (webhook%)": "webhook_deliveries"
+    },
+    {
+      "Tables_in_***REMOVED*** (webhook%)": "webhooks"
+    },
+    {
+      "Tables_in_***REMOVED*** (webhook%)": "Tables_in_***REMOVED*** (task%)"
+    },
+    {
+      "Tables_in_***REMOVED*** (webhook%)": "task_executions"
+    },
+    {
+      "Tables_in_***REMOVED*** (webhook%)": "Tables_in_***REMOVED*** (scheduled%)"
+    },
+    {
+      "Tables_in_***REMOVED*** (webhook%)": "scheduled_tasks"
+    }
+  ],
+  "messages": [],
+  "stdout": "Tables_in_***REMOVED*** (webhook%)\nwebhook_deliveries\nwebhooks\nTables_in_***REMOVED*** (task%)\ntask_executions\nTables_in_***REMOVED*** (scheduled%)\nscheduled_tasks\n",
+  "stderr": "",
+  "execution_time_ms": 222
+}

@@ -1,0 +1,9 @@
+{
+  "query": "DELETE FROM scheduled_tasks WHERE name = 'Daily Summary';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host ***REMOVED*** --port 4000 --user ***REMOVED*** --database ***REMOVED*** --execute DELETE FROM scheduled_tasks WHERE name = 'Daily Summary';",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 91
+}

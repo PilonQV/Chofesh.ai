@@ -17,17 +17,25 @@ export async function executeTask(task: any) {
   console.log(`[Task Executor] Executing task: ${task.name} (${task.id})`);
   
   // Create execution record
-  const execution = await createTaskExecution({
-    taskId: task.id,
-    triggeredBy: "scheduler",
-  });
-  
-  if (!execution || !execution.insertId) {
-    console.error(`[Task Executor] Failed to create execution record for task ${task.id}`);
+  let executionId: string;
+  try {
+    const result = await createTaskExecution({
+      taskId: task.id,
+      triggeredBy: "scheduler",
+    });
+    
+    // MySQL insert result has insertId
+    const mysqlResult = result as any;
+    if (!mysqlResult || typeof mysqlResult.insertId !== 'number') {
+      console.error(`[Task Executor] Failed to create execution record for task ${task.id}`);
+      return;
+    }
+    
+    executionId = mysqlResult.insertId.toString();
+  } catch (error: any) {
+    console.error(`[Task Executor] Error creating execution record for task ${task.id}:`, error.message);
     return;
   }
-  
-  const executionId = execution.insertId.toString();
   
   // Update status to running
   await updateTaskExecution({
