@@ -164,16 +164,34 @@ export async function regenerateWebhookSecret(webhookId: string, userId: number)
 /**
  * Get webhook deliveries for a webhook
  */
-export async function getWebhookDeliveries(webhookId: string, limit: number = 50) {
+export async function getWebhookDeliveries(options: {
+  webhookId?: string;
+  status?: string;
+  limit?: number;
+}) {
+  const { webhookId, status, limit = 50 } = options;
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
-  return await db
+  const conditions = [];
+  if (webhookId) {
+    conditions.push(eq(webhookDeliveries.webhookId, webhookId));
+  }
+  if (status) {
+    conditions.push(eq(webhookDeliveries.status, status as any));
+  }
+  
+  const query = db
     .select()
     .from(webhookDeliveries)
-    .where(eq(webhookDeliveries.webhookId, webhookId))
     .orderBy(desc(webhookDeliveries.createdAt))
     .limit(limit);
+  
+  if (conditions.length > 0) {
+    return await query.where(and(...conditions));
+  }
+  
+  return await query;
 }
 
 /**

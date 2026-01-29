@@ -48,6 +48,9 @@ import {
   Link2,
   Layers,
   Wrench,
+  Webhook,
+  Clock,
+  Rocket,
   Calculator,
   Youtube,
   Braces,
@@ -222,6 +225,17 @@ export default function Home() {
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-4">
+                <AccordionTrigger>Automation & Integrations</AccordionTrigger>
+                <AccordionContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FeatureCard title="Webhooks API" description="Receive real-time notifications when AI tasks complete. Integrate with Zapier, Make.com, n8n, and custom apps." icon={<Webhook />} href="/automation" />
+                    <FeatureCard title="Scheduled Tasks" description="Automate recurring AI workflows with cron scheduling. Daily reports, weekly summaries, monthly analysis - all hands-free." icon={<Clock />} href="/automation" />
+                    <FeatureCard title="Project Builders" description="Create complete deliverables: kids books with illustrations, websites with code, app designs with wireframes, marketing campaigns." icon={<Rocket />} />
+                    <FeatureCard title="API Access" description="Full REST API access to 50+ AI models, smart routing, and all platform features. Build your own integrations." icon={<Code2 />} href="/developers" />
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="item-5">
                 <AccordionTrigger>Privacy & Security</AccordionTrigger>
                 <AccordionContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
