@@ -16,7 +16,7 @@ export interface ModelDefinition {
   id: string;
   name: string;
   description: string;
-  provider: "platform" | "groq" | "openai" | "anthropic" | "grok" | "openrouter" | "puter";
+  provider: "platform" | "groq" | "openai" | "anthropic" | "grok" | "openrouter" | "puter" | "kimi";
   tier: "free" | "standard" | "premium";
   costPer1kInput: number;
   costPer1kOutput: number;
@@ -28,6 +28,45 @@ export interface ModelDefinition {
 }
 
 export const AVAILABLE_MODELS: ModelDefinition[] = [
+  // Kimi K2.5 - Moonshot AI (Premium multimodal with 256K context)
+  {
+    id: "kimi-k2.5",
+    name: "Kimi K2.5 (Premium)",
+    description: "Best visual coding, video understanding, 256K context",
+    provider: "kimi",
+    tier: "premium",
+    costPer1kInput: 0.0006,
+    costPer1kOutput: 0.003,
+    maxTokens: 262144,
+    supportsVision: true,
+    speed: "medium",
+    isReasoningModel: true,
+  },
+  {
+    id: "kimi-k2-thinking",
+    name: "Kimi K2 Thinking (Premium)",
+    description: "Best for agentic research & deep reasoning, 256K context",
+    provider: "kimi",
+    tier: "premium",
+    costPer1kInput: 0.0004,
+    costPer1kOutput: 0.00175,
+    maxTokens: 262144,
+    supportsVision: false,
+    speed: "medium",
+    isReasoningModel: true,
+  },
+  {
+    id: "kimi-k2-turbo-preview",
+    name: "Kimi K2 Turbo",
+    description: "Fast Kimi model with 256K context",
+    provider: "kimi",
+    tier: "standard",
+    costPer1kInput: 0.0002,
+    costPer1kOutput: 0.001,
+    maxTokens: 262144,
+    supportsVision: false,
+    speed: "fast",
+  },
   // Puter.js FREE models - No API key needed, runs in browser
   {
     id: "puter-gpt-5-nano",
