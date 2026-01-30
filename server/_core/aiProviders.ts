@@ -463,7 +463,7 @@ async function invokeKimi(options: AICompletionOptions): Promise<AICompletionRes
     body: JSON.stringify({
       model,
       messages: options.messages,
-      temperature: options.temperature ?? 0.7,
+      temperature: 1.0, // Kimi K2.5 requires fixed temperature of 1.0
       max_tokens: options.maxTokens ?? 4096,
       stream: false,
     }),
