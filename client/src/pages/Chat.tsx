@@ -759,7 +759,7 @@ export default function Chat() {
         });
         
         setUploadedImages(prev => [...prev, { url: result.url, filename: result.filename }]);
-        toast.success(`Uploaded ${file.name}`);
+        toast.success(`✓ ${file.name} uploaded - Vision AI ready`);
       }
     } catch (error) {
       toast.error('Failed to upload image');
@@ -1917,7 +1917,7 @@ export default function Chat() {
                       handleSend();
                     }
                   }}
-                  placeholder={uploadedImages.length > 0 ? "Ask about the image..." : (isListening ? "Listening... speak now" : "Type your message...")}
+                  placeholder={uploadedImages.length > 0 ? "Ask about the image... (Using Kimi K2.5 Vision AI)" : (isListening ? "Listening... speak now" : "Type your message...")}
                   disabled={isGenerating || isListening}
                   className={`flex-1 min-h-[44px] max-h-[200px] resize-none pr-12 border-0 focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-200 focus:min-h-[80px] ${isListening ? "bg-red-500/10" : ""}`}
                   rows={1}
