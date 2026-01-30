@@ -10,6 +10,7 @@
 
 import { ENV } from "./_core/env";
 import crypto from "crypto";
+import { getBestFreeModel } from "./_core/freeModelFallback";
 
 // Model definitions with tiers and costs
 export interface ModelDefinition {
@@ -464,6 +465,34 @@ export type ComplexityLevel = "simple" | "medium" | "complex";
 export type RoutingMode = "auto" | "free" | "manual";
 
 /**
+ * Detect if task requires long context (>128K tokens)
+ */
+export function requiresLongContext(messages: { role: string; content: string }[]): boolean {
+  const totalLength = messages.reduce((acc, m) => acc + (typeof m.content === 'string' ? m.content.length : 0), 0);
+  // Rough estimate: 1 token ≈ 4 characters
+  const estimatedTokens = totalLength / 4;
+  return estimatedTokens > 128000;
+}
+
+/**
+ * Detect if task requires vision capabilities
+ */
+export function requiresVision(messages: { role: string; content: string }[]): boolean {
+  const lastMessage = messages[messages.length - 1]?.content || "";
+  const visionKeywords = /image|picture|photo|screenshot|visual|video|diagram|chart|graph|design|ui|interface/i;
+  return visionKeywords.test(lastMessage);
+}
+
+/**
+ * Detect if task is code-related
+ */
+export function isCodeTask(messages: { role: string; content: string }[]): boolean {
+  const lastMessage = messages[messages.length - 1]?.content || "";
+  const codeKeywords = /code|function|class|debug|refactor|implement|algorithm|program|script|api|database|frontend|backend/i;
+  return codeKeywords.test(lastMessage) || /```/.test(lastMessage);
+}
+
+/**
  * Analyze query complexity based on various factors
  */
 export function analyzeQueryComplexity(messages: { role: string; content: string }[]): ComplexityLevel {
@@ -514,7 +543,8 @@ export function analyzeQueryComplexity(messages: { role: string; content: string
 export function selectModel(
   complexity: ComplexityLevel,
   mode: RoutingMode,
-  preferredModel?: string
+  preferredModel?: string,
+  messages?: { role: string; content: string }[]
 ): ModelDefinition {
   // Manual mode - use preferred model or default
   if (mode === "manual" && preferredModel) {
@@ -522,16 +552,17 @@ export function selectModel(
     if (model) return model;
   }
   
-  // ALL MODES NOW USE ONLY FREE MODELS
-  // We charge users credits, but backend uses free APIs
+  // Detect task characteristics
+  const hasVision = messages ? requiresVision(messages) : false;
+  const isCode = messages ? isCodeTask(messages) : false;
+  const isLongContext = messages ? requiresLongContext(messages) : false;
   
-  // Import the free model fallback system
-  const { getBestFreeModel } = require("./_core/freeModelFallback");
+  // Use the free model fallback system
   
-  // Get the best free model for this complexity
-  const bestFreeModel = getBestFreeModel(complexity, false, false);
+  // Get the best model for this task (prioritizes Kimi for vision/code/long-context)
+  const bestModel = getBestFreeModel(complexity, hasVision, isCode, isLongContext);
   
-  return bestFreeModel;
+  return bestModel;
 }
 
 /**

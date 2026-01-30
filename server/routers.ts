@@ -598,7 +598,7 @@ export const appRouter = router({
       .query(({ input }) => {
         const complexity = analyzeQueryComplexity(input.messages);
         const mode = (input.mode || "auto") as RoutingMode;
-        const selectedModel = selectModel(complexity, mode);
+        const selectedModel = selectModel(complexity, mode, undefined, input.messages);
         const inputTokens = input.messages.reduce((acc, m) => acc + estimateTokens(m.content), 0);
         const estimatedOutputTokens = Math.min(inputTokens * 2, 2000);
         const cost = estimateCost(selectedModel, inputTokens, estimatedOutputTokens);
@@ -1211,8 +1211,8 @@ export const appRouter = router({
         // Analyze complexity and select model
         const complexity = analyzeQueryComplexity(input.messages);
         const selectedModel = effectiveModel 
-          ? AVAILABLE_MODELS.find(m => m.id === effectiveModel) || selectModel(complexity, routingMode)
-          : selectModel(complexity, routingMode);
+          ? AVAILABLE_MODELS.find(m => m.id === effectiveModel) || selectModel(complexity, routingMode, undefined, input.messages)
+          : selectModel(complexity, routingMode, undefined, input.messages);
         
         // Check cache if enabled
         const cacheKey = getCacheKey(input.messages, selectedModel.id);
@@ -2314,7 +2314,7 @@ Provide a comprehensive, well-researched response.`;
           { role: "user" as const, content: input.question }
         ];
         const complexity = analyzeQueryComplexity(messages);
-        const selectedModel = selectModel(complexity, routingMode);
+        const selectedModel = selectModel(complexity, routingMode, undefined, messages);
         
         let ragMessages: any[];
         let chunksUsed = 0;
@@ -2451,7 +2451,7 @@ Provide a comprehensive, well-researched response.`;
         const routingMode = (input.routingMode || "auto") as RoutingMode;
         const messages = [{ role: "user" as const, content: input.question }];
         const complexity = analyzeQueryComplexity(messages);
-        const selectedModel = selectModel(complexity, routingMode);
+        const selectedModel = selectModel(complexity, routingMode, undefined, messages);
         
         let ragMessages: any[];
         let chunksUsed = 0;

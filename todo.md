@@ -3634,12 +3634,16 @@ Build a comprehensive autonomous agent that can complete complex tasks end-to-en
 - [ ] Test 256K long context support
 
 ### Smart Routing Enhancement
-- [ ] Add Kimi K2.5 to smart routing logic
-- [ ] Route visual coding tasks to Kimi K2.5
-- [ ] Route video analysis tasks to Kimi K2.5
-- [ ] Route long context tasks (>128K tokens) to Kimi K2.5
-- [ ] Route complex coding tasks to Kimi K2.5
-- [ ] Add cost optimization for visual tasks (Kimi vs GPT-4o)
+- [x] Add Kimi K2.5 to smart routing logic
+- [x] Route visual coding tasks to Kimi K2.5
+- [x] Route video analysis tasks to Kimi K2.5
+- [x] Route long context tasks (>128K tokens) to Kimi K2.5
+- [x] Route complex coding tasks to Kimi K2.5
+- [x] Add cost optimization for visual tasks (Kimi vs GPT-4o)
+- [x] Create detection functions (requiresVision, isCodeTask, requiresLongContext)
+- [x] Update selectModel to use new detection functions
+- [x] Add long context priority queue
+- [x] Write comprehensive smart routing tests (26/26 passing)
 
 ### UI Integration
 - [ ] Add Kimi K2.5 to model selector dropdown
