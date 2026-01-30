@@ -47,7 +47,8 @@ export type AIProvider =
   | "cerebras" 
   | "cloudflare" 
   | "google" 
-  | "puter";
+  | "puter"
+  | "kimi";
 
 export interface ProviderConfig {
   name: string;
@@ -176,6 +177,22 @@ export const PROVIDER_CONFIGS: Record<AIProvider, ProviderConfig> = {
     isFree: true,
   },
   
+  kimi: {
+    name: "kimi",
+    displayName: "Moonshot AI (Kimi)",
+    apiUrl: "https://api.moonshot.ai/v1/chat/completions",
+    models: [
+      { id: "kimi-k2.5", name: "Kimi K2.5", provider: "kimi", contextWindow: 262144, isFree: false, isVision: true, isReasoning: true, tier: "premium" },
+      { id: "kimi-k2-0905-preview", name: "Kimi K2 0905", provider: "kimi", contextWindow: 262144, isFree: false, tier: "standard" },
+      { id: "kimi-k2-turbo-preview", name: "Kimi K2 Turbo", provider: "kimi", contextWindow: 262144, isFree: false, tier: "standard" },
+      { id: "kimi-k2-thinking", name: "Kimi K2 Thinking", provider: "kimi", contextWindow: 262144, isFree: false, isReasoning: true, tier: "premium" },
+      { id: "kimi-k2-thinking-turbo", name: "Kimi K2 Thinking Turbo", provider: "kimi", contextWindow: 262144, isFree: false, isReasoning: true, tier: "standard" },
+    ],
+    rateLimit: { requestsPerMinute: 60, requestsPerDay: 10000 },
+    requiresApiKey: true,
+    isFree: false,
+  },
+  
   puter: {
     name: "puter",
     displayName: "Puter.js (Client-side)",
@@ -222,6 +239,7 @@ const providerHealth: Record<AIProvider, ProviderHealth> = {
   cerebras: { isHealthy: true, lastCheck: 0, consecutiveFailures: 0 },
   cloudflare: { isHealthy: true, lastCheck: 0, consecutiveFailures: 0 },
   google: { isHealthy: true, lastCheck: 0, consecutiveFailures: 0 },
+  kimi: { isHealthy: true, lastCheck: 0, consecutiveFailures: 0 },
   puter: { isHealthy: true, lastCheck: 0, consecutiveFailures: 0 },
 };
 
@@ -428,6 +446,51 @@ async function invokeCloudflare(options: AICompletionOptions): Promise<AIComplet
 }
 
 /**
+ * Invoke Kimi K2.5 API (Moonshot AI)
+ */
+async function invokeKimi(options: AICompletionOptions): Promise<AICompletionResponse> {
+  const apiKey = process.env.KIMI_API_KEY || process.env.MOONSHOT_API_KEY;
+  if (!apiKey) throw new Error("KIMI_API_KEY not configured");
+
+  const model = options.model || "kimi-k2.5";
+  
+  const response = await fetch(PROVIDER_CONFIGS.kimi.apiUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      messages: options.messages,
+      temperature: options.temperature ?? 0.7,
+      max_tokens: options.maxTokens ?? 4096,
+      stream: false,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Kimi API error: ${response.status} - ${errorText}`);
+  }
+
+  const data = await response.json();
+  markProviderHealthy("kimi");
+  
+  return {
+    id: data.id,
+    provider: "kimi",
+    model,
+    content: data.choices[0]?.message?.content || "",
+    usage: data.usage ? {
+      promptTokens: data.usage.prompt_tokens,
+      completionTokens: data.usage.completion_tokens,
+      totalTokens: data.usage.total_tokens,
+    } : undefined,
+  };
+}
+
+/**
  * Invoke Google AI Studio (Gemini)
  */
 async function invokeGoogle(options: AICompletionOptions): Promise<AICompletionResponse> {
@@ -494,6 +557,7 @@ const providerInvokers: Record<AIProvider, (options: AICompletionOptions) => Pro
   cerebras: invokeCerebras,
   cloudflare: invokeCloudflare,
   google: invokeGoogle,
+  kimi: invokeKimi,
   puter: async () => { throw new Error("Puter.js is client-side only"); },
 };
 

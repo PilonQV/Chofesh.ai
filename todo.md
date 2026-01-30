@@ -3614,3 +3614,50 @@ Build a comprehensive autonomous agent that can complete complex tasks end-to-en
 - [x] Test with /v1/files/, /v1/images/, and other patterns
 - [x] Add comprehensive test coverage for all URL patterns (8/8 passing)
 - [x] Regex now matches ANY `/v1/*` path on api.openai.com
+
+
+---
+
+## Phase 36: Kimi K2.5 Premium Integration (Jan 30 2026)
+
+### Core Integration
+- [x] Add Kimi K2.5 provider to aiProviders.ts
+- [x] Add Kimi K2.5 models to modelRouter.ts (kimi-k2.5, kimi-k2-thinking, kimi-k2-turbo)
+- [x] Configure provider health tracking for Kimi
+- [x] Create invokeKimi function with OpenAI-compatible API
+- [x] Add Kimi to provider invokers registry
+- [x] Write comprehensive integration tests (29/29 passing)
+- [ ] Add KIMI_API_KEY to environment secrets (pending user)
+- [ ] Test live API calls with real API key
+- [ ] Test image understanding capabilities
+- [ ] Test video understanding capabilities
+- [ ] Test 256K long context support
+
+### Smart Routing Enhancement
+- [ ] Add Kimi K2.5 to smart routing logic
+- [ ] Route visual coding tasks to Kimi K2.5
+- [ ] Route video analysis tasks to Kimi K2.5
+- [ ] Route long context tasks (>128K tokens) to Kimi K2.5
+- [ ] Route complex coding tasks to Kimi K2.5
+- [ ] Add cost optimization for visual tasks (Kimi vs GPT-4o)
+
+### UI Integration
+- [ ] Add Kimi K2.5 to model selector dropdown
+- [ ] Add "Visual Coding" mode toggle for screenshot-to-code
+- [ ] Add video upload support in chat interface
+- [ ] Update model descriptions to highlight Kimi capabilities
+- [ ] Add badge/indicator for multimodal models
+
+### Enhanced Features (Future)
+- [ ] Screenshot-to-Website builder (upload design → generate HTML/CSS/JS)
+- [ ] Video-to-Story converter for Kids Books
+- [ ] Image-to-App designer (wireframe → app design)
+- [ ] Visual brand analyzer for Marketing Campaigns
+- [ ] Long document analyzer (256K context)
+
+### Documentation
+- [ ] Add Kimi K2.5 to model comparison table on homepage
+- [ ] Document multimodal capabilities in docs
+- [ ] Add examples for visual coding
+- [ ] Add examples for video understanding
+- [ ] Update pricing documentation
