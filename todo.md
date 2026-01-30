@@ -3665,3 +3665,31 @@ Build a comprehensive autonomous agent that can complete complex tasks end-to-en
 - [ ] Add examples for visual coding
 - [ ] Add examples for video understanding
 - [ ] Update pricing documentation
+
+
+---
+
+## Phase 37: Image Upload Bug Fix
+
+### Bug Report
+- [x] Fix image upload not sending images to AI models
+- [x] Images show "uploaded" but AI doesn't recognize them
+- [x] Investigate chat interface image handling
+- [x] Check if images are being included in API requests
+- [x] Test with vision models (Kimi K2.5, GPT-4o)
+- [x] Verify image URL/base64 encoding
+- [x] Update chat UI to show image preview
+- [x] Test end-to-end image upload and analysis
+
+### Fix Summary
+**Root Cause:** Model selection wasn't forcing vision-capable models when images were uploaded
+
+**Changes Made:**
+1. Added automatic vision model selection when imageUrls are present
+2. Prioritize Kimi K2.5 for vision (4x cheaper than GPT-4o)
+3. Added validation to reject non-vision models when images are uploaded
+4. Updated UI to show "Vision AI ready" when images are uploaded
+5. Changed placeholder text to indicate Kimi K2.5 Vision AI is being used
+6. Created 14 comprehensive tests (all passing)
+
+**Result:** Images now automatically trigger vision model selection and are properly analyzed

@@ -1210,9 +1210,25 @@ export const appRouter = router({
         
         // Analyze complexity and select model
         const complexity = analyzeQueryComplexity(input.messages);
+        
+        // Force vision model if images are uploaded
+        if (input.imageUrls && input.imageUrls.length > 0 && !effectiveModel) {
+          // Override to select a vision-capable model
+          const visionModels = AVAILABLE_MODELS.filter(m => m.supportsVision);
+          // Prefer Kimi K2.5 for vision (4x cheaper than GPT-4o)
+          effectiveModel = visionModels.find(m => m.id === 'kimi-k2.5')?.id || 
+                          visionModels.find(m => m.id === 'gpt-4o')?.id ||
+                          visionModels[0]?.id;
+        }
+        
         const selectedModel = effectiveModel 
           ? AVAILABLE_MODELS.find(m => m.id === effectiveModel) || selectModel(complexity, routingMode, undefined, input.messages)
           : selectModel(complexity, routingMode, undefined, input.messages);
+        
+        // Validate that selected model supports vision if images are provided
+        if (input.imageUrls && input.imageUrls.length > 0 && !selectedModel.supportsVision) {
+          throw new Error(`Model ${selectedModel.name} does not support image analysis. Please select a vision-capable model like Kimi K2.5 or GPT-4o.`);
+        }
         
         // Check cache if enabled
         const cacheKey = getCacheKey(input.messages, selectedModel.id);
