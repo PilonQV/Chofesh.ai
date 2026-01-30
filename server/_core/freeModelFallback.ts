@@ -36,7 +36,8 @@ export const FREE_MODEL_PRIORITIES = {
   
   // Complex reasoning - most capable models
   complex: [
-    "deepseek-r1-free",            // Best reasoning model
+    "kimi-k2-thinking",            // Best reasoning + 256K context (premium)
+    "deepseek-r1-free",            // Best free reasoning model
     "puter-o3",                    // Advanced reasoning
     "puter-o1",                    // Good reasoning
     "llama-3.3-70b",               // Groq - fallback
@@ -45,7 +46,8 @@ export const FREE_MODEL_PRIORITIES = {
   
   // Vision tasks - multimodal models
   vision: [
-    "puter-gpt-4o",                // Best vision model
+    "kimi-k2.5",                   // Best vision + 256K context (premium but 4x cheaper than GPT-4o)
+    "puter-gpt-4o",                // Best free vision model
     "gemini-2.0-flash-free",       // Good vision
     "llama-3.2-90b-vision",        // Groq vision
     "qwen-2.5-vl-7b-free",         // Backup vision
@@ -53,10 +55,20 @@ export const FREE_MODEL_PRIORITIES = {
   
   // Code generation - specialized models
   code: [
+    "kimi-k2.5",                   // Superior coding (beats GPT-4.5 in benchmarks, 256K context)
     "puter-gpt-5",                 // Excellent for code
     "deepseek-r1-free",            // Strong code reasoning
     "llama-3.3-70b",               // Good code quality
     "mistral-large-free",          // Code specialist
+  ],
+  
+  // Long context tasks (>128K tokens)
+  longContext: [
+    "kimi-k2.5",                   // 256K context (2x GPT-4o, 4x cheaper)
+    "kimi-k2-thinking",            // 256K context + reasoning
+    "kimi-k2-turbo-preview",       // 256K context (faster)
+    "gemini-1.5-pro-free",         // 2M context (free)
+    "puter-gpt-4o",                // 128K context (free)
   ],
 };
 
@@ -66,9 +78,11 @@ export const FREE_MODEL_PRIORITIES = {
 export function getFreeModelPriority(
   complexity: ComplexityLevel,
   hasVision: boolean = false,
-  isCode: boolean = false
+  isCode: boolean = false,
+  isLongContext: boolean = false
 ): string[] {
-  // Special cases
+  // Special cases (priority order matters)
+  if (isLongContext) return FREE_MODEL_PRIORITIES.longContext;
   if (hasVision) return FREE_MODEL_PRIORITIES.vision;
   if (isCode) return FREE_MODEL_PRIORITIES.code;
   
@@ -83,9 +97,10 @@ export function getNextFreeModel(
   currentModelId: string,
   complexity: ComplexityLevel,
   hasVision: boolean = false,
-  isCode: boolean = false
+  isCode: boolean = false,
+  isLongContext: boolean = false
 ): ModelDefinition | null {
-  const priorityQueue = getFreeModelPriority(complexity, hasVision, isCode);
+  const priorityQueue = getFreeModelPriority(complexity, hasVision, isCode, isLongContext);
   const currentIndex = priorityQueue.indexOf(currentModelId);
   
   // If current model not in queue or is last, return null
@@ -106,9 +121,10 @@ export function getNextFreeModel(
 export function getBestFreeModel(
   complexity: ComplexityLevel,
   hasVision: boolean = false,
-  isCode: boolean = false
+  isCode: boolean = false,
+  isLongContext: boolean = false
 ): ModelDefinition {
-  const priorityQueue = getFreeModelPriority(complexity, hasVision, isCode);
+  const priorityQueue = getFreeModelPriority(complexity, hasVision, isCode, isLongContext);
   const bestModelId = priorityQueue[0];
   const bestModel = AVAILABLE_MODELS.find(m => m.id === bestModelId);
   
