@@ -446,6 +446,41 @@ async function invokeCloudflare(options: AICompletionOptions): Promise<AIComplet
 }
 
 /**
+ * Convert image URL to base64 data URL for Kimi K2.5
+ * Kimi only accepts base64-encoded images, not HTTP/HTTPS URLs
+ */
+async function convertImageUrlToBase64(imageUrl: string): Promise<string> {
+  try {
+    // If already a data URL, return as-is
+    if (imageUrl.startsWith('data:')) {
+      return imageUrl;
+    }
+
+    // Fetch the image from the URL
+    const response = await fetch(imageUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
+    }
+
+    // Get the image as a buffer
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // Determine the MIME type from the response headers or URL extension
+    const contentType = response.headers.get('content-type') || 'image/png';
+    
+    // Convert to base64
+    const base64 = buffer.toString('base64');
+    
+    // Return as data URL
+    return `data:${contentType};base64,${base64}`;
+  } catch (error) {
+    console.error('[Kimi] Failed to convert image URL to base64:', error);
+    throw new Error(`Failed to convert image for Kimi: ${error}`);
+  }
+}
+
+/**
  * Invoke Kimi K2.5 API (Moonshot AI)
  */
 async function invokeKimi(options: AICompletionOptions): Promise<AICompletionResponse> {
@@ -453,6 +488,35 @@ async function invokeKimi(options: AICompletionOptions): Promise<AICompletionRes
   if (!apiKey) throw new Error("KIMI_API_KEY not configured");
 
   const model = options.model || "kimi-k2.5";
+  
+  // Convert any image URLs to base64 for Kimi (Kimi doesn't support HTTP/HTTPS URLs)
+  const processedMessages = await Promise.all(
+    options.messages.map(async (message) => {
+      // Check if message content is an array (multimodal format)
+      if (Array.isArray(message.content)) {
+        const processedContent = await Promise.all(
+          message.content.map(async (part: any) => {
+            // If this is an image_url part, convert the URL to base64
+            if (part.type === 'image_url' && part.image_url?.url) {
+              const base64Url = await convertImageUrlToBase64(part.image_url.url);
+              return {
+                ...part,
+                image_url: {
+                  ...part.image_url,
+                  url: base64Url,
+                },
+              };
+            }
+            return part;
+          })
+        );
+        return { ...message, content: processedContent };
+      }
+      return message;
+    })
+  );
+  
+  console.log('[Kimi] Sending request with', processedMessages.length, 'messages');
   
   const response = await fetch(PROVIDER_CONFIGS.kimi.apiUrl, {
     method: "POST",
@@ -462,7 +526,7 @@ async function invokeKimi(options: AICompletionOptions): Promise<AICompletionRes
     },
     body: JSON.stringify({
       model,
-      messages: options.messages,
+      messages: processedMessages,
       temperature: 1.0, // Kimi K2.5 requires fixed temperature of 1.0
       max_tokens: options.maxTokens ?? 4096,
       stream: false,

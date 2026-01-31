@@ -3963,3 +3963,23 @@ Build a comprehensive autonomous agent that can complete complex tasks end-to-en
 - [x] Verified critical fix f8f3e67 IS on GitHub and deployed to Render
 - [x] Verified all commits are synced correctly
 - [x] Created DEPLOYMENT_RULES.md: ONE commit push at a time
+
+## Image Upload Workflow Audit
+- [ ] Research vision AI multimodal best practices (OpenAI, Anthropic, Kimi)
+- [ ] Trace frontend: image upload → S3 → imageUrls state
+- [ ] Trace backend: tRPC mutation → model selection → AI API call
+- [ ] Verify image URL format and accessibility
+- [ ] Check AI API request format for vision models
+- [ ] Identify root cause of recognition failure
+- [ ] Implement comprehensive fix
+- [ ] Test with multiple vision models
+
+
+## Phase 37 Part 5: Image Upload Workflow Audit & Fix
+- [x] Research OpenAI and Kimi vision API requirements
+- [x] Identified root cause: Kimi K2.5 only accepts base64 data URLs, not HTTP/HTTPS URLs
+- [x] Traced complete workflow from frontend upload to backend AI call
+- [x] Implemented convertImageUrlToBase64() function in aiProviders.ts
+- [x] Modified invokeKimi() to convert CloudFront URLs to base64 before sending to API
+- [x] Created comprehensive test suite (10/10 tests passing)
+- [x] All tests passing - ready for deployment
