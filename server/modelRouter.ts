@@ -544,7 +544,8 @@ export function selectModel(
   complexity: ComplexityLevel,
   mode: RoutingMode,
   preferredModel?: string,
-  messages?: { role: string; content: string }[]
+  messages?: { role: string; content: string }[],
+  hasImages?: boolean
 ): ModelDefinition {
   // Manual mode - use preferred model or default
   if (mode === "manual" && preferredModel) {
@@ -553,7 +554,8 @@ export function selectModel(
   }
   
   // Detect task characteristics
-  const hasVision = messages ? requiresVision(messages) : false;
+  // Prioritize explicit hasImages parameter over text heuristics
+  const hasVision = hasImages !== undefined ? hasImages : (messages ? requiresVision(messages) : false);
   const isCode = messages ? isCodeTask(messages) : false;
   const isLongContext = messages ? requiresLongContext(messages) : false;
   

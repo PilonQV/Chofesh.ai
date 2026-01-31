@@ -3912,3 +3912,10 @@ Build a comprehensive autonomous agent that can complete complex tasks end-to-en
 - [ ] AI receives and analyzes uploaded images
 - [ ] User can ask "what is this" and get image description
 - [ ] Production site works identically to dev preview
+
+## Phase 37 Part 3: Critical Image Upload Bug Fix
+- [x] Fix selectModel() to receive imageUrls parameter directly instead of relying on text heuristics
+- [x] Update routers.ts to pass imageUrls to selectModel()
+- [x] Ensure vision models are selected when images are present
+- [x] Test image recognition with simple queries like "what is this"
+- [x] Created comprehensive test suite (10/10 tests passing)
