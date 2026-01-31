@@ -1221,9 +1221,10 @@ export const appRouter = router({
                           visionModels[0]?.id;
         }
         
+        const hasImages = !!(input.imageUrls && input.imageUrls.length > 0);
         const selectedModel = effectiveModel 
-          ? AVAILABLE_MODELS.find(m => m.id === effectiveModel) || selectModel(complexity, routingMode, undefined, input.messages)
-          : selectModel(complexity, routingMode, undefined, input.messages);
+          ? AVAILABLE_MODELS.find(m => m.id === effectiveModel) || selectModel(complexity, routingMode, undefined, input.messages, hasImages)
+          : selectModel(complexity, routingMode, undefined, input.messages, hasImages);
         
         // Validate that selected model supports vision if images are provided
         if (input.imageUrls && input.imageUrls.length > 0 && !selectedModel.supportsVision) {
