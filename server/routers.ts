@@ -1525,6 +1525,7 @@ Provide a comprehensive, well-researched response.`;
           }));
           
           // If images are provided, convert the last user message to multimodal format
+          console.log('[DEBUG] imageUrls received:', input.imageUrls);
           if (input.imageUrls && input.imageUrls.length > 0) {
             const lastUserIdx = finalMessages.findLastIndex((m: any) => m.role === 'user');
             if (lastUserIdx >= 0) {
@@ -1540,6 +1541,7 @@ Provide a comprehensive, well-researched response.`;
                   ...imageContents,
                 ],
               };
+              console.log('[DEBUG] Modified last user message with images:', JSON.stringify(finalMessages[lastUserIdx], null, 2));
             }
           }
           
