@@ -553,6 +553,11 @@ export default function Chat() {
   const handleSend = async () => {
     if (!input.trim() || isGenerating) return;
 
+    console.log('[DEBUG START] handleSend called');
+    console.log('[DEBUG] uploadedImages:', uploadedImages);
+    console.log('[DEBUG] selectedModel:', selectedModel);
+    console.log('[DEBUG] routingMode:', routingMode);
+
     let conv = currentConversation;
     if (!conv) {
       conv = createConversation();
@@ -579,7 +584,8 @@ export default function Chat() {
       // Check if using Puter.js model (runs in browser, no API key needed)
       const isPuterModel = selectedModel.startsWith('puter-');
       
-      if (isPuterModel && isPuterAvailable()) {
+      // Skip Puter if images are uploaded (Puter doesn't support vision)
+      if (isPuterModel && isPuterAvailable() && uploadedImages.length === 0) {
         // Route to Puter.js (client-side)
         const puterModelId = selectedModel.replace('puter-', '');
         try {
@@ -620,7 +626,8 @@ export default function Chat() {
       // Check if using local Ollama model
       const isOllamaModel = selectedModel.startsWith('ollama:');
       
-      if (isOllamaModel && ollamaEnabled && ollamaConnected) {
+      // Skip Ollama if images are uploaded (most Ollama models don't support vision)
+      if (isOllamaModel && ollamaEnabled && ollamaConnected && uploadedImages.length === 0) {
         // Route to local Ollama
         const ollamaModelName = selectedModel.replace('ollama:', '');
         const ollamaResponse = await fetch(`${ollamaEndpoint}/api/chat`, {
@@ -670,21 +677,29 @@ export default function Chat() {
       // Determine which model to use
       const modelToUse = routingMode === "manual" ? selectedModel : undefined;
 
-      const response = await chatMutation.mutateAsync({
+      const imageUrlsToSend = uploadedImages.length > 0 ? uploadedImages.map(img => img.url) : undefined;
+      
+      const mutationInput = {
         messages,
         model: modelToUse,
         routingMode,
         useCache: true,
         temperature,
         topP,
-
         showThinking,
         includeMemories,
-        imageUrls: uploadedImages.length > 0 ? uploadedImages.map(img => img.url) : undefined,
+        imageUrls: imageUrlsToSend,
         responseFormat: responseFormat !== "auto" ? responseFormat : undefined,
         deepResearch: deepResearchEnabled,
-        agentMode: true, // Always autonomous
-      });
+        agentMode: true,
+      };
+      
+      console.log('[DEBUG] Mutation input:', JSON.stringify(mutationInput, null, 2));
+      console.log('[DEBUG] imageUrlsToSend:', imageUrlsToSend);
+      
+      const response = await chatMutation.mutateAsync(mutationInput);
+      console.log('[DEBUG] Response received:', response);
+
       
       // Clear uploaded images after sending
       setUploadedImages([]);
@@ -1917,7 +1932,7 @@ export default function Chat() {
                       handleSend();
                     }
                   }}
-                  placeholder={uploadedImages.length > 0 ? "Ask about the image... (Using Kimi K2.5 Vision AI)" : (isListening ? "Listening... speak now" : "Type your message...")}
+                  placeholder={uploadedImages.length > 0 ? "Ask about the image..." : isListening ? "Listening... speak now" : "Type your message..."}
                   disabled={isGenerating || isListening}
                   className={`flex-1 min-h-[44px] max-h-[200px] resize-none pr-12 border-0 focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-200 focus:min-h-[80px] ${isListening ? "bg-red-500/10" : ""}`}
                   rows={1}
