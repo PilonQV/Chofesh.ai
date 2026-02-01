@@ -3983,3 +3983,23 @@ Build a comprehensive autonomous agent that can complete complex tasks end-to-en
 - [x] Modified invokeKimi() to convert CloudFront URLs to base64 before sending to API
 - [x] Created comprehensive test suite (10/10 tests passing)
 - [x] All tests passing - ready for deployment
+
+
+## Phase 37 Part 6: Debug Image Recognition Still Not Working
+- [ ] Analyze console logs to identify which model was selected
+- [ ] Check if base64 conversion was triggered
+- [ ] Verify Render deployment completed successfully
+- [ ] Check if latest code (10db9886) is deployed
+- [ ] Identify why AI still can't see images
+- [ ] Implement additional fixes if needed
+- [ ] Test and verify image recognition works
+
+
+## Phase 37 Part 7: Version Tracking & Model Selection Debug
+- [x] Add APP_VERSION to package.json (v1.37.7)
+- [x] Add version number to all API responses
+- [x] Add detailed debug logging for model selection process
+- [x] Add logging to show hasImages parameter value
+- [x] Add logging to show selected model and why it was chosen
+- [x] Created version.ts utility for version tracking
+- [ ] Deploy and test with version verification in production
