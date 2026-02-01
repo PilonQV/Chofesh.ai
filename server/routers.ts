@@ -1,5 +1,6 @@
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
+import { getAppVersion } from "./_core/version";
 import { systemRouter } from "./_core/systemRouter";
 import { skillsRouter } from "./routers/skills";
 import { sharingRouter } from "./routers/sharing";
@@ -1222,9 +1223,16 @@ export const appRouter = router({
         }
         
         const hasImages = !!(input.imageUrls && input.imageUrls.length > 0);
+        
+        // DEBUG: Log model selection process
+        console.log(`[v${getAppVersion()}] [Model Selection] hasImages: ${hasImages}, imageUrls count: ${input.imageUrls?.length || 0}`);
+        console.log(`[v${getAppVersion()}] [Model Selection] effectiveModel: ${effectiveModel}, routingMode: ${routingMode}`);
+        
         const selectedModel = effectiveModel 
           ? AVAILABLE_MODELS.find(m => m.id === effectiveModel) || selectModel(complexity, routingMode, undefined, input.messages, hasImages)
           : selectModel(complexity, routingMode, undefined, input.messages, hasImages);
+        
+        console.log(`[v${getAppVersion()}] [Model Selection] Selected: ${selectedModel.id} (${selectedModel.name}), supportsVision: ${selectedModel.supportsVision}`);
         
         // Validate that selected model supports vision if images are provided
         if (input.imageUrls && input.imageUrls.length > 0 && !selectedModel.supportsVision) {
@@ -1765,6 +1773,9 @@ Provide a comprehensive, well-researched response.`;
 
             creditsUsed: creditCost,
             creditsRemaining: creditDeduction.remainingCredits,
+            
+            // Version tracking for deployment verification
+            version: getAppVersion(),
           };
         } catch (error: any) {
           // Log the actual error for debugging
