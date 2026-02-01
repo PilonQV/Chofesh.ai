@@ -4013,3 +4013,10 @@ Build a comprehensive autonomous agent that can complete complex tasks end-to-en
 - [x] Added debug logging for Kimi provider selection
 - [x] Test with vitest to ensure Kimi provider works correctly (10/10 tests passing)
 - [ ] Deploy to production and verify image recognition works
+
+## Phase 37 Part 9: CRITICAL FIX - Disable Agent Mode for Image Uploads
+- [x] Identified root cause: ReAct agent (agentMode) bypasses vision model selection
+- [x] Add check to disable agent mode when images are present
+- [x] Test that vision models (kimi-k2.5) are selected when images are uploaded (5/5 tests passing)
+- [x] Verify ReAct agent still works for text-only queries (logic preserved)
+- [ ] Deploy to production and verify fix

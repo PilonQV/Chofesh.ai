@@ -919,6 +919,13 @@ export const appRouter = router({
         // Step 3: Run full autonomous agent if enabled (replaces old agent mode)
         // The autonomous agent will think, plan, research, and offer options
         // NOW WITH REACT PATTERN - Thinks like Manus!
+        // IMPORTANT: Disable agent mode if images are present (agent doesn't support vision)
+        const hasUploadedImages = !!(input.imageUrls && input.imageUrls.length > 0);
+        if (hasUploadedImages && input.agentMode) {
+          console.log('[Autonomous Agent] Disabling agent mode - images require vision model');
+          input.agentMode = false;
+        }
+        
         if (input.agentMode && promptContent) {
           console.log('[Autonomous Agent] Running full autonomous flow with ReAct');
           
