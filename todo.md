@@ -4003,3 +4003,13 @@ Build a comprehensive autonomous agent that can complete complex tasks end-to-en
 - [x] Add logging to show selected model and why it was chosen
 - [x] Created version.ts utility for version tracking
 - [ ] Deploy and test with version verification in production
+
+
+## Phase 37 Part 8: CRITICAL FIX - Add Kimi Provider Handler
+- [x] Identified root cause: Kimi models (kimi-k2.5, kimi-k2-thinking, kimi-k2-turbo) had NO provider handler in routers.ts
+- [x] Exported invokeKimi function from aiProviders.ts
+- [x] Added invokeKimi import to routers.ts
+- [x] Added Kimi provider handler before default LLM fallback
+- [x] Added debug logging for Kimi provider selection
+- [x] Test with vitest to ensure Kimi provider works correctly (10/10 tests passing)
+- [ ] Deploy to production and verify image recognition works
