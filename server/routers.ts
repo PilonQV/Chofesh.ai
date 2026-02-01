@@ -1666,7 +1666,15 @@ Provide a comprehensive, well-researched response.`;
             });
           }
 
-          let rawContent = response.choices[0]?.message?.content;
+          // Handle different response formats (Kimi returns custom format, others return OpenAI format)
+          let rawContent: string | undefined;
+          if ('content' in response && typeof response.content === 'string') {
+            // Kimi provider returns { content: string, ... }
+            rawContent = response.content;
+          } else if ('choices' in response && Array.isArray(response.choices)) {
+            // Standard OpenAI format: { choices: [{ message: { content: string } }] }
+            rawContent = response.choices[0]?.message?.content;
+          }
           let assistantContent = typeof rawContent === 'string' ? rawContent : '';
           let usedFallback = false;
           let fallbackMessage = '';
