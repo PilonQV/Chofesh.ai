@@ -539,17 +539,27 @@ export async function invokeKimi(options: AICompletionOptions): Promise<AIComple
   }
 
   const data = await response.json();
+  
+  // Log the response for debugging
+  console.log('[Kimi] API Response:', JSON.stringify(data, null, 2));
+  
+  // Check if response has the expected structure
+  if (!data.choices || !Array.isArray(data.choices) || data.choices.length === 0) {
+    console.error('[Kimi] Invalid response structure:', data);
+    throw new Error(`Kimi API returned invalid response structure: ${JSON.stringify(data)}`);
+  }
+  
   markProviderHealthy("kimi");
   
   return {
-    id: data.id,
+    id: data.id || 'unknown',
     provider: "kimi",
     model,
     content: data.choices[0]?.message?.content || "",
     usage: data.usage ? {
-      promptTokens: data.usage.prompt_tokens,
-      completionTokens: data.usage.completion_tokens,
-      totalTokens: data.usage.total_tokens,
+      promptTokens: data.usage.prompt_tokens || 0,
+      completionTokens: data.usage.completion_tokens || 0,
+      totalTokens: data.usage.total_tokens || 0,
     } : undefined,
   };
 }
