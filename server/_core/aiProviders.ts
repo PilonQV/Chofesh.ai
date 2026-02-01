@@ -483,7 +483,7 @@ async function convertImageUrlToBase64(imageUrl: string): Promise<string> {
 /**
  * Invoke Kimi K2.5 API (Moonshot AI)
  */
-async function invokeKimi(options: AICompletionOptions): Promise<AICompletionResponse> {
+export async function invokeKimi(options: AICompletionOptions): Promise<AICompletionResponse> {
   const apiKey = process.env.KIMI_API_KEY || process.env.MOONSHOT_API_KEY;
   if (!apiKey) throw new Error("KIMI_API_KEY not configured");
 

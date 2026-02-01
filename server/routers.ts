@@ -121,6 +121,7 @@ import { users, supportRequests } from "../drizzle/schema";
 import { eq, desc, sql } from "drizzle-orm";
 import { invokeLLM } from "./_core/llm";
 import { invokeGrok, isGrokAvailable } from "./_core/grok";
+import { invokeKimi } from "./_core/aiProviders";
 import { trackProviderUsage, estimateCostSaved } from "./_core/providerAnalytics";
 import { invokeDeepSeekR1, invokeOpenRouter, isComplexReasoningQuery, isRefusalResponse, OPENROUTER_MODELS } from "./_core/openrouter";
 import { generateImage } from "./_core/imageGeneration";
@@ -1639,6 +1640,15 @@ Provide a comprehensive, well-researched response.`;
                 role: m.role as "system" | "user" | "assistant",
                 content: m.content,
               })),
+              model: selectedModel.id,
+              temperature: input.temperature,
+            });
+          } else if (selectedModel.provider === "kimi") {
+            // Use Kimi API for Moonshot AI models (K2.5, K2 Thinking, K2 Turbo)
+            // Kimi supports vision and automatically converts image URLs to base64
+            console.log(`[v${getAppVersion()}] [Kimi] Using Kimi provider for model: ${selectedModel.id}`);
+            response = await invokeKimi({
+              messages: finalMessages,
               model: selectedModel.id,
               temperature: input.temperature,
             });
