@@ -32,6 +32,12 @@ export const masterCommandRouter = router({
       adminToken: z.string(),
     }))
     .mutation(async ({ input, ctx }) => {
+      // Debug logging
+      console.log('[Master Command] Token validation:');
+      console.log('  Received token:', input.adminToken);
+      console.log('  Expected token:', ADMIN_TOKEN);
+      console.log('  Match:', input.adminToken === ADMIN_TOKEN);
+      
       // Verify admin token
       if (input.adminToken !== ADMIN_TOKEN) {
         throw new TRPCError({
