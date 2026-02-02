@@ -933,7 +933,7 @@ export default function Chat() {
       case "auto":
         return "Smart routing - best model for your query";
       case "free":
-        return "Free tier - Llama 3.1 via Groq (fast & free)";
+        return "Free tier - Fast & free models";
       case "manual":
         return "Manual - choose your preferred model";
     }
@@ -1417,7 +1417,7 @@ export default function Chat() {
                       </Badge>
                     </div>
                     <span className="text-xs text-muted-foreground ml-6">
-                      Llama 3.1 via Groq - fast & completely free
+                      Fast & completely free models
                     </span>
                   </div>
                 </DropdownMenuItem>
@@ -1692,7 +1692,7 @@ export default function Chat() {
                       <Zap className="w-4 h-4 text-green-400" />
                       <span className="font-medium text-sm">Free</span>
                     </div>
-                    <p className="text-xs text-muted-foreground">Llama 3.1 8B - Fast & free</p>
+                    <p className="text-xs text-muted-foreground">Fast & free</p>
                   </button>
                   <button
                     onClick={() => setRoutingMode("auto")}
@@ -1702,7 +1702,7 @@ export default function Chat() {
                       <Rocket className="w-4 h-4 text-blue-400" />
                       <span className="font-medium text-sm">Standard</span>
                     </div>
-                    <p className="text-xs text-muted-foreground">GPT-4o-mini - Best value</p>
+                    <p className="text-xs text-muted-foreground">Best value</p>
                   </button>
                   <button
                     onClick={() => setRoutingMode("manual")}
@@ -1712,7 +1712,7 @@ export default function Chat() {
                       <Crown className="w-4 h-4 text-yellow-400" />
                       <span className="font-medium text-sm">Premium</span>
                     </div>
-                    <p className="text-xs text-muted-foreground">GPT-4o, Claude - Best quality</p>
+                    <p className="text-xs text-muted-foreground">Best quality</p>
                   </button>
                 </div>
               </div>

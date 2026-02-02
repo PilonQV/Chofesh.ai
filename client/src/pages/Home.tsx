@@ -195,8 +195,8 @@ export default function Home() {
                 <AccordionTrigger>AI & Models</AccordionTrigger>
                 <AccordionContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FeatureCard title="25+ AI Models" description="Access GPT-4, Claude, Llama, Gemini, and more through a single unified API." icon={<Layers />} />
-                    <FeatureCard title="Smart Routing" description="Auto-selects from Groq, Cerebras, OpenRouter, and more for the best model per task." icon={<Sparkles />} />
+                    <FeatureCard title="25+ AI Models" description="Access the latest AI models through a single unified API." icon={<Layers />} />
+                    <FeatureCard title="Smart Routing" description="Automatically selects the best model for each task." icon={<Sparkles />} />
                     <FeatureCard title="Natural Conversations" description="Have authentic, helpful conversations with advanced AI assistants." icon={<MessageSquare />} />
                     <FeatureCard title="Vision Analysis" description="Upload images and let AI analyze, describe, and discuss them." icon={<Eye />} />
                   </div>

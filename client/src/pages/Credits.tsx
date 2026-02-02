@@ -241,10 +241,10 @@ export default function Credits() {
                       Chat
                     </h4>
                     <ul className="space-y-2 text-sm text-gray-400">
-                      <li className="flex justify-between"><span>Free models (Llama)</span><span className="text-emerald-400">1 credit</span></li>
-                      <li className="flex justify-between"><span>Standard (GPT-4o-mini)</span><span className="text-blue-400">2 credits</span></li>
+                      <li className="flex justify-between"><span>Free models</span><span className="text-emerald-400">1 credit</span></li>
+                      <li className="flex justify-between"><span>Standard models</span><span className="text-blue-400">2 credits</span></li>
 
-                      <li className="flex justify-between"><span>Premium (GPT-4o, Claude)</span><span className="text-amber-400">8 credits</span></li>
+                      <li className="flex justify-between"><span>Premium models</span><span className="text-amber-400">8 credits</span></li>
                     </ul>
                   </div>
                   <div>
@@ -256,7 +256,7 @@ export default function Credits() {
                       <li className="flex justify-between"><span>Standard</span><span className="text-blue-400">8 credits</span></li>
                       <li className="flex justify-between"><span>Single image</span><span className="text-blue-400">3 credits</span></li>
                       <li className="flex justify-between"><span>4 variations</span><span className="text-purple-400">10 credits</span></li>
-                      <li className="flex justify-between"><span>Premium (DALL-E 3)</span><span className="text-amber-400">20 credits</span></li>
+                      <li className="flex justify-between"><span>Premium quality</span><span className="text-amber-400">20 credits</span></li>
                     </ul>
                   </div>
                   <div>

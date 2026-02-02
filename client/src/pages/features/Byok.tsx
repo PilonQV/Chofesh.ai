@@ -65,7 +65,7 @@ export default function Byok() {
         <h2>How BYOK Works</h2>
         <ol>
           <li><strong>Add Your API Keys:</strong> In your Chofesh settings, you can securely add your API keys from any supported provider. Your keys are encrypted and stored locally in your browser, ensuring they remain private and under your control.</li>
-          <li><strong>Select Your Model:</strong> When you start a new chat, you can choose from any of the models available through your connected API keys. This gives you access to a vast library of cutting-edge AI models, including GPT-4, Claude 3, and Gemini.</li>
+          <li><strong>Select Your Model:</strong> When you start a new chat, you can choose from any of the models available through your connected API keys. This gives you access to a vast library of cutting-edge AI models, .</li>
           <li><strong>Direct API Access:</strong> When you use a model through BYOK, your requests are sent directly to the provider's API. This means you get the same performance and reliability as you would using the provider's own platform, but with the added benefits of the Chofesh interface and privacy features.</li>
         </ol>
 

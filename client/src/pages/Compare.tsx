@@ -5,7 +5,7 @@ export default function Compare() {
   const faqs = [
     {
       question: "Is Chofesh as powerful as hosted AI chat platforms?",
-      answer: "Yes. Chofesh gives you access to the same powerful models as hosted platforms, including GPT-4, Claude 3, and Gemini. The difference is that we do it in a way that respects your privacy."
+      answer: "Yes. Chofesh gives you access to the same powerful models as hosted platforms, The difference is that we do it in a way that respects your privacy."
     },
     {
       question: "Can I use Chofesh for free?",
