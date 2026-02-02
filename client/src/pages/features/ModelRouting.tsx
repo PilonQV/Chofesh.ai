@@ -13,7 +13,7 @@ export default function ModelRouting() {
     },
     {
       question: "Which models are included in the free tier?",
-      answer: "We offer a generous free tier that includes access to over 20 powerful models from providers like DeepSeek, Llama, and Mistral."
+      answer: "We offer a generous free tier that includes access to over 20 powerful models ."
     },
     {
       question: "How does this work with BYOK?",

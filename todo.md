@@ -4175,3 +4175,32 @@ Build a comprehensive autonomous agent that can complete complex tasks end-to-en
 - [ ] Test with image-to-code workflows
 - [ ] Verify 70% cost reduction vs Kimi-only
 - [ ] Save checkpoint and deploy
+
+---
+
+## Phase 42: Remove Model Disclosures & UI Cleanup (v1.40.0)
+
+### Remove All Model/Technical Disclosures from UI
+- [x] Remove all references to specific models (Kimi, GPT, Claude, Qwen, etc.) from UI
+- [x] Remove technical implementation details from UI text
+- [x] Remove model names from placeholders and descriptions
+- [x] Remove pipeline/process descriptions from UI
+- [x] Keep only user-facing benefits (cost savings, speed, etc.)
+- [x] Remove "Available Models" showcase section from DeveloperSDK page
+- [x] Update PUTER_IMAGE_MODELS to use generic names
+
+### Backend Preparation
+- [x] Add useHybridVision parameter to routers.ts input schema (ready for future implementation)
+
+### Files Updated
+- [x] client/src/pages/Chat.tsx - Removed Llama, GPT, Claude references
+- [x] client/src/pages/Home.tsx - Removed model provider names
+- [x] client/src/pages/Compare.tsx - Removed specific model names
+- [x] client/src/pages/features/Byok.tsx - Removed model examples
+- [x] client/src/pages/features/ModelRouting.tsx - Removed provider names
+- [x] client/src/pages/Credits.tsx - Genericized model tier names
+- [x] client/src/pages/Subscription.tsx - Removed model examples
+- [x] client/src/pages/DeveloperSDK.tsx - Removed model showcase + descriptions
+- [x] client/src/lib/puter.ts - Genericized image model names
+- [x] server/routers.ts - Added useHybridVision parameter
+- [x] package.json - Version bumped to 1.40.0

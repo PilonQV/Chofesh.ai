@@ -859,6 +859,7 @@ export const appRouter = router({
         webSearch: z.boolean().optional(),
         showThinking: z.boolean().optional(),
         includeMemories: z.boolean().optional(),
+        useHybridVision: z.boolean().optional(), // Use hybrid vision pipeline for cost optimization
         imageUrls: z.array(z.string().url()).optional(), // For vision - images to analyze
         responseFormat: z.enum(["detailed", "concise", "bullet", "table", "auto"]).optional(), // Response formatting mode
         deepResearch: z.boolean().optional(), // Enable deep research mode

@@ -65,10 +65,10 @@ export const PUTER_TEXT_MODELS = [
 ] as const;
 
 export const PUTER_IMAGE_MODELS = [
-  { id: "gpt-image-1.5", name: "GPT Image 1.5", description: "Latest image generation" },
-  { id: "gpt-image-1", name: "GPT Image 1", description: "Standard image generation" },
-  { id: "dall-e-3", name: "DALL-E 3", description: "High quality images" },
-  { id: "dall-e-2", name: "DALL-E 2", description: "Fast image generation" },
+  { id: "gpt-image-1.5", name: "Advanced Image Model", description: "Latest image generation" },
+  { id: "gpt-image-1", name: "Standard Image Model", description: "Standard image generation" },
+  { id: "dall-e-3", name: "High Quality Model", description: "High quality images" },
+  { id: "dall-e-2", name: "Fast Model", description: "Fast image generation" },
 ] as const;
 
 // Check if Puter is available

@@ -325,7 +325,7 @@ export default function Subscription() {
                               Are you sure you want to cancel your subscription? You'll lose access to:
                             </p>
                             <ul className="list-disc list-inside space-y-1 text-sm">
-                              <li>Premium AI models (GPT-4o, Claude, etc.)</li>
+                              <li>Premium AI models</li>
                               <li>Higher query limits</li>
                               <li>Document chat features</li>
                               <li>Priority support</li>

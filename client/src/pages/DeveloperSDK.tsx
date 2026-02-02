@@ -288,7 +288,7 @@ for await (const chunk of stream) {
                   <h3 className="text-lg font-semibold">Image Generation API</h3>
                   <p className="text-muted-foreground">
                     Generate stunning images from text prompts using state-of-the-art models 
-                    like FLUX, DALL-E, and Stable Diffusion.
+                    .
                   </p>
                 </div>
                 <CodeBlock
@@ -420,7 +420,7 @@ const verified = await client.auth.verifySession({
                 </div>
                 <h3 className="font-semibold mb-2">25+ AI Models</h3>
                 <p className="text-sm text-muted-foreground">
-                  Access GPT-4, Claude, Llama, Gemini, and more through a single unified API.
+                  Access the latest AI models through a single unified API.
                 </p>
               </CardContent>
             </Card>
@@ -488,30 +488,6 @@ const verified = await client.auth.verifySession({
         </div>
 
         {/* Available Models */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Available Models</CardTitle>
-            <CardDescription>Choose from our extensive collection of AI models</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {[
-                "GPT-4o", "GPT-4o-mini", "Claude 3.5 Sonnet", "Claude 3 Opus",
-                "Llama 3.3 70B", "Llama 3.1 405B", "Gemini 2.0 Flash", "Gemini Pro",
-                "DeepSeek R1", "Mistral Large", "Qwen 2.5", "Cerebras Llama",
-                "FLUX", "DALL-E 3", "Stable Diffusion", "And more..."
-              ].map((model) => (
-                <div
-                  key={model}
-                  className="px-3 py-2 rounded-lg bg-muted/50 text-sm text-center hover:bg-muted transition-colors"
-                >
-                  {model}
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
         {/* CTA Section */}
         <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
           <CardContent className="py-8 text-center">
