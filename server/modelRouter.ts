@@ -418,32 +418,7 @@ export const AVAILABLE_MODELS: ModelDefinition[] = [
     supportsVision: false,
     speed: "fast",
   },
-  // Standard tier - Platform models
-  {
-    id: "gpt-4o-mini",
-    name: "GPT-4o Mini",
-    description: "Fast and cost-effective",
-    provider: "platform",
-    tier: "standard",
-    costPer1kInput: 0.00015,
-    costPer1kOutput: 0.0006,
-    maxTokens: 128000,
-    supportsVision: true,
-    speed: "fast",
-  },
-  // Premium tier
-  {
-    id: "gpt-4o",
-    name: "GPT-4o",
-    description: "Most capable, multimodal",
-    provider: "platform",
-    tier: "premium",
-    costPer1kInput: 0.005,
-    costPer1kOutput: 0.015,
-    maxTokens: 128000,
-    supportsVision: true,
-    speed: "medium",
-  },
+  // GPT-4o and GPT-4o-mini removed - using Kimi K2.5 instead (4x cheaper, better performance)
   {
     id: "default",
     name: "GPT-4",

@@ -4048,4 +4048,93 @@ Build a comprehensive autonomous agent that can complete complex tasks end-to-en
 - [x] Fix the response processing code after Kimi API returns
 - [x] Add defensive checks for undefined values
 - [x] Test with unit tests (5 tests passing)
-- [ ] Deploy and verify image analysis works end-to-end
+- [x] Deploy and verify image analysis works end-to-end
+
+
+---
+
+## Phase 38: Kimi K2.5 Optimization Research & Implementation
+
+### Research Tasks
+- [x] Research Kimi K2.5 API documentation for advanced features and parameters
+- [x] Research Kimi K2.5 best practices for vision tasks (UI-to-code, OCR, document analysis)
+- [x] Research Kimi K2.5 context window optimization (256K tokens)
+- [x] Research Kimi K2.5 multimodal capabilities (text + image combinations)
+- [x] Research Kimi K2.5 pricing and cost optimization strategies
+- [ ] Research competitive platforms using Kimi K2.5 (v0.dev, Cursor, etc.)
+- [ ] Research Kimi K2.5 vs other vision models (GPT-4o, Claude 3.5, Gemini 2.0)
+
+### Analysis Tasks
+- [ ] Identify unique opportunities for Chofesh.ai using Kimi K2.5
+- [ ] Analyze cost-benefit of hybrid approach (Qwen + Kimi vs Kimi only)
+- [ ] Design optimization strategy document
+- [ ] Create implementation roadmap
+
+### Implementation Tasks
+- [ ] Implement priority optimizations
+- [ ] Add advanced Kimi K2.5 features
+- [ ] Test optimizations
+- [ ] Deploy to production
+
+
+---
+
+## Phase 39: Super Platform Transformation - Kimi K2.5 Exclusive
+
+### Phase 1: Remove GPT/Claude Dependencies
+- [ ] Audit all model references in codebase (GPT-4o, Claude, etc.)
+- [x] Remove GPT-4o and Claude from model list in modelRouter.ts
+- [x] Update FREE_MODEL_PRIORITIES to prioritize Kimi models
+- [ ] Update AVAILABLE_MODELS to mark Kimi K2.5 as default for vision
+- [ ] Remove OpenAI and Anthropic provider handlers from routers.ts
+- [ ] Update UI model selector to show Kimi models prominently
+- [ ] Test all workflows with Kimi-only configuration
+
+### Phase 2: Thinking Mode & Parameter Optimization
+- [ ] Add thinking mode toggle to chat settings UI
+- [ ] Implement thinking parameter in invokeKimi ({ type: "enabled" })
+- [ ] Add UI to show/hide thinking blocks in responses
+- [ ] Fix temperature to 1.0 for thinking mode, 0.6 for non-thinking
+- [ ] Fix top_p to 0.95 (required by Kimi API)
+- [ ] Add context window selector (98K default / 256K for large projects)
+- [ ] Implement token estimation before processing
+- [ ] Test thinking mode with complex reasoning tasks
+
+### Phase 3: Agent Swarm Integration
+- [ ] Research Kimi Agent Swarm API documentation
+- [ ] Add Agent Swarm toggle for complex workflows
+- [ ] Implement parallel sub-agent execution tracking
+- [ ] Build UI to show sub-agent progress (up to 100 agents)
+- [ ] Display parallel tool calls (up to 1,500 calls)
+- [ ] Add execution time comparison (single vs swarm)
+- [ ] Test Agent Swarm with multi-step research tasks
+- [ ] Measure 4.5x speed improvement
+
+### Phase 4: Hybrid Vision Pipeline (Qwen + Kimi)
+- [ ] Integrate Qwen 3-VL-Flash API for OCR/extraction
+- [ ] Build vision task router (OCR → Qwen, Reasoning → Kimi)
+- [ ] Implement automatic pipeline selection based on task type
+- [ ] Add cost tracking for Qwen vs Kimi usage
+- [ ] Test hybrid pipeline with UI screenshots
+- [ ] Measure 70% cost reduction vs Kimi-only
+- [ ] A/B test quality: hybrid vs Kimi-only
+
+### Phase 5: Super Features
+- [ ] Build UI-to-Code generator (screenshot → React component)
+- [ ] Add real-time code preview with hot reload
+- [ ] Implement code workspace with 256K context
+- [ ] Add multi-file editing with context awareness
+- [ ] Build document analysis suite (PDF/Word/Excel)
+- [ ] Add video understanding (upload → analysis)
+- [ ] Implement cache hit tracking (6x cost reduction)
+- [ ] Create cost dashboard (cache hits, token usage, API costs)
+
+### Phase 6: Testing & Deployment
+- [ ] Run comprehensive vitest suite for all new features
+- [ ] Test thinking mode with 10+ complex scenarios
+- [ ] Test Agent Swarm with parallel workflows
+- [ ] Test hybrid pipeline cost savings
+- [ ] Test UI-to-Code generator with real screenshots
+- [ ] Performance testing (response time, token usage)
+- [ ] Save checkpoint and deploy to production
+- [ ] Monitor production metrics (cost, speed, quality)
