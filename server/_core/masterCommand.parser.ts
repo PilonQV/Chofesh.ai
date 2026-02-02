@@ -5,12 +5,16 @@
  */
 
 import type { ParsedCommand, CommandIntent, AgentContext } from './masterCommand.types';
+import { callKimiAPI, withTimeout } from './masterCommand.aiClient';
 
 export class CommandParser {
   /**
    * Parse a natural language command into structured intent
    */
   async parse(command: string, context: string | undefined): Promise<ParsedCommand> {
+    console.log('[Parser] Starting command parsing...');
+    console.log('[Parser] Command:', command);
+    
     // Use AI to parse the command
     const prompt = `You are a command parser for a self-modifying AI system. Parse the following command into structured intent.
 
@@ -32,9 +36,35 @@ Respond in JSON format:
 }`;
 
     try {
-      // For now, use simple pattern matching
-      // TODO: Replace with AI call to Kimi K2.5
+      // Try AI-powered parsing first (with 30s timeout)
+      try {
+        console.log('[Parser] Calling AI model...');
+        const response = await withTimeout(
+          callKimiAPI([{ role: 'user', content: prompt }], 0.3),
+          30000, // 30 second timeout
+          'AI parsing'
+        );
+        console.log('[Parser] AI response received');
+
+        const content = response.content;
+        if (content) {
+          const parsed = JSON.parse(content);
+          return {
+            intent: parsed.intent as CommandIntent,
+            target: parsed.target,
+            action: parsed.action,
+            constraints: parsed.constraints || [],
+          };
+        }
+      } catch (aiError: any) {
+        console.warn('[Parser] AI parsing failed, falling back to simple parser');
+        console.warn('[Parser] Error:', aiError.message);
+      }
+
+      // Fallback to simple parser
+      console.log('[Parser] Using simple pattern-based parser');
       const parsed = this.simpleParser(command);
+      console.log('[Parser] Parsed result:', parsed);
       return parsed;
     } catch (error) {
       throw new Error(`Failed to parse command: ${error}`);

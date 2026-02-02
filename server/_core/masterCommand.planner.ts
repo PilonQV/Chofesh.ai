@@ -5,6 +5,7 @@
  */
 
 import type { ImplementationPlan, ImplementationStep, ParsedCommand, CodeAnalysis, AgentContext } from './masterCommand.types';
+import { callKimiAPI, withTimeout } from './masterCommand.aiClient';
 
 export class Planner {
   /**
@@ -15,6 +16,7 @@ export class Planner {
     analysis: CodeAnalysis,
     context: AgentContext
   ): Promise<ImplementationPlan> {
+    console.log('[Planner] Creating implementation plan...');
     this.log(context, 'Creating implementation plan...');
 
     const steps = await this.generateSteps(parsed, analysis);
@@ -48,10 +50,63 @@ export class Planner {
     parsed: ParsedCommand,
     analysis: CodeAnalysis
   ): Promise<ImplementationStep[]> {
-    const steps: ImplementationStep[] = [];
+    console.log('[Planner] Generating implementation steps...');
+    // Try AI-powered planning first (with 30s timeout)
+    try {
+      console.log('[Planner] Calling AI model...');
+      const prompt = `You are a technical planner for a self-modifying AI system. Create detailed implementation steps.
 
-    // For now, create simple steps based on intent
-    // TODO: Use AI to generate detailed steps
+Command Intent: ${parsed.intent}
+Target: ${parsed.target}
+Action: ${parsed.action}
+Constraints: ${parsed.constraints?.join(', ') || 'None'}
+
+Relevant Files:
+${analysis.relevantFiles.slice(0, 5).join('\n')}
+
+Create a step-by-step implementation plan. Each step should:
+1. Have a clear description
+2. List files to modify/create/delete
+3. Explain the reasoning
+
+Respond in JSON format:
+{
+  "steps": [
+    {
+      "description": "string",
+      "files": ["path/to/file.ts"],
+      "action": "modify" | "create" | "delete",
+      "reasoning": "string"
+    }
+  ]
+}`;
+
+      const response = await withTimeout(
+        callKimiAPI([{ role: 'user', content: prompt }], 0.3),
+        30000, // 30 second timeout
+        'AI planning'
+      );
+      console.log('[Planner] AI response received');
+
+      const content = response.content;
+      if (content) {
+        const result = JSON.parse(content);
+        return result.steps.map((step: any, index: number) => ({
+          id: index + 1,
+          description: step.description,
+          files: step.files,
+          action: step.action,
+          reasoning: step.reasoning,
+        }));
+      }
+    } catch (aiError: any) {
+      console.warn('[Planner] AI planning failed, falling back to simple planner');
+      console.warn('[Planner] Error:', aiError.message);
+    }
+
+    // Fallback to simple planning
+    console.log('[Planner] Using simple rule-based planner');
+    const steps: ImplementationStep[] = [];
 
     switch (parsed.intent) {
       case 'add_feature':
