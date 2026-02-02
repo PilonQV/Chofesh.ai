@@ -35,8 +35,16 @@ export const masterCommandRouter = router({
       // Debug logging
       console.log('[Master Command] Token validation:');
       console.log('  Received token:', input.adminToken);
+      console.log('  Received token length:', input.adminToken?.length);
+      console.log('  Received token type:', typeof input.adminToken);
       console.log('  Expected token:', ADMIN_TOKEN);
-      console.log('  Match:', input.adminToken === ADMIN_TOKEN);
+      console.log('  Expected token length:', ADMIN_TOKEN?.length);
+      console.log('  Expected token type:', typeof ADMIN_TOKEN);
+      console.log('  Strict match (===):', input.adminToken === ADMIN_TOKEN);
+      console.log('  Loose match (==):', input.adminToken == ADMIN_TOKEN);
+      console.log('  Trimmed match:', input.adminToken?.trim() === ADMIN_TOKEN?.trim());
+      console.log('  Character codes received:', input.adminToken?.split('').map(c => c.charCodeAt(0)).slice(0, 10));
+      console.log('  Character codes expected:', ADMIN_TOKEN?.split('').map(c => c.charCodeAt(0)).slice(0, 10));
       
       // Verify admin token
       if (input.adminToken !== ADMIN_TOKEN) {
