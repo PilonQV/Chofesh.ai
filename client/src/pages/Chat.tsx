@@ -107,10 +107,39 @@ import {
   FolderPlus,
   FolderOpen,
   Command,
+  Coins,
+  MessageCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 
 type RoutingMode = "auto" | "free" | "manual";
+
+// Helper functions for mode labels
+const getModeLabel = (mode: RoutingMode) => {
+  switch (mode) {
+    case "auto":
+      return "Agent Mode";
+    case "free":
+      return "Chat Mode";
+    case "manual":
+      return "Agent (Manual)";
+    default:
+      return "Auto";
+  }
+};
+
+const getModeIcon = (mode: RoutingMode) => {
+  switch (mode) {
+    case "auto":
+      return Zap;
+    case "free":
+      return MessageCircle;
+    case "manual":
+      return Settings;
+    default:
+      return Zap;
+  }
+};
 
 // Web Speech API types
 interface SpeechRecognitionEvent extends Event {
@@ -289,6 +318,13 @@ export default function Chat() {
   // Ollama local models
   const [ollamaEnabled, setOllamaEnabled] = useState(false);
   const [ollamaEndpoint, setOllamaEndpoint] = useState('http://localhost:11434');
+  
+  // Credits balance query
+  const { data: creditsData } = trpc.credits.balance.useQuery(undefined, {
+    enabled: isAuthenticated,
+    refetchInterval: 30000, // Refetch every 30 seconds
+  });
+  const credits = creditsData?.totalCredits ?? 0;
   const [ollamaModels, setOllamaModels] = useState<string[]>([]);
   const [ollamaConnected, setOllamaConnected] = useState(false);
   
@@ -1236,6 +1272,77 @@ export default function Chat() {
 
           {/* Header Controls */}
           <div className="flex items-center gap-1 sm:gap-2">
+            {/* Mode Selector (Manus Style) */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="h-8 gap-1.5 px-2 sm:px-3 bg-background/50 hover:bg-background">
+                  {(() => {
+                    const ModeIcon = getModeIcon(routingMode);
+                    return <ModeIcon className="w-3.5 h-3.5" />;
+                  })()}
+                  <span className="hidden sm:inline text-xs font-medium">{getModeLabel(routingMode)}</span>
+                  <ChevronDown className="w-3 h-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-72">
+                <DropdownMenuLabel>Select Mode</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setRoutingMode("auto")} className="cursor-pointer">
+                  <div className="flex flex-col gap-1 py-1">
+                    <div className="flex items-center gap-2">
+                      <Zap className="w-4 h-4 text-primary" />
+                      <span className="font-medium">Agent Mode (Recommended)</span>
+                    </div>
+                    <span className="text-xs text-muted-foreground pl-6">
+                      Autonomous task execution with smart routing
+                    </span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setRoutingMode("free")} className="cursor-pointer">
+                  <div className="flex flex-col gap-1 py-1">
+                    <div className="flex items-center gap-2">
+                      <MessageCircle className="w-4 h-4 text-green-400" />
+                      <span className="font-medium">Chat Mode</span>
+                    </div>
+                    <span className="text-xs text-muted-foreground pl-6">
+                      Quick answers and conversations (free, no credits)
+                    </span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setRoutingMode("manual")} className="cursor-pointer">
+                  <div className="flex flex-col gap-1 py-1">
+                    <div className="flex items-center gap-2">
+                      <Settings className="w-4 h-4" />
+                      <span className="font-medium">Agent Mode (Manual)</span>
+                    </div>
+                    <span className="text-xs text-muted-foreground pl-6">
+                      Choose your preferred model manually
+                    </span>
+                  </div>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
+            {/* Credit Balance (Manus Style) */}
+            {isAuthenticated && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setLocation("/credits")}
+                    className="h-8 gap-1.5 px-2 sm:px-3 bg-primary/10 hover:bg-primary/20 border-primary/20"
+                  >
+                    <Coins className="w-3.5 h-3.5 text-primary" />
+                    <span className="text-xs font-medium">{credits.toLocaleString()}</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Credits balance - Click to purchase more</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+            
             {/* Command Center Button */}
             <Tooltip>
               <TooltipTrigger asChild>
@@ -1955,7 +2062,7 @@ export default function Chat() {
               </Button>
             </div>
             <p className="text-xs text-muted-foreground text-center mt-2">
-              Your conversations are encrypted and stored locally on your device.
+              Your conversations are securely stored and encrypted. <a href="/privacy" className="underline">Privacy Policy</a>
             </p>
           </div>
         </div>
