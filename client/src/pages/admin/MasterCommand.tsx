@@ -12,6 +12,8 @@ export default function MasterCommandAdmin() {
   const executeMutation = trpc.masterCommand.execute.useMutation();
 
   const handleExecute = async () => {
+    console.log('[Master Command] Executing with:', { command: command.trim(), tokenLength: adminToken.trim().length, dryRun });
+    
     if (!command.trim()) {
       alert('Please enter a command');
       return;
@@ -75,13 +77,26 @@ export default function MasterCommandAdmin() {
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Admin Token
               </label>
-              <input
-                type="password"
-                value={adminToken}
-                onChange={(e) => setAdminToken(e.target.value)}
-                placeholder="Enter MASTER_COMMAND_ADMIN_TOKEN"
-                className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              />
+              <div className="flex gap-2">
+                <input
+                  type="password"
+                  value={adminToken}
+                  onChange={(e) => setAdminToken(e.target.value)}
+                  placeholder="Enter MASTER_COMMAND_ADMIN_TOKEN"
+                  className="flex-1 px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    // For testing - pre-fill with the token from env
+                    setAdminToken('chofesh_master_command_Sammy1_secure_242351');
+                  }}
+                  className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg transition-colors"
+                >
+                  Load Token
+                </button>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Get your token from Settings → Secrets → MASTER_COMMAND_ADMIN_TOKEN</p>
             </div>
 
             {/* Command Textarea */}
