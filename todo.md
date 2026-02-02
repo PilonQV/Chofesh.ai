@@ -4098,7 +4098,7 @@ Build a comprehensive autonomous agent that can complete complex tasks end-to-en
 - [ ] Fix top_p to 0.95 (required by Kimi API)
 - [ ] Add context window selector (98K default / 256K for large projects)
 - [ ] Implement token estimation before processing
-- [ ] Test thinking mode with complex reasoning tasks
+- [x] Test thinking mode with complex reasoning tasks
 
 ### Phase 3: Agent Swarm Integration
 - [ ] Research Kimi Agent Swarm API documentation
@@ -4138,3 +4138,40 @@ Build a comprehensive autonomous agent that can complete complex tasks end-to-en
 - [ ] Performance testing (response time, token usage)
 - [ ] Save checkpoint and deploy to production
 - [ ] Monitor production metrics (cost, speed, quality)
+
+
+---
+
+## Phase 40: Thinking Mode Toggle (Kimi K2.5)
+
+- [x] Add thinking mode UI toggle in Chat.tsx settings (already exists)
+- [x] Update backend to support thinking mode parameter for Kimi
+- [x] Modify model selection to use kimi-k2-thinking when enabled
+- [x] Display step-by-step reasoning in chat UI (already exists)
+- [x] Test thinking mode with complex reasoning tasks
+- [ ] Save checkpoint and deploy
+
+---
+
+## Phase 41: Agent Swarm Integration
+
+- [ ] Research Kimi K2.5 Agent Swarm API documentation
+- [ ] Design parallel execution architecture
+- [ ] Implement sub-agent spawning system (up to 100 agents)
+- [ ] Add parallel tool calling support (up to 1,500 calls)
+- [ ] Create orchestration layer for agent coordination
+- [ ] Test with complex multi-step workflows
+- [ ] Measure performance improvement (target: 4.5x faster)
+- [ ] Save checkpoint and deploy
+
+---
+
+## Phase 42: Hybrid Vision Pipeline (Qwen + Kimi)
+
+- [ ] Integrate Qwen 3-VL-Flash for OCR/extraction
+- [ ] Create vision pipeline router (Qwen → Kimi)
+- [ ] Implement cost tracking for hybrid pipeline
+- [ ] Add UI toggle for hybrid vs direct vision processing
+- [ ] Test with image-to-code workflows
+- [ ] Verify 70% cost reduction vs Kimi-only
+- [ ] Save checkpoint and deploy

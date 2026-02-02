@@ -1220,6 +1220,13 @@ export const appRouter = router({
         // Analyze complexity and select model
         const complexity = analyzeQueryComplexity(input.messages);
         
+        // Force thinking model if thinking mode is enabled
+        if (input.showThinking && !effectiveModel) {
+          // Use Kimi K2 Thinking for deep reasoning
+          effectiveModel = 'kimi-k2-thinking';
+          console.log(`[v${getAppVersion()}] [Thinking Mode] Enabled - using kimi-k2-thinking model`);
+        }
+        
         // Force vision model if images are uploaded
         if (input.imageUrls && input.imageUrls.length > 0 && !effectiveModel) {
           // Override to select a vision-capable model
