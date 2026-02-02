@@ -5,21 +5,16 @@ import { Loader2, Terminal, CheckCircle, XCircle, AlertTriangle, Undo2 } from 'l
 export default function MasterCommandAdmin() {
   const [command, setCommand] = useState('');
   const [dryRun, setDryRun] = useState(true);
-  const [adminToken, setAdminToken] = useState('');
   const [result, setResult] = useState<any>(null);
   const [isExecuting, setIsExecuting] = useState(false);
 
   const executeMutation = trpc.masterCommand.execute.useMutation();
 
   const handleExecute = async () => {
-    console.log('[Master Command] Executing with:', { command: command.trim(), tokenLength: adminToken.trim().length, dryRun });
+    console.log('[Master Command] Executing with:', { command: command.trim(), dryRun });
     
     if (!command.trim()) {
       alert('Please enter a command');
-      return;
-    }
-    if (!adminToken.trim()) {
-      alert('Please enter admin token');
       return;
     }
 
@@ -29,12 +24,15 @@ export default function MasterCommandAdmin() {
     try {
       const res = await executeMutation.mutateAsync({
         command: command.trim(),
-        adminToken: adminToken.trim(),
         dryRun,
         context: 'admin-panel',
       });
       setResult(res);
     } catch (error: any) {
+      console.error('[MasterCommand Frontend] Error caught:', error);
+      console.error('[MasterCommand Frontend] Error message:', error.message);
+      console.error('[MasterCommand Frontend] Error data:', error.data);
+      console.error('[MasterCommand Frontend] Full error object:', JSON.stringify(error, null, 2));
       setResult({
         success: false,
         error: error.message || 'Failed to execute command',
@@ -71,32 +69,11 @@ export default function MasterCommandAdmin() {
           {/* Left: Command Input */}
           <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20">
             <h2 className="text-xl font-semibold text-white mb-4">Command Input</h2>
-            
-            {/* Admin Token */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Admin Token
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="password"
-                  value={adminToken}
-                  onChange={(e) => setAdminToken(e.target.value)}
-                  placeholder="Enter MASTER_COMMAND_ADMIN_TOKEN"
-                  className="flex-1 px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    // For testing - pre-fill with the token from env
-                    setAdminToken('chofesh_master_command_Sammy1_secure_242351');
-                  }}
-                  className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg transition-colors"
-                >
-                  Load Token
-                </button>
-              </div>
-              <p className="text-xs text-gray-500 mt-1">Get your token from Settings → Secrets → MASTER_COMMAND_ADMIN_TOKEN</p>
+                   {/* Authentication Notice */}
+            <div className="mb-4 p-3 bg-purple-900/20 border border-purple-700/30 rounded-lg">
+              <p className="text-sm text-purple-300">
+                ✓ Authenticated as owner - Master Command access granted
+              </p>
             </div>
 
             {/* Command Textarea */}
