@@ -239,10 +239,10 @@ export default function Home() {
                 <AccordionTrigger>Privacy & Security</AccordionTrigger>
                 <AccordionContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FeatureCard title="Local Storage" description="Your conversations are encrypted and stored on your device. We never see them." icon={<Lock />} />
+                    <FeatureCard title="Secure Storage" description="Your conversations are securely stored with industry-standard encryption and access controls." icon={<Lock />} />
                     <FeatureCard title="Bring Your Keys (BYOK)" description="Use your own API keys for unlimited access. Pay only for what you use." icon={<Key />} />
                     <FeatureCard title="Advanced Security" description="Enterprise-grade prompt injection protection. Detects and blocks malicious prompts." icon={<ShieldCheck />} />
-                    <FeatureCard title="Local Models (Ollama)" description="Run AI completely offline with Ollama. Maximum privacy - your data never leaves your device." icon={<Server />} />
+                    <FeatureCard title="Local Models (Ollama)" description="Run AI completely offline with Ollama for maximum privacy." icon={<Server />} />
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -259,12 +259,12 @@ export default function Home() {
                   Your Data <span className="gradient-text">Stays Yours</span>
                 </h2>
                 <p className="text-muted-foreground mb-6">
-                  We built Chofesh with a simple principle: your conversations belong to you. We can't read your chats because they never leave your browser - that's how it should be.
+                  We built Chofesh with a simple principle: your conversations belong to you. We protect your data with industry-standard encryption and strict access controls.
                 </p>
                 <div className="space-y-4">
-                  <PrivacyItem icon={<Lock />} title="Encrypted on Your Device" text="AES-256 encryption keeps your data safe, even from us" />
-                  <PrivacyItem icon={<Globe />} title="Works Everywhere" text="Access your encrypted conversations from any browser" />
-                  <PrivacyItem icon={<Shield />} title="You're in Control" text="Delete your data anytime - it's stored locally" />
+                  <PrivacyItem icon={<Lock />} title="Encrypted Storage" text="Industry-standard encryption protects your conversations" />
+                  <PrivacyItem icon={<Globe />} title="Secure Access" text="Access your conversations securely from any device" />
+                  <PrivacyItem icon={<Shield />} title="You're in Control" text="Delete your data anytime - you own your conversations" />
                 </div>
                 <div className="mt-8">
                   <Link href="/privacy">
@@ -283,19 +283,19 @@ export default function Home() {
                         <Check className="w-5 h-5 text-green-500" />
                       </div>
                       <div>
-                        <div className="font-medium">Your Device Only</div>
-                        <div className="text-sm text-muted-foreground">Nothing stored on our servers</div>
+                        <div className="font-medium">Securely Protected</div>
+                        <div className="text-sm text-muted-foreground">Industry-standard security</div>
                       </div>
                     </div>
                     <div className="h-px bg-border" />
                     <div className="space-y-3">
                       <div className="flex items-center gap-2 text-sm">
                         <div className="w-2 h-2 rounded-full bg-green-500" />
-                        <span>Conversations encrypted locally</span>
+                        <span>Conversations encrypted in transit and at rest</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
                         <div className="w-2 h-2 rounded-full bg-green-500" />
-                        <span>Images stored on your device</span>
+                        <span>Secure image storage with S3</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
                         <div className="w-2 h-2 rounded-full bg-green-500" />
