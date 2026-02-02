@@ -11,8 +11,8 @@ import { TRPCError } from '@trpc/server';
 import { MasterCommandSystem } from '../_core/masterCommand';
 import path from 'path';
 
-// Admin token from environment
-const ADMIN_TOKEN = process.env.MASTER_COMMAND_ADMIN_TOKEN || 'dev_admin_token_change_me';
+// Owner authentication
+const OWNER_OPEN_ID = process.env.OWNER_OPEN_ID || '';
 
 // Project path
 const PROJECT_PATH = path.join(process.cwd());
@@ -29,38 +29,19 @@ export const masterCommandRouter = router({
       command: z.string().min(5, 'Command must be at least 5 characters'),
       context: z.string().optional(),
       dryRun: z.boolean().optional(),
-      adminToken: z.string(),
     }))
     .mutation(async ({ input, ctx }) => {
-      // Debug logging
-      console.log('[Master Command] Token validation:');
-      console.log('  Received token:', input.adminToken);
-      console.log('  Received token length:', input.adminToken?.length);
-      console.log('  Received token type:', typeof input.adminToken);
-      console.log('  Expected token:', ADMIN_TOKEN);
-      console.log('  Expected token length:', ADMIN_TOKEN?.length);
-      console.log('  Expected token type:', typeof ADMIN_TOKEN);
-      console.log('  Strict match (===):', input.adminToken === ADMIN_TOKEN);
-      console.log('  Loose match (==):', input.adminToken == ADMIN_TOKEN);
-      console.log('  Trimmed match:', input.adminToken?.trim() === ADMIN_TOKEN?.trim());
-      console.log('  Character codes received:', input.adminToken?.split('').map(c => c.charCodeAt(0)).slice(0, 10));
-      console.log('  Character codes expected:', ADMIN_TOKEN?.split('').map(c => c.charCodeAt(0)).slice(0, 10));
+      // Verify user is the owner
+      console.log('[Master Command] Auth check:', {
+        userOpenId: ctx.user.openId,
+        ownerOpenId: OWNER_OPEN_ID,
+        isOwner: ctx.user.openId === OWNER_OPEN_ID,
+      });
       
-      // Verify admin token
-      if (input.adminToken !== ADMIN_TOKEN) {
-        throw new TRPCError({
-          code: 'UNAUTHORIZED',
-          message: 'Invalid admin token',
-        });
-      }
-
-      // Additional check: Only allow specific admin users
-      // TODO: Add admin user IDs to environment
-      const ADMIN_USER_IDS = (process.env.ADMIN_USER_IDS || '').split(',').filter(Boolean);
-      if (ADMIN_USER_IDS.length > 0 && !ADMIN_USER_IDS.includes(ctx.user.id.toString())) {
+      if (!OWNER_OPEN_ID || ctx.user.openId !== OWNER_OPEN_ID) {
         throw new TRPCError({
           code: 'FORBIDDEN',
-          message: 'User is not authorized to execute master commands',
+          message: 'Only the owner can execute master commands',
         });
       }
 
@@ -85,15 +66,14 @@ export const masterCommandRouter = router({
    */
   history: protectedProcedure
     .input(z.object({
-      adminToken: z.string(),
       limit: z.number().min(1).max(100).optional(),
     }))
     .query(async ({ input, ctx }) => {
-      // Verify admin token
-      if (input.adminToken !== ADMIN_TOKEN) {
+      // Verify user is the owner
+      if (!OWNER_OPEN_ID || ctx.user.openId !== OWNER_OPEN_ID) {
         throw new TRPCError({
-          code: 'UNAUTHORIZED',
-          message: 'Invalid admin token',
+          code: 'FORBIDDEN',
+          message: 'Only the owner can view command history',
         });
       }
 
