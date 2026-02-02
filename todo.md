@@ -4374,3 +4374,38 @@ Build a comprehensive autonomous agent that can complete complex tasks end-to-en
 - [x] Plan 2027+ future vision
 - [x] Add community input section
 - [x] Make roadmap public and transparent
+
+---
+
+## Phase 48: Critical UX Fixes
+
+### Fix Iteration Limit Error Messages
+- [x] Remove "iteration limit" error messages from user-facing UI
+- [x] Replace with user-friendly message using last observation
+- [x] Auto-continue or gracefully handle max iterations
+- [x] Never expose internal agent loop details to users
+
+### Remove Permission-Asking Prompts
+- [x] Find and remove all "What would you like to do next?" prompts
+- [x] Remove numbered suggestion lists after responses
+- [x] Make agent complete tasks without asking permission
+- [x] Update response formatting to be direct
+
+### Remove Non-Working/Basic Features
+- [x] Remove Deep Research Mode (disabled/not working)
+- [x] Remove Math Calculator (too elementary)
+- [x] Remove Unit Converter (too elementary)
+- [x] Clean up Tools menu
+- [x] Update settings to remove disabled features
+
+### Add Model List to Agent Mode (Manual)
+- [x] Show available models when "Agent Mode (Manual)" is selected (already implemented)
+- [x] Display model names, capabilities, and costs (already implemented)
+- [x] Make model selection clear and intuitive (already implemented)
+- [x] Note: Agent uses selected model in manual mode, smart routing in auto mode
+
+### Remove Roadmap from Public Access
+- [x] Remove roadmap link from navigation (never was public)
+- [x] Remove roadmap from homepage (never was public)
+- [x] Keep ROADMAP.md file for internal use only
+- [x] Don't expose future plans publicly yet

@@ -148,14 +148,7 @@ function CommandCenterDialog() {
             <Globe className="mr-2 h-4 w-4 text-blue-500" />
             <span>URL Analyzer</span>
           </CommandItem>
-          <CommandItem onSelect={() => navigateTo("/tools?tab=calculator")}>
-            <Calculator className="mr-2 h-4 w-4 text-green-500" />
-            <span>Math Calculator</span>
-          </CommandItem>
-          <CommandItem onSelect={() => navigateTo("/tools?tab=converter")}>
-            <ArrowRightLeft className="mr-2 h-4 w-4 text-purple-500" />
-            <span>Unit Converter</span>
-          </CommandItem>
+          {/* Removed Math Calculator and Unit Converter - too elementary */}
         </CommandGroup>
 
         <CommandSeparator />

@@ -345,11 +345,8 @@ export async function runManusLikeAgent(
   // Format response with reasoning (optional, can be hidden)
   let response = result.answer;
   
-  // Add suggestions
-  if (result.suggestions.length > 0) {
-    response += "\n\n**What would you like to do next?**\n";
-    response += result.suggestions.map((s, i) => `${i + 1}. ${s}`).join('\n');
-  }
+  // Don't add suggestions - agent should be action-oriented, not asking permission
+  // Removed: "What would you like to do next?" prompt
   
   return response;
 }

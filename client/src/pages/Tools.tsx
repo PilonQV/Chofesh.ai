@@ -57,14 +57,7 @@ export default function Tools() {
               <Globe className="h-4 w-4" />
               <span className="hidden sm:inline">URL</span>
             </TabsTrigger>
-            <TabsTrigger value="calculator" className="flex items-center gap-2 py-2">
-              <Calculator className="h-4 w-4" />
-              <span className="hidden sm:inline">Math</span>
-            </TabsTrigger>
-            <TabsTrigger value="converter" className="flex items-center gap-2 py-2">
-              <ArrowRightLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">Convert</span>
-            </TabsTrigger>
+            {/* Removed Math Calculator and Unit Converter - too elementary */}
             <TabsTrigger value="regex" className="flex items-center gap-2 py-2">
               <Regex className="h-4 w-4" />
               <span className="hidden sm:inline">Regex</span>
@@ -93,15 +86,7 @@ export default function Tools() {
             <UrlScraper />
           </TabsContent>
 
-          {/* Calculator */}
-          <TabsContent value="calculator">
-            <MathCalculator />
-          </TabsContent>
-
-          {/* Unit Converter */}
-          <TabsContent value="converter">
-            <UnitConverter />
-          </TabsContent>
+          {/* Removed Math Calculator and Unit Converter - too elementary */}
 
           {/* Regex Tester */}
           <TabsContent value="regex">

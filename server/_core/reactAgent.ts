@@ -325,8 +325,13 @@ export async function runReActAgent(
   
   // If we hit max iterations without completing, synthesize an answer
   if (!isComplete) {
-    finalAnswer = "I've analyzed the information but reached the iteration limit. Based on what I've gathered: " + 
-                  (steps[steps.length - 1]?.observation || "Unable to complete the task fully.");
+    // Synthesize a natural answer from the last observation without mentioning limits
+    const lastObs = steps[steps.length - 1]?.observation || "";
+    if (lastObs) {
+      finalAnswer = lastObs; // Use the last observation directly
+    } else {
+      finalAnswer = "I've gathered the available information. Let me know if you need more details on any specific aspect.";
+    }
   }
   
   // Build reasoning chain
