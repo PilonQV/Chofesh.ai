@@ -331,23 +331,7 @@ export default function Settings() {
                       </Select>
                     </div>
 
-                    <div className="border-t pt-6">
-                      {/* Deep Research Mode */}
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                          <Label className="text-base flex items-center gap-2">
-                            <Globe className="h-4 w-4 text-blue-500" />
-                            Deep Research Mode
-                          </Label>
-                          <p className="text-sm text-muted-foreground">
-                            Enable comprehensive research for complex queries
-                          </p>
-                        </div>
-                        <Button variant="outline" disabled>
-                          Disabled
-                        </Button>
-                      </div>
-                    </div>
+                    {/* Removed Deep Research Mode - not working/not needed */}
 
                   </CardContent>
                 </Card>
