@@ -39,32 +39,43 @@ export class MasterCommandSystem {
    * Execute a master command
    */
   async execute(request: MasterCommandRequest): Promise<MasterCommandResponse> {
+    console.log('[MasterCommand] execute() called');
     const commandId = this.generateCommandId();
+    console.log('[MasterCommand] commandId generated:', commandId);
     const context: AgentContext = {
       projectPath: this.projectPath,
       command: request,
       logs: [],
     };
+    console.log('[MasterCommand] context created');
 
     try {
       this.log(context, `Starting Master Command: ${request.command}`);
+      console.log('[MasterCommand] Starting parse...');
 
       // 1. Parse command
       const parsed = await this.parser.parse(request.command, request.context);
+      console.log('[MasterCommand] Parse complete:', parsed.intent);
       context.parsed = parsed;
       
       // Validate command
+      console.log('[MasterCommand] Validating...');
       const validation = this.parser.validate(parsed);
       if (!validation.valid) {
         throw new Error(validation.reason);
       }
+      console.log('[MasterCommand] Validation passed');
 
       // 2. Analyze codebase
+      console.log('[MasterCommand] Starting analysis...');
       const analysis = await this.analyzer.analyze(parsed, context);
+      console.log('[MasterCommand] Analysis complete');
       context.analysis = analysis;
 
       // 3. Create plan
+      console.log('[MasterCommand] Starting planning...');
       const plan = await this.planner.createPlan(parsed, analysis, context);
+      console.log('[MasterCommand] Planning complete');
       context.plan = plan;
 
       // If dry run, return plan without executing

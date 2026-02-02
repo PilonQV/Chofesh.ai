@@ -7,6 +7,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type { ImplementationPlan, FileChange, AgentContext } from './masterCommand.types';
+import { callKimiAPI, withTimeout } from './masterCommand.aiClient';
 
 export class CodeGenerator {
   private projectPath: string;
@@ -22,6 +23,7 @@ export class CodeGenerator {
     plan: ImplementationPlan,
     context: AgentContext
   ): Promise<FileChange[]> {
+    console.log('[Generator] Generating code changes...');
     this.log(context, 'Generating code changes...');
 
     const changes: FileChange[] = [];
@@ -29,10 +31,12 @@ export class CodeGenerator {
     for (const step of plan.steps) {
       for (const file of step.files) {
         try {
+          console.log(`[Generator] Processing file: ${path.relative(this.projectPath, file)}`);
           const change = await this.generateFileChange(file, step.action, step.description, step.code);
           changes.push(change);
           this.log(context, `Generated change for: ${path.relative(this.projectPath, file)}`);
-        } catch (error) {
+        } catch (error: any) {
+          console.warn(`[Generator] Error for ${file}:`, error.message);
           this.log(context, `Error generating change for ${file}: ${error}`);
         }
       }
@@ -90,23 +94,55 @@ export class CodeGenerator {
   }
 
   /**
-   * Modify file content
-   * TODO: Use AI for intelligent modifications
+   * Modify file content using AI
    */
   private async modifyFile(
     originalContent: string,
     description: string,
     code?: string
   ): Promise<string> {
-    // For MVP, just add a comment at the top
-    const comment = `// Master Command: ${description}\n`;
-    
+    // If specific code provided, use it
     if (code) {
-      // If specific code provided, append it
-      return comment + originalContent + '\n\n' + code;
+      return code;
     }
-    
-    // Otherwise just add the comment
+
+    // Try AI-powered code generation (with 45s timeout)
+    try {
+      console.log('[Generator] Calling AI for code modification...');
+      const prompt = `You are a code modification agent. Modify the following code according to the description.
+
+Description: ${description}
+
+Original Code:
+\`\`\`
+${originalContent}
+\`\`\`
+
+Provide the complete modified code. Only output the code, no explanations.`;
+
+      const response = await withTimeout(
+        callKimiAPI([{ role: 'user', content: prompt }], 0.2),
+        45000, // 45 second timeout (longer for code generation)
+        'AI code generation'
+      );
+      console.log('[Generator] AI code modification complete');
+
+      const content = response.content;
+      if (content) {
+        // Extract code from markdown code blocks if present
+        const codeMatch = content.match(/```(?:typescript|javascript|tsx|jsx)?\n([\s\S]*?)```/);
+        if (codeMatch) {
+          return codeMatch[1].trim();
+        }
+        return content.trim();
+      }
+    } catch (aiError: any) {
+      console.warn('[Generator] AI code generation failed, using fallback');
+      console.warn('[Generator] Error:', aiError.message);
+    }
+
+    // Fallback: just add a comment
+    const comment = `// Master Command: ${description}\n`;
     return comment + originalContent;
   }
 
