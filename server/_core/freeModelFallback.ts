@@ -19,18 +19,18 @@ import { AVAILABLE_MODELS, type ModelDefinition, type ComplexityLevel } from "..
 export const FREE_MODEL_PRIORITIES = {
   // Simple queries - fast, lightweight models
   simple: [
-    "puter-gpt-5-nano",           // Fastest, browser-based
+    "kimi-k2-free",                // Kimi free tier via OpenRouter
+    "puter-gpt-5-nano",            // Fastest, browser-based
     "llama-3.1-8b",                // Groq - ultra fast
-    "puter-gpt-4o-mini",           // Backup browser model
     "gemma-2-9b",                  // Groq - good quality
   ],
   
   // Medium complexity - balanced models
   medium: [
+    "kimi-k2-turbo-preview",       // Fast Kimi with 256K context
+    "kimi-k2-free",                // Kimi free tier
     "puter-gpt-5",                 // Full GPT-5 capabilities
     "llama-3.3-70b",               // Groq - excellent quality
-    "mixtral-8x7b",                // Groq - good reasoning
-    "puter-gpt-4o",                // Multimodal backup
     "deepseek-v3",                 // Strong general purpose
   ],
   
@@ -46,9 +46,8 @@ export const FREE_MODEL_PRIORITIES = {
   
   // Vision tasks - multimodal models
   vision: [
-    "kimi-k2.5",                   // Best vision + 256K context (premium but 4x cheaper than GPT-4o)
-    "puter-gpt-4o",                // Best free vision model
-    "gemini-2.0-flash-free",       // Good vision
+    "kimi-k2.5",                   // Best vision + 256K context (4x cheaper, native multimodal)
+    "gemini-2.0-flash-free",       // Free vision fallback
     "llama-3.2-90b-vision",        // Groq vision
     "qwen-2.5-vl-7b-free",         // Backup vision
   ],

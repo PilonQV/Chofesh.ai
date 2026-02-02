@@ -1230,15 +1230,14 @@ export const appRouter = router({
                           visionModels[0]?.id;
         }
         
-        const hasImages = !!(input.imageUrls && input.imageUrls.length > 0);
-        
+        // Reuse hasUploadedImages from agent mode check above (line 923)
         // DEBUG: Log model selection process
-        console.log(`[v${getAppVersion()}] [Model Selection] hasImages: ${hasImages}, imageUrls count: ${input.imageUrls?.length || 0}`);
+        console.log(`[v${getAppVersion()}] [Model Selection] hasImages: ${hasUploadedImages}, imageUrls count: ${input.imageUrls?.length || 0}`);
         console.log(`[v${getAppVersion()}] [Model Selection] effectiveModel: ${effectiveModel}, routingMode: ${routingMode}`);
         
         const selectedModel = effectiveModel 
-          ? AVAILABLE_MODELS.find(m => m.id === effectiveModel) || selectModel(complexity, routingMode, undefined, input.messages, hasImages)
-          : selectModel(complexity, routingMode, undefined, input.messages, hasImages);
+          ? AVAILABLE_MODELS.find(m => m.id === effectiveModel) || selectModel(complexity, routingMode, undefined, input.messages, hasUploadedImages)
+          : selectModel(complexity, routingMode, undefined, input.messages, hasUploadedImages);
         
         console.log(`[v${getAppVersion()}] [Model Selection] Selected: ${selectedModel.id} (${selectedModel.name}), supportsVision: ${selectedModel.supportsVision}`);
         
