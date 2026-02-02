@@ -159,11 +159,45 @@ export default function Home() {
         <section className="pt-24 pb-12 md:pt-32 md:pb-20 px-4 relative overflow-hidden" aria-labelledby="hero-heading">
           <div className="container mx-auto text-center relative z-10">
             <h1 id="hero-heading" className="text-3xl md:text-6xl lg:text-7xl font-bold mb-4 md:mb-6 leading-tight">
-              Private AI Chat That Keeps Your Data <span className="gradient-text">on Your Device</span>
+              Your Complete AI Platform With <span className="gradient-text">12+ Powerful Features</span>
             </h1>
-            <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto mb-8">
-              Chofesh is a privacy-first AI chat platform built for people who want control. Access 25+ models, execute code in 60+ languages, bring your own API keys, and use powerful tools without compromising your data.
+            <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-3xl mx-auto mb-6">
+              Agent Mode for autonomous tasks, Thinking Mode for complex reasoning, Vision Analysis, Code Execution in 60+ languages, Image Generation, Smart Model Routing, BYOK (Bring Your Own Keys), Local Models with Ollama, Memory System, Custom Characters, Artifacts, and more. All with pay-as-you-go pricing and credits that never expire.
             </p>
+            <div className="flex flex-wrap items-center justify-center gap-3 mb-8 max-w-3xl mx-auto">
+              <Badge variant="secondary" className="gap-1.5 px-3 py-1.5">
+                <Zap className="w-3.5 h-3.5" />
+                Agent Mode
+              </Badge>
+              <Badge variant="secondary" className="gap-1.5 px-3 py-1.5">
+                <Brain className="w-3.5 h-3.5" />
+                Thinking Mode
+              </Badge>
+              <Badge variant="secondary" className="gap-1.5 px-3 py-1.5">
+                <Eye className="w-3.5 h-3.5" />
+                Vision Analysis
+              </Badge>
+              <Badge variant="secondary" className="gap-1.5 px-3 py-1.5">
+                <Code2 className="w-3.5 h-3.5" />
+                Code Execution
+              </Badge>
+              <Badge variant="secondary" className="gap-1.5 px-3 py-1.5">
+                <Image className="w-3.5 h-3.5" />
+                Image Generation
+              </Badge>
+              <Badge variant="secondary" className="gap-1.5 px-3 py-1.5">
+                <Key className="w-3.5 h-3.5" />
+                BYOK
+              </Badge>
+              <Badge variant="secondary" className="gap-1.5 px-3 py-1.5">
+                <Server className="w-3.5 h-3.5" />
+                Local Models
+              </Badge>
+              <Badge variant="secondary" className="gap-1.5 px-3 py-1.5">
+                <Sparkles className="w-3.5 h-3.5" />
+                +5 More
+              </Badge>
+            </div>
             <div className="flex items-center justify-center gap-4">
               <Link href={isAuthenticated ? "/chat" : "/login"}>
                 <Button size="lg" className="gap-2">
