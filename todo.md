@@ -4204,3 +4204,42 @@ Build a comprehensive autonomous agent that can complete complex tasks end-to-en
 - [x] client/src/lib/puter.ts - Genericized image model names
 - [x] server/routers.ts - Added useHybridVision parameter
 - [x] package.json - Version bumped to 1.40.0
+
+---
+
+## Phase 43: Transform to Autonomous AI Agent (v1.41.0)
+
+### Research & Analysis
+- [ ] Research best autonomous agent system prompts
+- [ ] Study Kimi K2.5's advanced capabilities (thinking mode, tool calling, reasoning)
+- [ ] Analyze current agent behavior and identify over-cautious patterns
+- [ ] Research successful autonomous agent implementations
+
+### System Prompt Updates
+- [x] Remove all disclaimers and "I can't" statements
+- [x] Make agent confident and action-oriented
+- [x] Hide internal tool names from user-facing responses
+- [x] Add autonomous decision-making instructions
+- [x] Implement "just do it" mentality
+- [x] Use technical, developer-friendly language
+
+### Smart Tool Routing
+- [x] Auto-detect when to use web search (current events, real-time data)
+- [x] Auto-detect when to execute code (calculations, data processing)
+- [x] Auto-detect when to generate images (visual requests)
+- [x] Remove "What would you like to do next?" prompts
+- [x] Make agent proactively solve problems
+
+### Agent Behavior Changes
+- [x] Change "I can't build a website" → "Building that now..."
+- [x] Change tool listing → Just use tools silently
+- [x] Change asking permission → Just do it
+- [x] Add confidence and autonomy to responses
+- [x] Make responses action-oriented, not explanatory
+
+### Testing
+- [ ] Test with "build a website" query
+- [ ] Test with "tell me all your features" query
+- [ ] Test autonomous tool usage
+- [ ] Verify no over-explaining
+- [ ] Verify confident, technical responses

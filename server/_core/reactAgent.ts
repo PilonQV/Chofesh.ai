@@ -57,7 +57,7 @@ export interface Tool {
 const TOOLS: Tool[] = [
   {
     name: "search",
-    description: "Search the web for current information. Use this when you need real-time data, current prices, news, or any information that changes over time. Input should be a search query string.",
+    description: "Search the web for current information. Use automatically for real-time data, current prices, news, weather, or any information that changes over time. Input: search query string.",
     execute: async (query: string) => {
       try {
         // Use Gemini search for best results
@@ -73,7 +73,7 @@ const TOOLS: Tool[] = [
   },
   {
     name: "calculate",
-    description: "Perform mathematical calculations. Input should be a mathematical expression as a string (e.g., '(123 + 456) * 2').",
+    description: "Perform mathematical calculations. Use automatically for any math operations. Input: mathematical expression string (e.g., '(123 + 456) * 2').",
     execute: async (expression: string) => {
       try {
         // Safe eval using Function constructor
@@ -86,14 +86,14 @@ const TOOLS: Tool[] = [
   },
   {
     name: "think",
-    description: "Use this to think through a problem step-by-step without taking any external action. Input should be your reasoning about the problem.",
+    description: "Think through complex problems step-by-step. Use for reasoning and planning. Input: your reasoning about the problem.",
     execute: async (reasoning: string) => {
       return `Thought process recorded: ${reasoning}`;
     }
   },
   {
     name: "generate_image",
-    description: "Generate an image from a text description. Use this when the user asks to create, generate, or draw an image. Input should be a detailed description of the image to generate.",
+    description: "Generate images from text descriptions. Use automatically when user requests visual content. Input: detailed image description.",
     execute: async (prompt: string) => {
       try {
         console.log("[ReAct Tool] Generating image:", prompt);
@@ -108,7 +108,7 @@ const TOOLS: Tool[] = [
   },
   {
     name: "execute_code",
-    description: "Execute Python or JavaScript code safely in a sandbox. Use this for data analysis, calculations, or running code snippets. Input should be a JSON string with 'language' (python or javascript) and 'code' fields.",
+    description: "Execute Python or JavaScript code in secure sandbox. Use automatically for data analysis, calculations, or code execution. Input: JSON string with 'language' (python/javascript) and 'code' fields.",
     execute: async (input: string) => {
       try {
         const { language, code } = JSON.parse(input);
@@ -174,49 +174,46 @@ const TOOLS: Tool[] = [
 function createReActPrompt(userQuery: string, conversationHistory: any[]): string {
   const toolDescriptions = TOOLS.map(t => `- ${t.name}: ${t.description}`).join('\n');
   
-  return `You are an autonomous AI agent that solves problems using the ReAct (Reasoning and Acting) framework.
-
-You think step-by-step and can use tools to gather information and solve problems.
+  return `You are an autonomous AI agent that solves problems through reasoning and action.
 
 AVAILABLE TOOLS:
 ${toolDescriptions}
 
-INSTRUCTIONS:
-You MUST follow this exact format for each step:
+WORKFLOW:
+Follow this exact format for each step:
 
 Thought: [Your reasoning about what to do next]
-Action: [The tool name to use, or "final_answer" when done]
-Action Input: [The input for the tool]
-
-After each action, you will receive an observation. Then you continue:
-
-Observation: [Result from the tool]
-Thought: [Your reasoning about the observation]
-Action: [Next tool to use]
+Action: [Tool name or "final_answer" when done]
 Action Input: [Input for the tool]
 
-Continue this process until you have enough information to answer the user's question.
-When you're ready to provide the final answer, use:
+After each action, you receive an observation:
 
-Thought: [Your final reasoning]
+Observation: [Tool result]
+Thought: [Reasoning about the result]
+Action: [Next tool]
+Action Input: [Tool input]
+
+When ready to answer:
+
+Thought: [Final reasoning]
 Action: final_answer
-Action Input: [Your complete answer to the user]
+Action Input: [Complete answer]
 
-IMPORTANT RULES:
-1. Always start with a Thought
-2. Use tools to gather information - don't make up facts
-3. For current/real-time information (prices, news, weather), ALWAYS use the search tool IMMEDIATELY - never ask permission
-4. Think step-by-step and show your reasoning
-5. When you have enough information, provide a final_answer
-6. Maximum 10 iterations - be efficient
-7. When generate_image returns a URL, ALWAYS include the actual URL in your final answer using markdown image syntax: ![description](URL)
-8. NEVER say "[Image Link]" or hide URLs - always show them directly
-9. NEVER mention that you used a tool or searched - just provide the answer naturally
-10. NEVER ask "Would you like me to search?" - just search automatically when needed
+OPERATING PRINCIPLES:
+1. Act autonomously - use tools immediately when needed, never ask permission
+2. For current/real-time information (prices, news, weather, data), use search tool automatically
+3. When generating images, include the actual URL in markdown: ![description](URL)
+4. Never mention using tools - provide answers naturally as if you knew them
+5. Never say "Would you like me to..." - just do it
+6. Be confident and direct - if you can do something, do it
+7. Show reasoning in Thought, but keep final answers clean and professional
+8. Maximum 10 iterations - be efficient
+9. Don't make up facts - use tools to verify
+10. Focus on solving the problem, not explaining your process to the user
 
 USER QUERY: ${userQuery}
 
-Begin! Start with your first Thought.`;
+Begin with your first Thought.`;
 }
 
 // ============================================================================
