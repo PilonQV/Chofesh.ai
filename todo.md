@@ -4887,3 +4887,38 @@ Build a comprehensive autonomous agent that can complete complex tasks end-to-en
 - **Red "Execute Command (Makes Changes)"** - Requires confirmation, then actually modifies codebase
 - Removed confusing dry run checkbox
 - Added confirmation dialog with warning emoji before execution
+
+
+---
+
+## Phase 58: Improve Chat Message Formatting (v1.54.0)
+
+**Goal:** Make AI responses clean and readable like ChatGPT/Claude with proper markdown rendering and mobile-friendly layout.
+
+### Current Issues
+- [x] Tables render as raw markdown with pipes and dashes (hard to read)
+- [x] Poor spacing between elements
+- [x] Not mobile-friendly
+- [x] Markdown not rendering properly
+
+### Implementation
+- [x] Using Streamdown (already installed) - built for AI streaming
+- [x] Style tables with proper borders, padding, and responsive design
+- [x] Improve typography (font sizes, line heights, spacing)
+- [x] Better mobile layout (full width for AI, proper padding)
+- [x] Clean up message bubble styling with Tailwind prose classes
+
+### Expected Result
+- [x] Tables render as actual HTML tables (not raw markdown)
+- [x] Clean, readable formatting on mobile and desktop
+- [x] Professional appearance like ChatGPT/Claude
+- [x] Better user experience
+
+### Result
+✅ **COMPLETE** - Chat messages now render beautifully:
+- **Tables:** Full-width with borders, padding, and proper styling
+- **Typography:** Responsive font sizes (prose-sm on mobile, prose-base on desktop)
+- **Mobile-friendly:** AI messages take full width, user messages 85%
+- **Code blocks:** Proper syntax highlighting with dark background
+- **Links, lists, blockquotes:** All styled professionally
+- **Spacing:** Relaxed line heights for better readability
