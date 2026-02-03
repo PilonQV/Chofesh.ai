@@ -4798,3 +4798,62 @@ Build a comprehensive autonomous agent that can complete complex tasks end-to-en
 
 ### Result
 ✅ **COMPLETE** - Kimi K2.5 orchestrator fully implemented and working! Every chat request goes through Kimi first for intelligent routing decisions. Orchestration logs show detailed reasoning. System tested successfully with multiple query types.
+
+
+---
+
+## Phase 56: Query Caching for Orchestrator (v1.52.0)
+
+**Goal:** Implement intelligent caching system for Kimi orchestrator routing decisions to reduce overhead and improve response times.
+
+### Implementation Plan
+
+**Step 1: Design Cache Strategy** ✅
+- [x] Define cache key generation (query normalization + similarity hashing)
+- [x] Define cache structure (routing decision + metadata)
+- [x] Define TTL strategy (time-based expiration)
+- [x] Design similarity threshold for cache hits
+- [x] Design cache invalidation strategy
+
+**Step 2: Create Cache Module** ✅
+- [x] Create `server/_core/orchestration/orchestratorCache.ts`
+- [x] Implement in-memory LRU cache with TTL
+- [x] Implement query normalization (lowercase, trim, remove extra spaces)
+- [x] Implement similarity matching (Levenshtein distance or fuzzy matching)
+- [x] Add cache statistics tracking (hits, misses, savings)
+
+**Step 3: Integrate with Orchestrator** ✅
+- [x] Update `kimiOrchestrator.ts` to check cache before analysis
+- [x] Cache routing decisions after successful orchestration
+- [x] Add cache bypass flag for testing
+- [x] Log cache hits/misses for monitoring
+
+**Step 4: Testing** ✅
+- [x] Test cache hits for identical queries
+- [x] Test cache hits for similar queries (typos, case differences)
+- [x] Test cache misses for different queries
+- [x] Test TTL expiration
+- [x] Verify cache statistics accuracy
+- [x] All 18 tests passing
+
+**Step 5: Monitoring & Analytics** ✅
+- [x] Add cache metrics to orchestration logs
+- [x] Track cache hit rate
+- [x] Track average latency reduction
+- [x] Track cost savings from cached decisions
+
+### Expected Benefits
+- [x] 50-80% latency reduction for repeated/similar queries
+- [x] Reduced Kimi API calls (cost savings on orchestration overhead)
+- [x] Better user experience (faster response times)
+- [x] Scalable caching architecture
+
+### Result
+✅ **COMPLETE** - Query caching fully implemented and tested! Cache system uses LRU eviction with TTL, similarity matching (Levenshtein distance), and comprehensive statistics tracking. All 18 unit tests passing. Cache automatically stores routing decisions and matches similar queries with 85%+ similarity.
+
+### Technical Details
+- Cache implementation: In-memory LRU with configurable max size
+- TTL: 1 hour default (configurable)
+- Similarity threshold: 85% match (configurable)
+- Max cache size: 1000 entries (configurable)
+- Cache key: Normalized query hash
