@@ -90,39 +90,56 @@ export default function MasterCommandAdmin() {
               />
             </div>
 
-            {/* Dry Run Toggle */}
-            <div className="mb-6">
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={dryRun}
-                  onChange={(e) => setDryRun(e.target.checked)}
-                  className="w-5 h-5 text-purple-600 bg-gray-900 border-gray-700 rounded focus:ring-purple-500"
-                />
-                <span className="text-gray-300">
-                  Dry Run (preview changes without applying)
-                </span>
-              </label>
-            </div>
 
-            {/* Execute Button */}
-            <button
-              onClick={handleExecute}
-              disabled={isExecuting}
-              className="w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
-            >
-              {isExecuting ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Executing...
-                </>
-              ) : (
-                <>
-                  <Terminal className="w-5 h-5" />
-                  {dryRun ? 'Preview Changes' : 'Execute Command'}
-                </>
-              )}
-            </button>
+
+            {/* Action Buttons */}
+            <div className="space-y-3">
+              {/* Preview Button */}
+              <button
+                onClick={() => {
+                  setDryRun(true);
+                  setTimeout(() => handleExecute(), 100);
+                }}
+                disabled={isExecuting}
+                className="w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+              >
+                {isExecuting && dryRun ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Previewing...
+                  </>
+                ) : (
+                  <>
+                    <Terminal className="w-5 h-5" />
+                    Preview Changes (Safe)
+                  </>
+                )}
+              </button>
+
+              {/* Execute Button */}
+              <button
+                onClick={() => {
+                  if (confirm('⚠️ This will modify the codebase. Are you sure you want to execute this command?')) {
+                    setDryRun(false);
+                    setTimeout(() => handleExecute(), 100);
+                  }
+                }}
+                disabled={isExecuting}
+                className="w-full px-6 py-3 bg-red-600 hover:bg-red-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 border-2 border-red-500/50"
+              >
+                {isExecuting && !dryRun ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Executing...
+                  </>
+                ) : (
+                  <>
+                    <AlertTriangle className="w-5 h-5" />
+                    Execute Command (Makes Changes)
+                  </>
+                )}
+              </button>
+            </div>
 
             {/* Example Commands */}
             <div className="mt-6">
