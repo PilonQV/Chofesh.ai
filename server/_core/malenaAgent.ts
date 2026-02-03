@@ -385,13 +385,14 @@ async function handleResearchTask(
 
   // Use enhanced autonomous agent with research tools
   const llmProvider = {
-    name: "gpt-4o",
+    name: "auto", // Let Kimi orchestrator decide
     call: async (messages: any[]) => {
       const response = await invokeAICompletion({
-        model: "gpt-4o",
+        model: "auto", // Let orchestrator decide
         messages,
         temperature: 0.7,
         maxTokens: 2000,
+        useOrchestration: true, // Enable Kimi orchestration
       });
       return response.content;
     },
@@ -464,13 +465,14 @@ async function handleGeneralTask(
   const { userMessage, conversationHistory } = request;
 
   const llmProvider = {
-    name: "gpt-4o",
+    name: "auto", // Let Kimi orchestrator decide
     call: async (messages: any[]) => {
       const response = await invokeAICompletion({
-        model: "gpt-4o",
+        model: "auto", // Let orchestrator decide
         messages,
         temperature: 0.7,
         maxTokens: 2000,
+        useOrchestration: true, // Enable Kimi orchestration
       });
       return response.content;
     },

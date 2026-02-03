@@ -5,7 +5,7 @@
  * chat infrastructure, providing a seamless Manus-like experience.
  */
 
-import { invokeLLM, type Message, type InvokeResult } from "./llm";
+import { invokeAICompletion } from "./aiProviders";
 import { runManusLikeAgent, type LLMProvider } from "./autonomousAgentEnhanced";
 
 // ============================================================================
@@ -17,36 +17,18 @@ import { runManusLikeAgent, type LLMProvider } from "./autonomousAgentEnhanced";
  */
 export function createChofeshLLMProvider(): LLMProvider {
   return {
-    name: "chofesh-llm",
+    name: "kimi-orchestrator",
     call: async (messages: any[]): Promise<string> => {
-      // Convert to proper Message format
-      const formattedMessages: Message[] = messages.map(m => ({
-        role: m.role as "system" | "user" | "assistant",
-        content: m.content,
-      }));
-      
-      // Call the existing LLM
-      const result: InvokeResult = await invokeLLM({
-        messages: formattedMessages,
+      // Call AI with Kimi orchestration enabled
+      // Don't pass model - let orchestrator decide
+      const result = await invokeAICompletion({
+        messages,
+        temperature: 0.7,
         maxTokens: 4096,
+        useOrchestration: true, // Enable Kimi orchestration
       });
       
-      // Extract text response
-      const content = result.choices[0]?.message?.content;
-      if (typeof content === 'string') {
-        return content;
-      }
-      
-      // Handle array content (multimodal)
-      if (Array.isArray(content)) {
-        const textParts = content
-          .filter(c => c.type === 'text')
-          .map(c => 'text' in c ? c.text : '')
-          .join('\n');
-        return textParts;
-      }
-      
-      return "";
+      return result.content;
     }
   };
 }
