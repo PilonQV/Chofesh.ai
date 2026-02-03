@@ -10,6 +10,7 @@
 
 import { ENV } from "./env";
 import { interceptAndGenerateImages } from "./imageUrlInterceptorEnhanced";
+import { analyzeQuery, orchestrateWithKimi, executeOrchestration, type OrchestrationDecision } from "./kimiOrchestrator";
 
 // ============================================================================
 // Types
@@ -636,12 +637,75 @@ const providerInvokers: Record<AIProvider, (options: AICompletionOptions) => Pro
 };
 
 /**
- * Invoke AI completion with automatic fallback
+ * Invoke AI completion with Kimi orchestration or automatic fallback
  */
 export async function invokeAICompletion(
-  options: AICompletionOptions & { provider?: AIProvider; fallbackProviders?: AIProvider[] }
-): Promise<AICompletionResponse> {
-  const { provider, fallbackProviders = ["groq", "openrouter", "cerebras"], ...completionOptions } = options;
+  options: AICompletionOptions & { 
+    provider?: AIProvider; 
+    fallbackProviders?: AIProvider[]; 
+    useOrchestration?: boolean; // Enable Kimi orchestration
+  }
+): Promise<AICompletionResponse & { orchestration?: OrchestrationDecision }> {
+  const { provider, fallbackProviders = ["groq", "openrouter", "cerebras"], useOrchestration = true, ...completionOptions } = options;
+  
+  console.log('[invokeAICompletion] Called with:', { 
+    provider, 
+    useOrchestration, 
+    kimiConfigured: isProviderConfigured("kimi"),
+    messageCount: completionOptions.messages.length 
+  });
+  
+  // ============================================================================
+  // Kimi Orchestration Layer
+  // ============================================================================
+  
+  if (useOrchestration && isProviderConfigured("kimi") && !provider) {
+    try {
+      console.log('[AI Providers] Using Kimi orchestration');
+      
+      // Analyze the query
+      const analysis = analyzeQuery(completionOptions.messages);
+      console.log('[AI Providers] Query analysis:', analysis);
+      
+      // Kimi decides routing
+      const decision = await orchestrateWithKimi(completionOptions.messages, analysis);
+      console.log('[AI Providers] Orchestration decision:', decision);
+      
+      // Execute based on Kimi's decision
+      if (decision.primaryModel === 'kimi-k2.5') {
+        // Kimi handles directly
+        const response = await invokeKimi({
+          ...completionOptions,
+          model: 'kimi-k2.5',
+        });
+        response.content = await interceptAndGenerateImages(response.content);
+        return { ...response, orchestration: decision };
+      } else {
+        // Delegate to cheaper model
+        const delegateProvider = decision.delegateModel?.includes('gpt') ? 'groq' : 'openrouter';
+        const delegateResponse = await providerInvokers[delegateProvider](completionOptions);
+        
+        // Kimi synthesizes the result
+        const synthesisMessages = [
+          ...completionOptions.messages,
+          { role: 'assistant' as const, content: delegateResponse.content },
+          { role: 'user' as const, content: 'Please review and enhance this response if needed. Keep it concise and accurate.' },
+        ];
+        
+        const finalResponse = await invokeKimi({
+          messages: synthesisMessages,
+          model: 'kimi-k2.5',
+          temperature: 0.6,
+        });
+        
+        finalResponse.content = await interceptAndGenerateImages(finalResponse.content);
+        return { ...finalResponse, orchestration: decision };
+      }
+    } catch (error) {
+      console.error('[AI Providers] Orchestration failed, falling back to standard routing:', error);
+      // Fall through to standard routing
+    }
+  }
   
   // If specific provider requested, try it first
   if (provider && provider !== "puter") {
@@ -708,6 +772,8 @@ export function isProviderConfigured(provider: AIProvider): boolean {
       return !!(process.env.CLOUDFLARE_WORKERS_TOKEN || process.env.cloudflare_api_key) && !!process.env.CLOUDFLARE_ACCOUNT_ID;
     case "google":
       return !!(process.env.GOOGLE_AI_API_KEY || process.env.GOOGLE_API_KEY);
+    case "kimi":
+      return !!process.env.KIMI_API_KEY;
     case "puter":
       return true; // Always available (client-side)
     default:
