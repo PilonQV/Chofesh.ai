@@ -4922,3 +4922,9 @@ Build a comprehensive autonomous agent that can complete complex tasks end-to-en
 - **Code blocks:** Proper syntax highlighting with dark background
 - **Links, lists, blockquotes:** All styled professionally
 - **Spacing:** Relaxed line heights for better readability
+
+
+### Issue Found
+- [x] Updated AIChatBox.tsx but main /chat page uses different component
+- [x] Found and updated Chat.tsx with same prose styling
+- [x] Tables should now render properly with borders and styling
