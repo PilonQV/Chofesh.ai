@@ -6,6 +6,7 @@
  */
 
 import OpenAI from 'openai';
+import { getCachedDecision, cacheDecision } from './orchestration/orchestratorCache';
 
 const KIMI_API_KEY = process.env.KIMI_API_KEY || '';
 const KIMI_BASE_URL = 'https://api.moonshot.ai/v1';
@@ -87,12 +88,38 @@ export function analyzeQuery(messages: any[]): QueryAnalysis {
 }
 
 /**
- * Kimi K2.5 makes the routing decision
+ * Kimi K2.5 makes the routing decision (with caching)
  */
 export async function orchestrateWithKimi(
   messages: any[],
-  analysis: QueryAnalysis
+  analysis: QueryAnalysis,
+  bypassCache: boolean = false
 ): Promise<OrchestrationDecision> {
+  // Check cache first (unless bypassed)
+  if (!bypassCache) {
+    const lastMessage = messages[messages.length - 1];
+    const query = typeof lastMessage.content === 'string' 
+      ? lastMessage.content 
+      : JSON.stringify(lastMessage.content);
+    
+    const cached = getCachedDecision(query);
+    
+    if (cached.cacheHit && cached.decision) {
+      // Return cached decision
+      const model = MODEL_COSTS[cached.decision.targetModel as keyof typeof MODEL_COSTS] || MODEL_COSTS['kimi-k2.5'];
+      const estimatedTokens = analysis.contextLength + 1000;
+      const estimatedCost = (estimatedTokens / 1000000) * (model.input + model.output);
+      
+      return {
+        strategy: cached.decision.shouldDelegate ? 'delegate' : 'direct',
+        primaryModel: cached.decision.shouldDelegate ? 'kimi-k2.5' : (cached.decision.targetModel || 'kimi-k2.5'),
+        delegateModel: cached.decision.shouldDelegate ? cached.decision.targetModel : undefined,
+        reasoning: `[CACHED ${(cached.similarity! * 100).toFixed(0)}%] ${cached.decision.reasoning}`,
+        estimatedCost,
+        complexity: analysis.complexity,
+      };
+    }
+  }
   const client = new OpenAI({
     apiKey: KIMI_API_KEY,
     baseURL: KIMI_BASE_URL,
@@ -156,7 +183,7 @@ ${JSON.stringify(messages[messages.length - 1])}`;
     const model = MODEL_COSTS[decision.primaryModel as keyof typeof MODEL_COSTS] || MODEL_COSTS['kimi-k2.5'];
     const estimatedCost = (estimatedTokens / 1000000) * (model.input + model.output);
     
-    return {
+    const orchestrationDecision = {
       strategy: decision.strategy || 'direct',
       primaryModel: decision.primaryModel || 'kimi-k2.5',
       delegateModel: decision.delegateModel,
@@ -164,6 +191,22 @@ ${JSON.stringify(messages[messages.length - 1])}`;
       estimatedCost,
       complexity: analysis.complexity,
     };
+    
+    // Cache the decision for future use
+    if (!bypassCache) {
+      const lastMessage = messages[messages.length - 1];
+      const query = typeof lastMessage.content === 'string' 
+        ? lastMessage.content 
+        : JSON.stringify(lastMessage.content);
+      
+      cacheDecision(query, {
+        shouldDelegate: orchestrationDecision.strategy === 'delegate',
+        targetModel: orchestrationDecision.delegateModel || orchestrationDecision.primaryModel,
+        reasoning: orchestrationDecision.reasoning,
+      });
+    }
+    
+    return orchestrationDecision;
   } catch (error) {
     console.error('[Kimi Orchestrator] Error:', error);
     // Fallback to rule-based routing
