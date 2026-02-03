@@ -254,18 +254,18 @@ export function AIChatBox({
 
                     <div
                       className={cn(
-                        "max-w-[80%] rounded-lg px-4 py-2.5",
+                        "rounded-lg",
                         message.role === "user"
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted text-foreground"
+                          ? "max-w-[85%] md:max-w-[80%] bg-primary text-primary-foreground px-4 py-2.5"
+                          : "w-full bg-transparent text-foreground"
                       )}
                     >
                       {message.role === "assistant" ? (
-                        <div className="prose prose-sm dark:prose-invert max-w-none">
+                        <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-headings:font-semibold prose-headings:text-foreground prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-strong:text-foreground prose-code:text-primary prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:before:content-[''] prose-code:after:content-[''] prose-table:border-collapse prose-table:w-full prose-th:border prose-th:border-border prose-th:bg-muted prose-th:px-4 prose-th:py-2 prose-th:text-left prose-th:font-semibold prose-td:border prose-td:border-border prose-td:px-4 prose-td:py-2 prose-tr:border-b prose-tr:border-border prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:pl-4 prose-blockquote:italic prose-ul:list-disc prose-ul:pl-6 prose-ol:list-decimal prose-ol:pl-6 prose-li:my-1">
                           <Streamdown>{message.content}</Streamdown>
                         </div>
                       ) : (
-                        <p className="whitespace-pre-wrap text-sm">
+                        <p className="whitespace-pre-wrap text-sm md:text-base leading-relaxed">
                           {message.content}
                         </p>
                       )}
