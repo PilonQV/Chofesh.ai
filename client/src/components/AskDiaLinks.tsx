@@ -11,8 +11,10 @@ interface AskDiaLinksProps {
 export const AskDiaLinks: React.FC<AskDiaLinksProps> = ({ content, onAskFollowUp }) => {
   if (!content || typeof content !== 'string') return null;
 
-  // Debug: Check if content contains markdown
-  console.log('AskDiaLinks content:', content.substring(0, 100));
+  // If content has no markdown but has newlines, convert to markdown paragraphs
+  const processedContent = content.includes('\n') && !content.includes('<p>')
+    ? content.split('\n\n').map(p => p.trim()).filter(p => p).join('\n\n')
+    : content;
 
   return (
     <div className="markdown-content w-full text-[15px] text-foreground/95 leading-7">
@@ -43,9 +45,16 @@ export const AskDiaLinks: React.FC<AskDiaLinksProps> = ({ content, onAskFollowUp
             </h4>
           ),
           
-          // PARAGRAPHS
+          // PARAGRAPHS - Enhanced with inline styles for fallback
           p: ({ children }) => (
-            <p className="mb-5 last:mb-0 leading-[1.8] break-words">
+            <p 
+              className="mb-5 last:mb-0 leading-[1.8] break-words"
+              style={{ 
+                marginBottom: '1.2em', 
+                marginTop: 0,
+                lineHeight: 1.8 
+              }}
+            >
               {children}
             </p>
           ),
@@ -172,9 +181,32 @@ export const AskDiaLinks: React.FC<AskDiaLinksProps> = ({ content, onAskFollowUp
               className="max-w-full h-auto rounded-lg my-4 border border-border"
             />
           ),
+          
+          // TEXT NODE - Handle plain text with double newlines
+          text: ({ value }: any) => {
+            // If text has double newlines, split into paragraphs manually
+            if (value && typeof value === 'string' && value.includes('\n\n')) {
+              return (
+                <>
+                  {value.split('\n\n').map((paragraph: string, i: number) => (
+                    <p 
+                      key={i} 
+                      style={{ 
+                        marginBottom: '1.2em', 
+                        lineHeight: 1.8 
+                      }}
+                    >
+                      {paragraph}
+                    </p>
+                  ))}
+                </>
+              );
+            }
+            return <>{value}</>;
+          }
         }}
       >
-        {content}
+        {processedContent}
       </ReactMarkdown>
     </div>
   );

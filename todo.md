@@ -5144,3 +5144,23 @@ Build a comprehensive autonomous agent that can complete complex tasks end-to-en
 - [x] Update AskDiaLinks.tsx with readability improvements
 - [x] Add layout container fixes to index.css
 - [x] Test readability improvements
+
+
+---
+
+## Phase 70: Nuclear CSS Overrides & Plain Text Fallback
+
+### Goal
+- [x] Force readable layout with aggressive !important CSS selectors
+- [x] Handle plain text without markdown parsing (no <p> tags)
+- [x] Fix paragraph spacing when markdown fails
+- [x] Darker background for better contrast
+- [x] Manual paragraph splitting fallback
+- [x] Remove debug console.log from AskDiaLinks
+
+### Implementation
+- [x] Add nuclear CSS overrides to end of index.css
+- [x] Update AskDiaLinks with plain text fallback logic
+- [x] Add manual paragraph splitting for double newlines
+- [x] Remove debug console.log for production
+- [x] Test with plain text and markdown content
