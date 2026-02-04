@@ -395,3 +395,62 @@
     }
   }
 }
+
+/* ===================================================================
+   CRITICAL: Chat Overflow Fixes - v1.59.0
+   Prevents flexbox overflow, enables table scrolling, fixes text wrapping
+   =================================================================== */
+
+/* CRITICAL: Prevent flexbox overflow issues */
+.chat-container,
+.messages-container {
+  min-width: 0; /* Allows children to shrink below content size */
+  width: 100%;
+}
+
+/* Message bubble constraint fixes */
+.message-user,
+.message-assistant {
+  max-width: 100%; /* Ensure bubbles don't exceed parent */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Table overflow handling for raw markdown fallback */
+.message-assistant pre,
+.message-assistant code,
+.message-user pre,
+.message-user code {
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* Force tables to scroll horizontally instead of overflowing */
+.prose table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Ensure long URLs and strings break */
+.prose a {
+  word-break: break-all;
+}
+
+/* Mobile-specific fixes */
+@media (max-width: 768px) {
+  .max-w-\[85\%\] {
+    max-width: 92%; /* Slightly wider on mobile but still constrained */
+  }
+  
+  .prose {
+    font-size: 0.875rem; /* Smaller text on mobile */
+  }
+  
+  /* Horizontal scroll for tables on small screens */
+  .prose table {
+    font-size: 0.75rem;
+  }
+}

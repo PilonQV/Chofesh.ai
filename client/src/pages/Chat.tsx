@@ -1831,16 +1831,18 @@ export default function Chat() {
                 key={index}
                 className={`group flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
               >
-                <div className="flex flex-col gap-1 max-w-[85%]">
+                {/* CRITICAL FIX: Added min-w-0 to allow flex item to shrink */}
+                <div className="flex flex-col gap-1 max-w-[85%] min-w-0">
                   <div
-                    className={`rounded-2xl px-4 py-3 transition-all duration-200 ${
+                    className={`rounded-2xl px-4 py-3 transition-all duration-200 overflow-hidden ${
                       message.role === "user"
                         ? "message-user text-white"
                         : "message-assistant"
                     }`}
                   >
+                    {/* CRITICAL FIX: Added overflow-x-auto and min-w-0 to prose container */}
                     {message.role === "assistant" ? (
-                      <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-headings:font-semibold prose-headings:text-foreground prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-strong:text-foreground prose-code:text-primary prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:before:content-[''] prose-code:after:content-[''] prose-table:border-collapse prose-table:w-full prose-th:border prose-th:border-border prose-th:bg-muted prose-th:px-4 prose-th:py-2 prose-th:text-left prose-th:font-semibold prose-td:border prose-td:border-border prose-td:px-4 prose-td:py-2 prose-tr:border-b prose-tr:border-border prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:pl-4 prose-blockquote:italic prose-ul:list-disc prose-ul:pl-6 prose-ol:list-decimal prose-ol:pl-6 prose-li:my-1">
+                      <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none min-w-0 overflow-x-auto prose-p:leading-relaxed prose-p:break-words prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-pre:overflow-x-auto prose-headings:font-semibold prose-headings:text-foreground prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-a:break-all prose-strong:text-foreground prose-strong:break-words prose-code:text-primary prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:break-all prose-code:before:content-[''] prose-code:after:content-[''] prose-table:block prose-table:overflow-x-auto prose-table:w-full prose-table:whitespace-nowrap prose-th:border prose-th:border-border prose-th:bg-muted prose-th:px-4 prose-th:py-2 prose-th:text-left prose-th:font-semibold prose-td:border prose-td:border-border prose-td:px-4 prose-td:py-2 prose-tr:border-b prose-tr:border-border prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:pl-4 prose-blockquote:italic prose-ul:list-disc prose-ul:pl-6 prose-ol:list-decimal prose-ol:pl-6 prose-li:my-1 prose-li:break-words">
                         {/* Render thinking blocks if present */}
                         {message.content.includes('<think>') ? (
                           <>
@@ -1876,7 +1878,7 @@ export default function Chat() {
                         )}
                       </div>
                     ) : (
-                      <p className="whitespace-pre-wrap">{message.content}</p>
+                      <p className="whitespace-pre-wrap break-words overflow-hidden">{message.content}</p>
                     )}
                   </div>
                   {/* Message action buttons - show on hover */}
