@@ -4928,3 +4928,45 @@ Build a comprehensive autonomous agent that can complete complex tasks end-to-en
 - [x] Updated AIChatBox.tsx but main /chat page uses different component
 - [x] Found and updated Chat.tsx with same prose styling
 - [x] Tables should now render properly with borders and styling
+
+
+---
+
+## Phase 60: Fix Table Rendering in Chat Messages
+
+### Root Cause Identified
+- [x] AskDiaLinks splits content by clickable terms, breaking table syntax
+- [x] When "React" or "Vue" appear in tables, the split destroys table structure
+- [x] Each part rendered separately prevents Streamdown from parsing tables
+
+### Solution Implemented
+- [x] Added `containsMarkdownTables()` function to detect table syntax
+- [x] Skip clickable terms feature when tables are detected
+- [x] Render tables directly with Streamdown to preserve structure
+
+### Testing Required
+- [ ] Test table rendering in chat messages
+- [ ] Verify clickable terms still work for non-table content
+- [ ] Verify images still work
+- [ ] Test on mobile and desktop
+
+
+---
+
+## Phase 60: Fix Table Rendering (Streamdown → ReactMarkdown)
+
+### Root Cause
+- [x] Streamdown doesn't support GFM tables properly
+- [x] Clickable terms feature splits content, breaking table syntax
+- [x] Need to replace Streamdown with ReactMarkdown + remark-gfm
+
+### Implementation
+- [x] Installed react-markdown 10.1.0 and remark-gfm 4.0.1
+- [x] Replaced all 6 instances of Streamdown with ReactMarkdown in AskDiaLinks.tsx
+- [x] Added table detection to skip clickable terms when tables present
+- [x] Cleared Vite cache and node_modules
+- [ ] Verify tables render correctly in production deployment
+
+### Testing
+- [x] Test page (/table-test) works perfectly with ReactMarkdown
+- [ ] Production deployment test needed (dev server cache issues preventing verification)
