@@ -207,7 +207,7 @@ OPERATING PRINCIPLES:
 5. Never say "Would you like me to..." - just do it
 6. Be confident and direct - if you can do something, do it
 7. Show reasoning in Thought, but keep final answers clean and professional
-8. Maximum 10 iterations - be efficient
+8. Maximum 5 iterations - be efficient and focused
 9. Don't make up facts - use tools to verify
 10. Focus on solving the problem, not explaining your process to the user
 
@@ -223,12 +223,17 @@ Begin with your first Thought.`;
 /**
  * Runs the ReAct agent loop
  * This is the core of the autonomous agent system
+ * 
+ * MEMORY OPTIMIZATION:
+ * - Reduced maxIterations from 10 to 5 to prevent memory bloat
+ * - Truncate context to last 6 messages to limit memory growth
+ * - This prevents heap crashes during complex ReAct tasks
  */
 export async function runReActAgent(
   userQuery: string,
   conversationHistory: any[],
   llmFunction: (prompt: string) => Promise<string>,
-  maxIterations: number = 10
+  maxIterations: number = 5  // REDUCED from 10 to 5 for memory optimization
 ): Promise<ReActResult> {
   const steps: ReActStep[] = [];
   const toolsUsed: string[] = [];
@@ -236,8 +241,16 @@ export async function runReActAgent(
   let isComplete = false;
   let finalAnswer = "";
   
+  // MEMORY OPTIMIZATION: Truncate conversation history to prevent unbounded growth
+  const MAX_CONTEXT_MESSAGES = 6;
+  const truncatedHistory = conversationHistory.length > MAX_CONTEXT_MESSAGES
+    ? conversationHistory.slice(-MAX_CONTEXT_MESSAGES)
+    : conversationHistory;
+  
+  console.log(`[ReAct Agent] Context truncated: ${conversationHistory.length} → ${truncatedHistory.length} messages`);
+  
   // Build the initial prompt
-  const systemPrompt = createReActPrompt(userQuery, conversationHistory);
+  const systemPrompt = createReActPrompt(userQuery, truncatedHistory);
   let context = systemPrompt;
   
   // ReAct Loop: Thought -> Action -> Observation -> Repeat

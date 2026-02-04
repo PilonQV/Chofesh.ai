@@ -541,7 +541,28 @@ export async function invokeKimi(options: AICompletionOptions): Promise<AIComple
 
   const data = await response.json();
   
-  // Log the response for debugging
+  // MEMORY OPTIMIZATION: Truncate massive reasoning_content from Kimi K2.5
+  // Kimi K2.5 outputs 1,761+ tokens of internal thinking (2-3x longer than answer)
+  // This causes memory bloat when buffered in ReAct loops
+  if (data.choices?.[0]?.message?.reasoning_content) {
+    const reasoning = data.choices[0].message.reasoning_content;
+    const reasoningLength = reasoning.length;
+    
+    // Truncate to last 500 chars for display, free the rest immediately
+    if (reasoningLength > 500) {
+      data.choices[0].message.reasoning_content = 
+        '...' + reasoning.slice(-500);
+      console.log(`[Kimi] Truncated reasoning_content: ${reasoningLength} → 500 chars (saved ${(reasoningLength - 500)} chars)`);
+    }
+    
+    // In production, delete reasoning_content entirely if not shown to user
+    if (process.env.NODE_ENV === 'production') {
+      delete data.choices[0].message.reasoning_content;
+      console.log('[Kimi] Deleted reasoning_content in production to free memory');
+    }
+  }
+  
+  // Log the response for debugging (after truncation)
   console.log('[Kimi] API Response:', JSON.stringify(data, null, 2));
   
   // Check if response has the expected structure

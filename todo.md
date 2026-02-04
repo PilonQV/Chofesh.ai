@@ -5164,3 +5164,28 @@ Build a comprehensive autonomous agent that can complete complex tasks end-to-en
 - [x] Add manual paragraph splitting for double newlines
 - [x] Remove debug console.log for production
 - [x] Test with plain text and markdown content
+
+
+---
+
+## Phase 71: Comprehensive Memory Optimization for Render Pro (4GB RAM)
+
+### Goal
+- [x] Fix Node.js memory crashes on Render Pro plan (4GB RAM available)
+- [x] Set NODE_OPTIONS to use 3.5GB heap (leaving 500MB for OS)
+- [x] Truncate Kimi K2.5's massive reasoning_content (1,761+ tokens)
+- [x] Limit ReAct loop iterations and context accumulation
+- [x] Add memory monitoring and diagnostic logging
+
+### Root Causes Identified
+1. **Node.js default limit (~1.4GB)** - Doesn't use full 4GB RAM automatically
+2. **Kimi K2.5 reasoning_content** - 1,761 tokens of internal thinking (2-3x longer than answer)
+3. **ReAct loop accumulation** - Growing context between iterations
+4. **No heap size flag set** - Need `--max-old-space-size=3584`
+
+### Implementation
+- [x] Update package.json start script: `node --max-old-space-size=3584 dist/index.js`
+- [x] Truncate reasoning_content in Kimi API handler (keep last 500 chars, delete in production)
+- [x] Limit ReAct iterations to 5 (not 10) and context to last 6 messages
+- [x] Add memory monitoring interval (log every 30s, alert at 1.2GB, auto-GC if enabled)
+- [x] Test TypeScript compilation and server startup
