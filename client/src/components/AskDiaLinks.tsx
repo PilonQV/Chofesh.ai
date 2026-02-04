@@ -15,7 +15,7 @@ export const AskDiaLinks: React.FC<AskDiaLinksProps> = ({ content, onAskFollowUp
   console.log('AskDiaLinks content:', content.substring(0, 100));
 
   return (
-    <div className="markdown-content w-full text-foreground">
+    <div className="markdown-content w-full text-[15px] text-foreground/95 leading-7">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw]}
@@ -28,12 +28,12 @@ export const AskDiaLinks: React.FC<AskDiaLinksProps> = ({ content, onAskFollowUp
             </h1>
           ),
           h2: ({ children }) => (
-            <h2 className="text-xl font-semibold mb-3 mt-5 text-foreground flex items-center gap-2">
+            <h2 className="text-lg font-semibold mt-8 mb-4 text-foreground border-b border-border/50 pb-2">
               {children}
             </h2>
           ),
           h3: ({ children }) => (
-            <h3 className="text-lg font-semibold mb-2 mt-4 text-foreground">
+            <h3 className="text-base font-semibold mt-6 mb-3 text-foreground/90">
               {children}
             </h3>
           ),
@@ -45,7 +45,7 @@ export const AskDiaLinks: React.FC<AskDiaLinksProps> = ({ content, onAskFollowUp
           
           // PARAGRAPHS
           p: ({ children }) => (
-            <p className="mb-4 last:mb-0 leading-7 break-words text-foreground/90">
+            <p className="mb-5 last:mb-0 leading-[1.8] break-words">
               {children}
             </p>
           ),
@@ -91,7 +91,7 @@ export const AskDiaLinks: React.FC<AskDiaLinksProps> = ({ content, onAskFollowUp
             </ol>
           ),
           li: ({ children }) => (
-            <li className="break-words leading-7 mb-1">
+            <li className="mb-2 leading-7 break-words marker:text-muted-foreground">
               {children}
             </li>
           ),
@@ -101,7 +101,7 @@ export const AskDiaLinks: React.FC<AskDiaLinksProps> = ({ content, onAskFollowUp
             if (inline) {
               return (
                 <code 
-                  className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono text-primary break-all"
+                  className="bg-white/10 px-1.5 py-0.5 rounded text-[0.85em] font-mono text-blue-300"
                   {...props}
                 >
                   {children}
@@ -149,7 +149,7 @@ export const AskDiaLinks: React.FC<AskDiaLinksProps> = ({ content, onAskFollowUp
           
           // STRONG/BOLD
           strong: ({ children }) => (
-            <strong className="font-bold text-foreground">
+            <strong className="font-semibold text-foreground">
               {children}
             </strong>
           ),
