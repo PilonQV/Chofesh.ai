@@ -5051,3 +5051,22 @@ Build a comprehensive autonomous agent that can complete complex tasks end-to-en
 - [x] Update index.css: Add flexbox, table, and mobile fixes
 - [x] Update AskDiaLinks: Add ReactMarkdown custom components for tables/code
 - [x] Test on mobile and desktop
+
+
+---
+
+## Phase 65: Fix Markdown Table Rendering (Simplified AskDiaLinks)
+
+### Goal
+- [x] Replace complex AskDiaLinks with simplified ReactMarkdown implementation
+- [x] Fix raw markdown pipes showing instead of HTML tables
+- [x] Add rehype-raw for HTML support in markdown
+- [x] Update Chat.tsx prose structure
+- [x] Add markdown-body CSS fixes
+
+### Implementation
+- [x] Install rehype-raw dependency
+- [x] Replace entire AskDiaLinks.tsx with new simplified version
+- [x] Update Chat.tsx assistant message section
+- [x] Add markdown-body CSS to index.css
+- [x] Test table rendering

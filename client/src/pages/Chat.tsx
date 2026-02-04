@@ -1840,9 +1840,8 @@ export default function Chat() {
                         : "message-assistant"
                     }`}
                   >
-                    {/* CRITICAL FIX: Added overflow-x-auto and min-w-0 to prose container */}
                     {message.role === "assistant" ? (
-                      <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none min-w-0 overflow-x-auto prose-p:leading-relaxed prose-p:break-words prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-pre:overflow-x-auto prose-headings:font-semibold prose-headings:text-foreground prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-a:break-all prose-strong:text-foreground prose-strong:break-words prose-code:text-primary prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:break-all prose-code:before:content-[''] prose-code:after:content-[''] prose-table:block prose-table:overflow-x-auto prose-table:w-full prose-table:whitespace-nowrap prose-th:border prose-th:border-border prose-th:bg-muted prose-th:px-4 prose-th:py-2 prose-th:text-left prose-th:font-semibold prose-td:border prose-td:border-border prose-td:px-4 prose-td:py-2 prose-tr:border-b prose-tr:border-border prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:pl-4 prose-blockquote:italic prose-ul:list-disc prose-ul:pl-6 prose-ol:list-decimal prose-ol:pl-6 prose-li:my-1 prose-li:break-words">
+                      <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none w-full min-w-0">
                         {/* Render thinking blocks if present */}
                         {message.content.includes('<think>') ? (
                           <>
@@ -1856,15 +1855,12 @@ export default function Chat() {
                                 <>
                                   {thinkingContent && (
                                     <Collapsible defaultOpen={false}>
-                                      <CollapsibleTrigger className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground mb-3 w-full">
-                                        <Lightbulb className="w-4 h-4 text-yellow-500" />
+                                      <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-2">
+                                        <Lightbulb className="w-4 h-4" /> 
                                         <span>View reasoning process</span>
-                                        <ChevronDown className="w-3 h-3 ml-auto" />
                                       </CollapsibleTrigger>
-                                      <CollapsibleContent>
-                                        <div className="mb-4 p-3 rounded-lg bg-yellow-500/5 border border-yellow-500/20 text-sm text-muted-foreground italic">
-                                          <Streamdown>{thinkingContent}</Streamdown>
-                                        </div>
+                                      <CollapsibleContent className="bg-muted/50 rounded-lg p-3 mb-3 text-sm text-muted-foreground">
+                                        <Streamdown>{thinkingContent}</Streamdown>
                                       </CollapsibleContent>
                                     </Collapsible>
                                   )}
@@ -1878,7 +1874,7 @@ export default function Chat() {
                         )}
                       </div>
                     ) : (
-                      <p className="whitespace-pre-wrap break-words overflow-hidden">{message.content}</p>
+                      <p className="whitespace-pre-wrap break-words leading-relaxed">{message.content}</p>
                     )}
                   </div>
                   {/* Message action buttons - show on hover */}

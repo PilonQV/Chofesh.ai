@@ -454,3 +454,71 @@
     font-size: 0.75rem;
   }
 }
+
+
+/* ===================================================================
+   Markdown Body Fixes - v1.60.0
+   Ensures markdown renders properly with tables and proper layout
+   =================================================================== */
+
+/* Critical: Ensure markdown renders properly */
+.markdown-body {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Fix table rendering */
+.markdown-body table {
+  display: table;
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+/* Ensure prose doesn't break layout */
+.prose {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Fix flexbox text overflow */
+.chat-message-container {
+  min-width: 0;
+  width: 100%;
+}
+
+/* User message specific */
+.message-user p {
+  margin: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Assistant message prose overrides */
+.message-assistant .prose {
+  color: inherit;
+}
+
+.message-assistant .prose p {
+  margin-bottom: 0.75rem;
+}
+
+.message-assistant .prose p:last-child {
+  margin-bottom: 0;
+}
+
+/* Table cell content handling */
+.markdown-body td {
+  vertical-align: top;
+}
+
+/* Ensure code doesn't overflow */
+.markdown-body pre {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* Fix long links */
+.markdown-body a {
+  word-break: break-all;
+}
