@@ -32,6 +32,42 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
   throw new Error(`No available port found starting from ${startPort}`);
 }
 
+/**
+ * Memory monitoring and diagnostic logging
+ * Logs memory usage every 30 seconds and alerts when approaching limit
+ */
+function startMemoryMonitoring() {
+  // Log memory usage every 30 seconds
+  setInterval(() => {
+    const mem = process.memoryUsage();
+    const usedMB = Math.round(mem.heapUsed / 1024 / 1024);
+    const totalMB = Math.round(mem.heapTotal / 1024 / 1024);
+    const rssMB = Math.round(mem.rss / 1024 / 1024);
+    const externalMB = Math.round(mem.external / 1024 / 1024);
+    const usedGB = (mem.heapUsed / 1024 / 1024 / 1024).toFixed(2);
+    const totalGB = (mem.heapTotal / 1024 / 1024 / 1024).toFixed(2);
+    const rssGB = (mem.rss / 1024 / 1024 / 1024).toFixed(2);
+    
+    console.log(`[MEMORY] Heap: ${usedMB}MB/${totalMB}MB (${usedGB}GB/${totalGB}GB) | RSS: ${rssMB}MB (${rssGB}GB) | External: ${externalMB}MB`);
+    
+    // Alert when heap usage exceeds 1.2GB (approaching 3.5GB limit with safety margin)
+    if (mem.heapUsed > 1.2 * 1024 * 1024 * 1024) {
+      console.warn(`[WARNING] Heap usage high: ${usedGB}GB / 3.5GB limit - approaching memory limit!`);
+      
+      // Force garbage collection if enabled (requires --expose-gc flag)
+      if (global.gc) {
+        console.log('[MEMORY] Running garbage collection...');
+        global.gc();
+        const afterGC = process.memoryUsage();
+        const freedMB = Math.round((mem.heapUsed - afterGC.heapUsed) / 1024 / 1024);
+        console.log(`[MEMORY] GC freed ${freedMB}MB`);
+      }
+    }
+  }, 30000); // Log every 30 seconds
+  
+  console.log('[MEMORY] Memory monitoring started (logging every 30s)');
+}
+
 async function startServer() {
   const app = express();
   const server = createServer(app);
@@ -116,6 +152,9 @@ async function startServer() {
     
     // Start background workers
     startBackgroundWorkers();
+    
+    // MEMORY OPTIMIZATION: Start memory monitoring
+    startMemoryMonitoring();
   });
 }
 
