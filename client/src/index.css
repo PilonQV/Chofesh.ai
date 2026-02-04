@@ -522,3 +522,50 @@
 .markdown-body a {
   word-break: break-all;
 }
+
+
+/* ===================================================================
+   Markdown Content Fixes - v1.61.0
+   Ensures markdown headings and elements render correctly
+   =================================================================== */
+
+/* Ensure markdown renders correctly */
+.markdown-content {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Fix for ReactMarkdown not rendering */
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4 {
+  display: block;
+  width: 100%;
+}
+
+/* Ensure prose doesn't interfere if still using it elsewhere */
+.prose h1, .prose h2, .prose h3 {
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+/* Fix any potential white-space issues preventing markdown parsing */
+.message-assistant {
+  white-space: normal;
+}
+
+/* Table improvements */
+.markdown-content table {
+  display: table;
+  width: 100%;
+}
+
+/* List styling improvements */
+.markdown-content li > p {
+  margin-bottom: 0.25em;
+}
+
+.markdown-content li:last-child > p {
+  margin-bottom: 0;
+}
