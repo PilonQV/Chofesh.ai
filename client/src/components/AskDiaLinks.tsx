@@ -285,7 +285,36 @@ export function AskDiaLinks({ content, onAskFollowUp, onImageRegenerated }: AskD
   // Splitting by clickable terms breaks table syntax
   // Use ReactMarkdown with remark-gfm for proper table rendering
   if (containsMarkdownTables(content)) {
-    return <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>;
+    return (
+      <div className="markdown-content break-words">
+        <ReactMarkdown 
+          remarkPlugins={[remarkGfm]}
+          components={{
+            // Ensure tables render with scroll wrapper
+            table: ({ node, ...props }) => (
+              <div className="overflow-x-auto my-4">
+                <table className="w-full border-collapse text-sm" {...props} />
+              </div>
+            ),
+            // Ensure long text breaks
+            p: ({ node, ...props }) => (
+              <p className="break-words mb-4 leading-relaxed" {...props} />
+            ),
+            code: ({ node, inline, ...props }: any) => (
+              inline ? (
+                <code className="break-all bg-muted px-1 py-0.5 rounded text-sm" {...props} />
+              ) : (
+                <pre className="overflow-x-auto bg-gray-900 text-gray-100 p-4 rounded-lg my-4">
+                  <code className="break-all" {...props} />
+                </pre>
+              )
+            )
+          }}
+        >
+          {content}
+        </ReactMarkdown>
+      </div>
+    );
   }
   
   const clickableTerms = useMemo(() => extractClickableTerms(content), [content]);
@@ -297,7 +326,36 @@ export function AskDiaLinks({ content, onAskFollowUp, onImageRegenerated }: AskD
   
   // If no clickable terms, just render with ReactMarkdown + GFM
   if (clickableTerms.size === 0) {
-    return <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>;
+    return (
+      <div className="markdown-content break-words">
+        <ReactMarkdown 
+          remarkPlugins={[remarkGfm]}
+          components={{
+            // Ensure tables render with scroll wrapper
+            table: ({ node, ...props }) => (
+              <div className="overflow-x-auto my-4">
+                <table className="w-full border-collapse text-sm" {...props} />
+              </div>
+            ),
+            // Ensure long text breaks
+            p: ({ node, ...props }) => (
+              <p className="break-words mb-4 leading-relaxed" {...props} />
+            ),
+            code: ({ node, inline, ...props }: any) => (
+              inline ? (
+                <code className="break-all bg-muted px-1 py-0.5 rounded text-sm" {...props} />
+              ) : (
+                <pre className="overflow-x-auto bg-gray-900 text-gray-100 p-4 rounded-lg my-4">
+                  <code className="break-all" {...props} />
+                </pre>
+              )
+            )
+          }}
+        >
+          {content}
+        </ReactMarkdown>
+      </div>
+    );
   }
   
   // Create a pattern to match all clickable terms
