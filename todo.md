@@ -5189,3 +5189,40 @@ Build a comprehensive autonomous agent that can complete complex tasks end-to-en
 - [x] Limit ReAct iterations to 5 (not 10) and context to last 6 messages
 - [x] Add memory monitoring interval (log every 30s, alert at 1.2GB, auto-GC if enabled)
 - [x] Test TypeScript compilation and server startup
+
+
+---
+
+## Phase 72: Fix Slow Query Performance (81s for Simple Question)
+
+### Problem
+- **User query:** "now can you tell me you t llm model" (simple identity question)
+- **Response time:** 81,312ms (81 seconds) - UNACCEPTABLE
+- **Root cause:** ReAct agent running for simple question that doesn't need tools
+- **Log evidence:** Line 18 shows `responseTimeMS=81312` with Kimi K2.5 taking 12,782 chars of reasoning
+
+### Analysis
+1. **Query type:** Simple factual question (model identity)
+2. **Expected time:** <2 seconds (direct LLM response)
+3. **Actual time:** 81 seconds (ReAct agent + Kimi reasoning overhead)
+4. **Kimi reasoning_content:** 12,782 chars (truncated to 500, deleted in production)
+5. **ReAct iterations:** 1 iteration (completed successfully but slow)
+
+### Root Cause
+- **ReAct agent invoked unnecessarily** for simple question
+- **Kimi K2.5 generates massive reasoning_content** (12,782 chars) even for simple queries
+- **shouldUseReActAgent function existed but was never called** in router
+
+### Solution
+- [x] Implement smart query classification before invoking ReAct
+- [x] Skip ReAct for simple queries (identity, greetings, basic facts)
+- [x] Route simple queries directly to fast LLM (Groq, Cerebras)
+- [x] Reserve ReAct for complex queries needing tools (search, calculate, image generation)
+
+### Implementation
+- [x] Enhanced shouldUseReActAgent with detailed classification logic
+- [x] Added skip patterns: identity questions, greetings, short simple queries (<10 words)
+- [x] Added use patterns: real-time info, multi-step reasoning, complex questions (>15 words), tool tasks
+- [x] Integrated shouldUseReActAgent into router before invoking ReAct
+- [x] Added logging for routing decisions ("Skipping ReAct" vs "Using ReAct")
+- [x] Test TypeScript compilation (passing)
