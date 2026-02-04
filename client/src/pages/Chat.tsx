@@ -1841,7 +1841,7 @@ export default function Chat() {
                     }`}
                   >
                     {message.role === "assistant" ? (
-                      <div className="w-full min-w-0 overflow-hidden">
+                      <div className="w-full min-w-0 overflow-hidden py-1">
                         {message.content.includes('<think>') ? (
                           <>
                             {/* Extract and render thinking block */}
@@ -1853,32 +1853,28 @@ export default function Chat() {
                               return (
                                 <>
                                   {thinkingContent && (
-                                    <Collapsible defaultOpen={false} className="mb-4">
-                                      <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors bg-muted/30 px-3 py-2 rounded-lg w-full">
-                                        <Lightbulb className="w-4 h-4" /> 
-                                        <span>View reasoning process</span>
+                                    <Collapsible defaultOpen={false} className="mb-6">
+                                      <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-all bg-muted/30 hover:bg-muted/50 px-4 py-2 rounded-lg w-full border border-border/50">
+                                        <Lightbulb className="w-4 h-4 text-yellow-500" /> 
+                                        <span className="font-medium">View reasoning process</span>
                                       </CollapsibleTrigger>
-                                      <CollapsibleContent className="mt-2 p-3 bg-muted/20 rounded-lg text-sm text-muted-foreground border border-border">
-                                        <div className="whitespace-pre-wrap font-mono text-xs">
-                                          {thinkingContent}
-                                        </div>
+                                      <CollapsibleContent className="mt-3 p-4 bg-muted/20 rounded-lg text-sm text-muted-foreground border border-border/50 font-mono leading-relaxed">
+                                        {thinkingContent}
                                       </CollapsibleContent>
                                     </Collapsible>
                                   )}
-                                  {/* Main content - USE AskDiaLinks HERE */}
                                   <AskDiaLinks content={mainContent} onAskFollowUp={handleAskFollowUp} />
                                 </>
                               );
                             })()}
                           </>
                         ) : (
-                          /* Regular assistant message - USE AskDiaLinks HERE */
                           <AskDiaLinks content={message.content} onAskFollowUp={handleAskFollowUp} />
                         )}
                       </div>
                     ) : (
                       /* User message */
-                      <p className="whitespace-pre-wrap break-words leading-relaxed text-white">{message.content}</p>
+                      <p className="whitespace-pre-wrap break-words leading-relaxed text-white text-[15px]">{message.content}</p>
                     )}
                   </div>
                   {/* Message action buttons - show on hover */}

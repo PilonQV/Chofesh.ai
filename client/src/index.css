@@ -569,3 +569,97 @@
 .markdown-content li:last-child > p {
   margin-bottom: 0;
 }
+
+
+/* ========================================
+   PHASE 69: Typography & Readability Improvements
+   ======================================== */
+
+/* CRITICAL: Constrain line length for readability (60-75 chars optimal) */
+.message-assistant {
+  max-width: 680px !important; /* Forces optimal reading width */
+  line-height: 1.7; /* Increased from default */
+  letter-spacing: 0.01em; /* Slight breathing room */
+}
+
+/* Better text contrast and weight */
+.message-assistant {
+  background: oklch(0.25 0.03 265); /* Darker for better contrast */
+  color: oklch(0.95 0.01 265); /* Slightly brighter text */
+  border: 1px solid oklch(0.35 0.05 265);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2); /* Subtle depth */
+}
+
+/* Paragraph spacing - critical for comprehension */
+.markdown-content p {
+  margin-bottom: 1.2em !important; /* Clear paragraph breaks */
+  margin-top: 0;
+  line-height: 1.8; /* Generous line height */
+}
+
+/* First paragraph no top margin */
+.markdown-content p:first-child {
+  margin-top: 0;
+}
+
+/* Bold text should pop but not scream */
+.markdown-content strong {
+  color: oklch(0.98 0.02 265); /* Almost white */
+  font-weight: 600; /* Semibold instead of bold */
+}
+
+/* Better inline code styling */
+.markdown-content code {
+  background: rgba(255,255,255,0.1);
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  font-size: 0.9em;
+  color: #60a5fa; /* Blue tint for code */
+}
+
+/* Lists need breathing room */
+.markdown-content ul, 
+.markdown-content ol {
+  margin: 1em 0;
+  padding-left: 1.5em;
+}
+
+.markdown-content li {
+  margin-bottom: 0.5em; /* Space between list items */
+  line-height: 1.7;
+}
+
+/* Headings should be distinct but not jarring */
+.markdown-content h2 {
+  font-size: 1.3em;
+  margin-top: 1.5em;
+  margin-bottom: 0.8em;
+  color: oklch(0.98 0.01 265);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-bottom: 0.3em;
+}
+
+.markdown-content h3 {
+  font-size: 1.1em;
+  margin-top: 1.2em;
+  margin-bottom: 0.6em;
+  color: oklch(0.96 0.01 265);
+}
+
+/* Ensure the chat container centers content and doesn't stretch too wide */
+.chat-messages-container {
+  max-width: 900px; /* Center content */
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* User messages should also have max-width for consistency */
+.message-user {
+  max-width: 80% !important; /* Slightly narrower than assistant */
+  border-radius: 1.25rem 1.25rem 0.25rem 1.25rem; /* iOS-style bubble */
+}
+
+.message-assistant {
+  border-radius: 1.25rem 1.25rem 1.25rem 0.25rem; /* iOS-style bubble */
+  padding: 1.25rem 1.5rem; /* More internal padding */
+}
