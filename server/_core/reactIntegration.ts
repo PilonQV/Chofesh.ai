@@ -81,28 +81,79 @@ export async function runReActForChat(
 /**
  * Determines if a query should use the ReAct agent
  * 
+ * PERFORMANCE OPTIMIZATION:
+ * - Skip ReAct for simple queries (identity, greetings, basic facts)
+ * - Route simple queries directly to fast LLMs (Groq/Cerebras)
+ * - Reserve ReAct for complex queries needing tools
+ * 
  * Use ReAct for:
  * - Questions requiring real-time information
  * - Multi-step reasoning tasks
  * - Complex problem-solving
- * - Tasks requiring tool use
+ * - Tasks requiring tool use (search, calculate, image generation)
+ * 
+ * Skip ReAct for:
+ * - Identity questions ("who are you", "what model")
+ * - Greetings ("hello", "hi", "how are you")
+ * - Basic facts that don't need tools
+ * - Short simple questions (<10 words)
  */
 export function shouldUseReActAgent(userMessage: string): boolean {
   const message = userMessage.toLowerCase();
   
-  // Real-time information queries
+  // SKIP REACT: Simple identity questions ("who are you", "what model")
+  const isIdentityQuestion = /\b(who are you|what (are you|is your|model|llm|ai)|your (name|model|identity))\b/i.test(userMessage);
+  if (isIdentityQuestion) {
+    console.log('[ReAct Router] Skipping ReAct for identity question - routing to fast LLM');
+    return false;
+  }
+  
+  // SKIP REACT: Greetings and pleasantries
+  const isGreeting = /^(hi|hello|hey|good (morning|afternoon|evening)|how are you|thanks|thank you)\b/i.test(userMessage.trim());
+  if (isGreeting) {
+    console.log('[ReAct Router] Skipping ReAct for greeting - routing to fast LLM');
+    return false;
+  }
+  
+  // SKIP REACT: Very short simple questions (<10 words, no tool indicators)
+  const wordCount = userMessage.split(/\s+/).length;
+  const hasToolIndicators = /\b(search|find|look up|get data|fetch|calculate|generate|create)\b/i.test(userMessage);
+  if (wordCount < 10 && !hasToolIndicators) {
+    console.log(`[ReAct Router] Skipping ReAct for short simple question (${wordCount} words) - routing to fast LLM`);
+    return false;
+  }
+  
+  // USE REACT: Real-time information queries
   const needsRealTimeInfo = /\b(current|latest|today|now|recent|price|news|weather)\b/i.test(userMessage);
+  if (needsRealTimeInfo) {
+    console.log('[ReAct Router] Using ReAct for real-time information query');
+    return true;
+  }
   
-  // Multi-step reasoning
-  const needsReasoning = /\b(how to|step by step|explain|analyze|compare|calculate)\b/i.test(userMessage);
+  // USE REACT: Multi-step reasoning
+  const needsReasoning = /\b(how to|step by step|explain|analyze|compare)\b/i.test(userMessage);
+  if (needsReasoning) {
+    console.log('[ReAct Router] Using ReAct for multi-step reasoning');
+    return true;
+  }
   
-  // Complex questions
-  const isComplex = userMessage.split(/\s+/).length > 15; // Long queries tend to be complex
+  // USE REACT: Complex questions (>15 words)
+  const isComplex = wordCount > 15;
+  if (isComplex) {
+    console.log(`[ReAct Router] Using ReAct for complex question (${wordCount} words)`);
+    return true;
+  }
   
-  // Tool-requiring tasks
-  const needsTools = /\b(search|find|look up|get data|fetch)\b/i.test(userMessage);
+  // USE REACT: Tool-requiring tasks
+  const needsTools = /\b(search|find|look up|get data|fetch|calculate|generate|create)\b/i.test(userMessage);
+  if (needsTools) {
+    console.log('[ReAct Router] Using ReAct for tool-requiring task');
+    return true;
+  }
   
-  return needsRealTimeInfo || needsReasoning || isComplex || needsTools;
+  // DEFAULT: Skip ReAct for everything else (simple questions)
+  console.log('[ReAct Router] Skipping ReAct for simple question - routing to fast LLM');
+  return false;
 }
 
 // ============================================================================

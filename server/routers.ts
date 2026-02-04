@@ -930,16 +930,21 @@ export const appRouter = router({
         }
         
         if (input.agentMode && promptContent) {
-          console.log('[Autonomous Agent] Running full autonomous flow with ReAct');
+          // PERFORMANCE OPTIMIZATION: Check if query needs ReAct agent
+          // Skip ReAct for simple queries (identity, greetings, basic facts)
+          const useReAct = shouldUseReActAgent(promptContent);
           
-          try {
-            // ALWAYS use the advanced ReAct agent (Manus-level)
-            console.log('[ReAct Agent] Using Manus-like ReAct agent');
-              const reactResponse = await runReActForChat(
-                promptContent,
-                input.messages,
-                ctx.user.id
-              );
+          if (useReAct) {
+            console.log('[Autonomous Agent] Running full autonomous flow with ReAct');
+            
+            try {
+              // Use the advanced ReAct agent (Manus-level)
+              console.log('[ReAct Agent] Using Manus-like ReAct agent');
+                const reactResponse = await runReActForChat(
+                  promptContent,
+                  input.messages,
+                  ctx.user.id
+                );
               
               // Audit log for ReAct agent
               await auditLogApiCall({
@@ -965,9 +970,14 @@ export const appRouter = router({
               cost: 0,
               // thinking: reactResponse.reasoning, // Hide reasoning from user
             };
-          } catch (error: any) {
-            console.error('[Autonomous Agent] Error:', error);
-            // Fall through to regular chat if autonomous agent fails
+            } catch (error: any) {
+              console.error('[Autonomous Agent] Error:', error);
+              // Fall through to regular chat if autonomous agent fails
+            }
+          } else if (input.agentMode && promptContent) {
+            // Simple query detected - skip ReAct and use fast LLM
+            console.log('[ReAct Router] Skipping ReAct for simple query - using fast LLM');
+            // Fall through to regular chat (will use Groq/Cerebras)
           }
         }
         
