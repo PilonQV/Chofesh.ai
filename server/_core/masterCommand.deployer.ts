@@ -69,6 +69,10 @@ export class Deployer {
    */
   private async createCommit(message: string): Promise<string> {
     try {
+      // Configure git identity if not set
+      await execAsync('git config user.email "master-command@chofesh.ai" || true', { cwd: this.projectPath });
+      await execAsync('git config user.name "Master Command Bot" || true', { cwd: this.projectPath });
+      
       // Add all changes
       await execAsync('git add .', { cwd: this.projectPath });
       
