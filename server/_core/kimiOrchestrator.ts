@@ -11,6 +11,13 @@ import { getCachedDecision, cacheDecision } from './orchestration/orchestratorCa
 const KIMI_API_KEY = process.env.KIMI_API_KEY || '';
 const KIMI_BASE_URL = 'https://api.moonshot.ai/v1';
 
+// Diagnostic logging for API key
+if (!KIMI_API_KEY) {
+  console.error('[Kimi Orchestrator] CRITICAL: KIMI_API_KEY is not set!');
+} else {
+  console.log(`[Kimi Orchestrator] API key loaded (length: ${KIMI_API_KEY.length}, starts with: ${KIMI_API_KEY.substring(0, 8)}...)`);
+}
+
 // Model costs per 1M tokens (input/output)
 const MODEL_COSTS = {
   'kimi-k2.5': { input: 0.10, output: 0.60 },
@@ -207,8 +214,21 @@ ${JSON.stringify(messages[messages.length - 1])}`;
     }
     
     return orchestrationDecision;
-  } catch (error) {
-    console.error('[Kimi Orchestrator] Error:', error);
+  } catch (error: any) {
+    console.error('[Kimi Orchestrator] Error:', {
+      message: error.message,
+      status: error.status,
+      code: error.code,
+      type: error.type,
+    });
+    
+    // Log 401 errors specifically
+    if (error.status === 401 || error.message?.includes('401') || error.message?.includes('Unauthorized')) {
+      console.error('[Kimi Orchestrator] 401 UNAUTHORIZED ERROR - Check API key!');
+      console.error('[Kimi Orchestrator] API key present:', !!KIMI_API_KEY);
+      console.error('[Kimi Orchestrator] API key length:', KIMI_API_KEY?.length || 0);
+    }
+    
     // Fallback to rule-based routing
     return fallbackRouting(analysis);
   }
