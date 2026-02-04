@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo } from "react";
-import { Streamdown } from "streamdown";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Button } from "@/components/ui/button";
 import { MessageSquare, RefreshCw, Download, Loader2 } from "lucide-react";
 import {
@@ -233,7 +234,7 @@ function RenderWithImages({
     // Add text before the image
     if (match.index > lastIndex) {
       const textBefore = content.slice(lastIndex, match.index);
-      parts.push(<Streamdown key={`text-${key++}`}>{textBefore}</Streamdown>);
+      parts.push(<ReactMarkdown key={`text-${key++}`} remarkPlugins={[remarkGfm]}>{textBefore}</ReactMarkdown>);
     }
 
     // Add the image with regenerate capability
@@ -255,10 +256,17 @@ function RenderWithImages({
   // Add remaining text after the last image
   if (lastIndex < content.length) {
     const remainingText = content.slice(lastIndex);
-    parts.push(<Streamdown key={`text-${key++}`}>{remainingText}</Streamdown>);
+    parts.push(<ReactMarkdown key={`text-${key++}`} remarkPlugins={[remarkGfm]}>{remainingText}</ReactMarkdown>);
   }
 
   return <>{parts}</>;
+}
+
+// Check if content contains markdown tables
+function containsMarkdownTables(content: string): boolean {
+  // Match table syntax: lines with pipes that form table structure
+  const tablePattern = /^\s*\|.+\|\s*$/m;
+  return tablePattern.test(content);
 }
 
 export function AskDiaLinks({ content, onAskFollowUp, onImageRegenerated }: AskDiaLinksProps) {
@@ -273,6 +281,13 @@ export function AskDiaLinks({ content, onAskFollowUp, onImageRegenerated }: AskD
     );
   }
   
+  // If content contains markdown tables, skip clickable terms to preserve table structure
+  // Splitting by clickable terms breaks table syntax
+  // Use ReactMarkdown with remark-gfm for proper table rendering
+  if (containsMarkdownTables(content)) {
+    return <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>;
+  }
+  
   const clickableTerms = useMemo(() => extractClickableTerms(content), [content]);
   
   const handleTermClick = useCallback((term: string) => {
@@ -280,9 +295,9 @@ export function AskDiaLinks({ content, onAskFollowUp, onImageRegenerated }: AskD
     onAskFollowUp(question);
   }, [onAskFollowUp]);
   
-  // If no clickable terms, just render with Streamdown
+  // If no clickable terms, just render with ReactMarkdown + GFM
   if (clickableTerms.size === 0) {
-    return <Streamdown>{content}</Streamdown>;
+    return <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>;
   }
   
   // Create a pattern to match all clickable terms
@@ -320,8 +335,8 @@ export function AskDiaLinks({ content, onAskFollowUp, onImageRegenerated }: AskD
           );
         }
         
-        // For non-clickable parts, render with Streamdown for markdown support
-        return <Streamdown key={index}>{part}</Streamdown>;
+        // For non-clickable parts, render with ReactMarkdown + GFM for markdown support
+        return <ReactMarkdown key={index} remarkPlugins={[remarkGfm]}>{part}</ReactMarkdown>;
       })}
     </div>
   );
