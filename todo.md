@@ -5089,3 +5089,19 @@ Build a comprehensive autonomous agent that can complete complex tasks end-to-en
 - [x] Fix Chat.tsx to use AskDiaLinks correctly
 - [x] Add markdown-content CSS to index.css
 - [x] Test heading rendering
+
+
+---
+
+## Phase 67: Fix JavaScript Heap Out of Memory Error (Production)
+
+### Goal
+- [x] Fix "FATAL ERROR: Reached heap limit Allocation failed - JavaScript heap out of memory"
+- [x] Increase Node.js heap memory limit for production
+- [x] Update package.json start script with --max-old-space-size flag
+
+### Implementation
+- [x] Check current package.json start script
+- [x] Add NODE_OPTIONS="--max-old-space-size=4096" to production start
+- [x] Test memory configuration
+- [x] Deploy fix to production
