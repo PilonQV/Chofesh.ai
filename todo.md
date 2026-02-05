@@ -5265,3 +5265,44 @@ Build a comprehensive autonomous agent that can complete complex tasks end-to-en
 - [x] Update fallback priorities to use kimi-k2.5 as lead model
 - [x] Test model selection with updated configuration (21 tests passed)
 - [x] Save checkpoint
+
+
+---
+
+## Phase 75: Kimi 2.5 API Usage & Cost Monitoring
+
+### Goal
+- [ ] Track Kimi 2.5 API usage in production logs
+- [ ] Calculate costs based on token usage
+- [ ] Implement rate limiting to control spending
+- [ ] Create usage analytics dashboard endpoint
+- [ ] Monitor monthly costs and adjust limits as needed
+
+### Implementation
+- [ ] Add token counting to Kimi provider (input/output tokens)
+- [ ] Calculate cost per request ($0.0006 per 1K input, $0.0018 per 1K output)
+- [ ] Log API usage with timestamps, tokens, and costs
+- [ ] Add rate limiting configuration (requests per minute/hour/day)
+- [ ] Create /api/admin/kimi-usage endpoint for analytics
+- [ ] Test monitoring system
+- [ ] Save checkpoint
+
+
+---
+
+## Phase 75: Kimi 2.5 API Usage & Cost Monitoring
+
+### Goal
+- [x] Track Kimi 2.5 API usage in production logs
+- [x] Calculate costs per request (input/output tokens)
+- [x] Implement rate limiting to control spending
+- [x] Create analytics dashboard endpoint for monitoring
+- [x] Estimate monthly costs based on usage patterns
+
+### Implementation
+- [x] Add API usage tracking to Kimi provider (apiUsageLogger.ts)
+- [x] Implement token counting and cost calculation ($0.0006/1K input, $0.0018/1K output)
+- [x] Create production logging system with JSON format
+- [x] Add rate limiting configuration (60/min, 1000/hour, 10000/day, $5/hour, $50/day)
+- [x] Create usage analytics dashboard endpoint (admin.kimiUsage)
+- [x] Test monitoring system (13 tests passed)

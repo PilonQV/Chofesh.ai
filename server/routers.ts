@@ -2968,6 +2968,22 @@ Provide a comprehensive, well-researched response.`;
       return await getAuditLogStats();
     }),
     
+    // Kimi API usage analytics
+    kimiUsage: adminProcedure.query(async () => {
+      const { getAllUsageStats, getRecentLogs } = await import("./_core/apiUsageLogger");
+      const { getRateLimitStatus } = await import("./_core/apiRateLimiter");
+      
+      const usageStats = getAllUsageStats();
+      const recentLogs = getRecentLogs('kimi', 50);
+      const rateLimitStatus = getRateLimitStatus('kimi');
+      
+      return {
+        stats: usageStats,
+        recentLogs,
+        rateLimitStatus,
+      };
+    }),
+    
     // Dashboard stats - comprehensive metrics
     dashboardStats: adminProcedure.query(async () => {
       const allUsers = await getAllUsers();
