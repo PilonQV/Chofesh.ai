@@ -11,6 +11,8 @@
 import { ENV } from "./env";
 import { interceptAndGenerateImages } from "./imageUrlInterceptorEnhanced";
 import { analyzeQuery, orchestrateWithKimi, executeOrchestration, type OrchestrationDecision } from "./kimiOrchestrator";
+import { logAPIUsage } from "./apiUsageLogger";
+import { checkRateLimit, recordRequest } from "./apiRateLimiter";
 
 // ============================================================================
 // Types
@@ -490,6 +492,13 @@ export async function invokeKimi(options: AICompletionOptions): Promise<AIComple
 
   const model = options.model || "kimi-k2.5";
   
+  // Check rate limits before making the API call
+  const rateLimitCheck = checkRateLimit('kimi');
+  if (!rateLimitCheck.allowed) {
+    console.error('[Kimi] Rate limit exceeded:', rateLimitCheck.reason);
+    throw new Error(`Rate limit exceeded: ${rateLimitCheck.reason}. Retry after ${rateLimitCheck.retryAfter}s`);
+  }
+  
   // Convert any image URLs to base64 for Kimi (Kimi doesn't support HTTP/HTTPS URLs)
   const processedMessages = await Promise.all(
     options.messages.map(async (message) => {
@@ -561,6 +570,53 @@ export async function invokeKimi(options: AICompletionOptions): Promise<AIComple
       console.log('[Kimi] Deleted reasoning_content in production to free memory');
     }
   }
+  
+  // Extract usage metrics for cost tracking
+  const inputTokens = data.usage?.prompt_tokens || 0;
+  const outputTokens = data.usage?.completion_tokens || 0;
+  const totalTokens = data.usage?.total_tokens || 0;
+  
+  // Calculate cost (Kimi K2.5 pricing: $0.0006 per 1K input, $0.0018 per 1K output)
+  const inputCost = (inputTokens / 1000) * 0.0006;
+  const outputCost = (outputTokens / 1000) * 0.0018;
+  const totalCost = inputCost + outputCost;
+  
+  // Record request for rate limiting
+  recordRequest('kimi', totalCost);
+  
+  // Log usage and cost for production monitoring
+  logAPIUsage({
+    timestamp: new Date().toISOString(),
+    provider: 'kimi',
+    model,
+    tokens: {
+      input: inputTokens,
+      output: outputTokens,
+      total: totalTokens,
+    },
+    cost: {
+      input: inputCost,
+      output: outputCost,
+      total: totalCost,
+    },
+    success: true,
+  });
+  
+  console.log('[Kimi API Usage]', {
+    model,
+    timestamp: new Date().toISOString(),
+    tokens: {
+      input: inputTokens,
+      output: outputTokens,
+      total: totalTokens,
+    },
+    cost: {
+      input: `$${inputCost.toFixed(6)}`,
+      output: `$${outputCost.toFixed(6)}`,
+      total: `$${totalCost.toFixed(6)}`,
+    },
+    estimatedMonthlyCost: `$${(totalCost * 30 * 24).toFixed(2)}`,
+  });
   
   // Log the response for debugging (after truncation)
   console.log('[Kimi] API Response:', JSON.stringify(data, null, 2));
