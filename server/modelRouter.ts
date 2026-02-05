@@ -171,18 +171,6 @@ export const AVAILABLE_MODELS: ModelDefinition[] = [
     speed: "slow",
   },
   {
-    id: "kimi-k2-free",
-    name: "Kimi K2 (Free)",
-    description: "Moonshot's latest model - FREE via OpenRouter",
-    provider: "openrouter",
-    tier: "free",
-    costPer1kInput: 0,
-    costPer1kOutput: 0,
-    maxTokens: 128000,
-    supportsVision: false,
-    speed: "medium",
-  },
-  {
     id: "mistral-small-free",
     name: "Mistral Small 3.1 (Free)",
     description: "Fast Mistral model - FREE via OpenRouter",
