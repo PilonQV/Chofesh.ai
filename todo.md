@@ -5248,3 +5248,20 @@ Build a comprehensive autonomous agent that can complete complex tasks end-to-en
 - [x] Keep all existing features: Agent Mode, model selection, voice, images
 - [x] Test all functionality with new UI (100% working)
 - [x] Save checkpoint
+
+
+---
+
+## Phase 74: Remove Free Kimi K2 Model (404 Error Fix)
+
+### Problem
+- **Error:** OpenRouter API 404 - "No endpoints found for moonshotai/kimi-k2:free"
+- **Root cause:** Free Kimi K2 model no longer available on OpenRouter
+- **Impact:** Users get errors instead of AI responses
+
+### Solution
+- [x] Remove kimi-k2-free from model configuration (modelRouter.ts)
+- [x] Ensure system uses paid Kimi 2.5 API (KIMI_API_KEY already configured)
+- [x] Update fallback priorities to use kimi-k2.5 as lead model
+- [x] Test model selection with updated configuration (21 tests passed)
+- [x] Save checkpoint

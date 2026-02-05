@@ -15,11 +15,12 @@ import { AVAILABLE_MODELS, type ModelDefinition, type ComplexityLevel } from "..
 
 /**
  * Priority queue of free models by use case
+ * Updated: Kimi 2.5 is now the lead model (paid API available)
  */
 export const FREE_MODEL_PRIORITIES = {
   // Simple queries - fast, lightweight models
   simple: [
-    "kimi-k2-free",                // Kimi free tier via OpenRouter
+    "kimi-k2.5",                   // Lead model with paid API
     "puter-gpt-5-nano",            // Fastest, browser-based
     "llama-3.1-8b",                // Groq - ultra fast
     "gemma-2-9b",                  // Groq - good quality
@@ -27,8 +28,8 @@ export const FREE_MODEL_PRIORITIES = {
   
   // Medium complexity - balanced models
   medium: [
+    "kimi-k2.5",                   // Lead model with 256K context
     "kimi-k2-turbo-preview",       // Fast Kimi with 256K context
-    "kimi-k2-free",                // Kimi free tier
     "puter-gpt-5",                 // Full GPT-5 capabilities
     "llama-3.3-70b",               // Groq - excellent quality
     "deepseek-v3",                 // Strong general purpose
@@ -36,12 +37,12 @@ export const FREE_MODEL_PRIORITIES = {
   
   // Complex reasoning - most capable models
   complex: [
+    "kimi-k2.5",                   // Lead model - superior reasoning
     "kimi-k2-thinking",            // Best reasoning + 256K context (premium)
     "deepseek-r1-free",            // Best free reasoning model
     "puter-o3",                    // Advanced reasoning
     "puter-o1",                    // Good reasoning
     "llama-3.3-70b",               // Groq - fallback
-    "kimi-k2-free",                // Long context
   ],
   
   // Vision tasks - multimodal models
