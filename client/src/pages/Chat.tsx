@@ -1,5 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useTheme } from "@/contexts/ThemeContext";
+import "@/styles/design-system.css";
 import { Button } from "@/components/ui/button";
 import {
   getPopularPersonas,
@@ -988,7 +989,9 @@ export default function Chat() {
   }
 
   return (
-    <div className="h-[100dvh] bg-background flex overflow-hidden" style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}>
+    <div className="h-[100dvh] bg-[#0d0d12] flex overflow-hidden relative" style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      {/* Animated Background Mesh */}
+      <div className="chofesh-bg-mesh" />
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div
@@ -1829,7 +1832,8 @@ export default function Chat() {
             {currentConversation?.messages.map((message, index) => (
               <div
                 key={index}
-                className={`group flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                className={`group flex chofesh-message-enter ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                style={{ animationDelay: `${index * 0.05}s` }}
               >
                 {/* CRITICAL FIX: Added min-w-0 to allow flex item to shrink */}
                 <div className="flex flex-col gap-1 max-w-[85%] min-w-0">
@@ -1927,18 +1931,23 @@ export default function Chat() {
               </div>
             ))}
 
-            {/* Loading indicator */}
+            {/* Loading indicator with typing dots */}
             {isGenerating && (
               <div className="flex justify-start">
                 <div className="bg-muted rounded-2xl px-4 py-3">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <img 
                       src="/chofesh-logo-48.webp" 
                       alt="AI generating response" 
-                      className="w-5 h-5 object-contain animate-pulse" 
+                      className="w-5 h-5 object-contain" 
                     />
-                    <span className="text-sm text-muted-foreground">
-                      {routingMode === "auto" ? "Selecting best model..." : "Generating..."}
+                    <div className="flex gap-1.5">
+                      <div className="chofesh-typing-dot" />
+                      <div className="chofesh-typing-dot" />
+                      <div className="chofesh-typing-dot" />
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {routingMode === "auto" ? "Selecting best model..." : "Thinking..."}
                     </span>
                   </div>
                 </div>
@@ -1990,7 +1999,7 @@ export default function Chat() {
 
               
               {/* Input container with single attachment button - glassmorphism */}
-              <div className="flex-1 relative flex items-end rounded-xl glass-input focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary/50 transition-all duration-300">
+              <div className="flex-1 relative flex items-end rounded-xl chofesh-glass-panel transition-all duration-300">
                 {/* Single + button for all attachments (Manus-like) */}
                 <div className="flex items-center gap-1 pl-2 pb-2 self-end">
                   <DropdownMenu>
@@ -2050,7 +2059,7 @@ export default function Chat() {
               <Button 
                 onClick={handleSend} 
                 disabled={(!input.trim() && uploadedImages.length === 0) || isGenerating}
-                className="self-end h-[44px]"
+                className="self-end h-[44px] chofesh-btn-gradient"
               >
                 {isGenerating ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
