@@ -26,14 +26,15 @@ export interface RateLimitState {
 
 /**
  * Default rate limits for Kimi API
- * Adjust these based on your budget and usage patterns
+ * COST OPTIMIZED: Kimi reserved for complex queries only (5% of traffic)
+ * 95% of queries use free APIs (Groq, Cerebras, Gemini)
  */
 export const DEFAULT_KIMI_RATE_LIMITS: RateLimitConfig = {
-  maxRequestsPerMinute: 60,      // 60 requests/minute = 1 per second
-  maxRequestsPerHour: 1000,      // 1000 requests/hour
-  maxRequestsPerDay: 10000,      // 10,000 requests/day
-  maxCostPerHour: 5.00,          // $5/hour max
-  maxCostPerDay: 50.00,          // $50/day max (~$1500/month)
+  maxRequestsPerMinute: 10,      // 10 requests/minute (reduced from 60)
+  maxRequestsPerHour: 150,       // 150 requests/hour (reduced from 1000)
+  maxRequestsPerDay: 1000,       // 1,000 requests/day (reduced from 10,000)
+  maxCostPerHour: 0.50,          // $0.50/hour max (reduced from $5)
+  maxCostPerDay: 5.00,           // $5/day max (~$150/month, reduced from $1500)
 };
 
 /**

@@ -18,57 +18,57 @@ import { AVAILABLE_MODELS, type ModelDefinition, type ComplexityLevel } from "..
  * Updated: Kimi 2.5 is now the lead model (paid API available)
  */
 export const FREE_MODEL_PRIORITIES = {
-  // Simple queries - fast, lightweight models
+  // Simple queries - fast, lightweight models (FREE FIRST)
   simple: [
-    "kimi-k2.5",                   // Lead model with paid API
-    "puter-gpt-5-nano",            // Fastest, browser-based
-    "llama-3.1-8b",                // Groq - ultra fast
-    "gemma-2-9b",                  // Groq - good quality
+    "llama-3.1-8b",                // Groq - ultra fast, FREE
+    "gemma-2-9b",                  // Groq - good quality, FREE
+    "puter-gpt-5-nano",            // Fastest, browser-based, FREE
+    "kimi-k2.5",                   // PAID - only if free models fail
   ],
   
-  // Medium complexity - balanced models
+  // Medium complexity - balanced models (FREE FIRST)
   medium: [
-    "kimi-k2.5",                   // Lead model with 256K context
-    "kimi-k2-turbo-preview",       // Fast Kimi with 256K context
-    "puter-gpt-5",                 // Full GPT-5 capabilities
-    "llama-3.3-70b",               // Groq - excellent quality
-    "deepseek-v3",                 // Strong general purpose
+    "llama-3.3-70b",               // Groq - excellent quality, FREE
+    "deepseek-v3",                 // Strong general purpose, FREE
+    "puter-gpt-5",                 // Full GPT-5 capabilities, FREE
+    "kimi-k2.5",                   // PAID - only if free models fail
+    "kimi-k2-turbo-preview",       // PAID - backup
   ],
   
-  // Complex reasoning - most capable models
+  // Complex reasoning - most capable models (FREE FIRST, Kimi for hard cases)
   complex: [
-    "kimi-k2.5",                   // Lead model - superior reasoning
-    "kimi-k2-thinking",            // Best reasoning + 256K context (premium)
-    "deepseek-r1-free",            // Best free reasoning model
-    "puter-o3",                    // Advanced reasoning
-    "puter-o1",                    // Good reasoning
-    "llama-3.3-70b",               // Groq - fallback
+    "deepseek-r1-free",            // Best free reasoning model, FREE
+    "llama-3.3-70b",               // Groq - excellent reasoning, FREE
+    "puter-o3",                    // Advanced reasoning, FREE
+    "puter-o1",                    // Good reasoning, FREE
+    "kimi-k2.5",                   // PAID - for truly complex cases
+    "kimi-k2-thinking",            // PAID - premium reasoning backup
   ],
   
-  // Vision tasks - multimodal models
+  // Vision tasks - multimodal models (FREE FIRST)
   vision: [
-    "kimi-k2.5",                   // Best vision + 256K context (4x cheaper, native multimodal)
-    "gemini-2.0-flash-free",       // Free vision fallback
-    "llama-3.2-90b-vision",        // Groq vision
-    "qwen-2.5-vl-7b-free",         // Backup vision
+    "gemini-2.0-flash-free",       // Free vision, excellent quality, FREE
+    "llama-3.2-90b-vision",        // Groq vision, FREE
+    "qwen-2.5-vl-7b-free",         // Backup vision, FREE
+    "kimi-k2.5",                   // PAID - for complex vision analysis
   ],
   
-  // Code generation - specialized models
+  // Code generation - specialized models (FREE FIRST)
   code: [
-    "kimi-k2.5",                   // Superior coding (beats GPT-4.5 in benchmarks, 256K context)
-    "puter-gpt-5",                 // Excellent for code
-    "deepseek-r1-free",            // Strong code reasoning
-    "llama-3.3-70b",               // Good code quality
-    "mistral-large-free",          // Code specialist
+    "deepseek-r1-free",            // Strong code reasoning, FREE
+    "llama-3.3-70b",               // Good code quality, FREE
+    "mistral-large-free",          // Code specialist, FREE
+    "puter-gpt-5",                 // Excellent for code, FREE
+    "kimi-k2.5",                   // PAID - for complex code architecture
   ],
   
-  // Long context tasks (>128K tokens)
+  // Long context tasks (>128K tokens) (FREE FIRST - Gemini has 2M context!)
   longContext: [
-    "kimi-k2.5",                   // 256K context (2x GPT-4o, 4x cheaper)
-    "kimi-k2-thinking",            // 256K context + reasoning
-    "kimi-k2-turbo-preview",       // 256K context (faster)
-    "gemini-1.5-pro-free",         // 2M context (free)
-    "puter-gpt-4o",                // 128K context (free)
+    "gemini-1.5-pro-free",         // 2M context, FREE (8x more than Kimi!)
+    "puter-gpt-4o",                // 128K context, FREE
+    "kimi-k2.5",                   // 256K context, PAID - only if Gemini fails
+    "kimi-k2-thinking",            // 256K context + reasoning, PAID
+    "kimi-k2-turbo-preview",       // 256K context (faster), PAID
   ],
 };
 
