@@ -152,7 +152,7 @@ describe("Email Auth API Endpoints", () => {
 
     it("should accept valid registration data", () => {
       const email = "test@example.com";
-      const password = "StrongPass123";
+      const password = "TestPassword123!";
       
       expect(validateEmail(email)).toBe(true);
       expect(validatePassword(password)).toBeNull();
