@@ -417,7 +417,7 @@ All features use the unified Runware API:
 ### Environment Variables
 
 ```bash
-RUNWARE_API_KEY=pQVh9EjMuA9OwX2MapOqivdDMejKeJmh
+RUNWARE_API_KEY=your_runware_api_key_here
 ```
 
 ---
