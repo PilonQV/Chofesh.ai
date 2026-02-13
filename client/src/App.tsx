@@ -40,7 +40,7 @@ const CodeReview = lazy(() => import("./pages/CodeReview"));
 const KnowledgeBase = lazy(() => import("./pages/KnowledgeBase"));
 const ComponentShowcase = lazy(() => import("./pages/ComponentShowcase"));
 const Tools = lazy(() => import("./pages/Tools"));
-const AdminAuditLogs = lazy(() => import("./pages/AdminAuditLogs"));
+// AdminAuditLogs removed - audit logging disabled for privacy
 const AdminSupport = lazy(() => import("./pages/AdminSupport"));
 const MasterCommand = lazy(() => import("./pages/admin/MasterCommand"));
 const PrivacyVault = lazy(() => import("./pages/PrivacyVault"));
@@ -81,7 +81,7 @@ function Router() {
         <Route path="/image" component={ImageGen} />
         <Route path="/images" component={ImageGen} />
         <Route path="/admin" component={AdminDashboard} />
-        <Route path="/admin/audit-logs" component={AdminAuditLogs} />
+        {/* AdminAuditLogs route removed - audit logging disabled for privacy */}
         <Route path="/admin/support" component={AdminSupport} />
         <Route path="/admin/master-command" component={MasterCommand} />
         <Route path="/privacy" component={Privacy} />

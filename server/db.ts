@@ -1616,56 +1616,8 @@ export async function logApiCall(log: InsertApiCallLog): Promise<void> {
   }
   
   try {
-    // Apply content moderation to the prompt
-    const { moderateContent } = await import("./_core/contentModeration");
-    const moderationResult = moderateContent(log.prompt || "");
-    
-    // Add moderation flags to the log
-    const logWithModeration = {
-      ...log,
-      isFlagged: moderationResult.isFlagged,
-      flagReason: moderationResult.flagReason as any,
-      flagDetails: moderationResult.flagDetails,
-    };
-    
-    await db.insert(apiCallLogs).values(logWithModeration);
-    
-    // Log flagged content for admin awareness
-    if (moderationResult.isFlagged) {
-      console.warn(`[Content Moderation] Flagged content from user ${log.userId}: ${moderationResult.flagReason} - ${moderationResult.flagDetails}`);
-      
-      // Send email alert for critical content (illegal_activity or self_harm)
-      if (moderationResult.flagReason === "illegal_activity" || moderationResult.flagReason === "self_harm") {
-        try {
-          const { sendCriticalContentAlert, getAdminEmailsForAlerts } = await import("./_core/resend");
-          const adminEmails = await getAdminEmailsForAlerts();
-          
-          if (adminEmails.length > 0) {
-            // Send alert asynchronously (don't block the main flow)
-            sendCriticalContentAlert(adminEmails, {
-              userId: log.userId,
-              userEmail: log.userEmail || null,
-              userName: log.userName || null,
-              flagReason: moderationResult.flagReason,
-              flagDetails: moderationResult.flagDetails || "No details available",
-              prompt: log.prompt || "",
-              contentType: "chat",
-              timestamp: new Date(),
-            }).then(result => {
-              if (result.success) {
-                console.log(`[Content Moderation] Critical content alert sent to ${adminEmails.length} admin(s)`);
-              } else {
-                console.error(`[Content Moderation] Failed to send critical content alert: ${result.error}`);
-              }
-            }).catch(err => {
-              console.error("[Content Moderation] Error sending critical content alert:", err);
-            });
-          }
-        } catch (emailError) {
-          console.error("[Content Moderation] Error preparing critical content alert:", emailError);
-        }
-      }
-    }
+    // Content moderation removed for privacy
+    await db.insert(apiCallLogs).values(log);
   } catch (error) {
     console.error("[Database] Failed to log API call:", error);
   }
@@ -1783,56 +1735,8 @@ export async function logImageAccess(log: InsertImageAccessLog): Promise<void> {
   }
   
   try {
-    // Apply content moderation to the prompt
-    const { moderateContent } = await import("./_core/contentModeration");
-    const moderationResult = moderateContent(log.prompt || "");
-    
-    // Add moderation flags to the log
-    const logWithModeration = {
-      ...log,
-      isFlagged: moderationResult.isFlagged,
-      flagReason: moderationResult.flagReason as any,
-      flagDetails: moderationResult.flagDetails,
-    };
-    
-    await db.insert(imageAccessLogs).values(logWithModeration);
-    
-    // Log flagged content for admin awareness
-    if (moderationResult.isFlagged) {
-      console.warn(`[Content Moderation] Flagged image prompt from user ${log.userId}: ${moderationResult.flagReason} - ${moderationResult.flagDetails}`);
-      
-      // Send email alert for critical content (illegal_activity or self_harm)
-      if (moderationResult.flagReason === "illegal_activity" || moderationResult.flagReason === "self_harm") {
-        try {
-          const { sendCriticalContentAlert, getAdminEmailsForAlerts } = await import("./_core/resend");
-          const adminEmails = await getAdminEmailsForAlerts();
-          
-          if (adminEmails.length > 0) {
-            // Send alert asynchronously (don't block the main flow)
-            sendCriticalContentAlert(adminEmails, {
-              userId: log.userId,
-              userEmail: log.userEmail || null,
-              userName: null, // Image logs don't have userName
-              flagReason: moderationResult.flagReason,
-              flagDetails: moderationResult.flagDetails || "No details available",
-              prompt: log.prompt || "",
-              contentType: "image",
-              timestamp: new Date(),
-            }).then(result => {
-              if (result.success) {
-                console.log(`[Content Moderation] Critical image content alert sent to ${adminEmails.length} admin(s)`);
-              } else {
-                console.error(`[Content Moderation] Failed to send critical image content alert: ${result.error}`);
-              }
-            }).catch(err => {
-              console.error("[Content Moderation] Error sending critical image content alert:", err);
-            });
-          }
-        } catch (emailError) {
-          console.error("[Content Moderation] Error preparing critical image content alert:", emailError);
-        }
-      }
-    }
+    // Content moderation removed for privacy
+    await db.insert(imageAccessLogs).values(log);
   } catch (error) {
     console.error("[Database] Failed to log image access:", error);
   }
