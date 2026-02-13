@@ -123,7 +123,7 @@ import { eq, desc, sql } from "drizzle-orm";
 import { invokeLLM } from "./_core/llm";
 import { invokeGrok, isGrokAvailable } from "./_core/grok";
 import { invokeKimi } from "./_core/aiProviders";
-import { trackProviderUsage, estimateCostSaved } from "./_core/providerAnalytics";
+// // // // // import { trackProviderUsage, estimateCostSaved } from "./_core/providerAnalytics";
 import { invokeDeepSeekR1, invokeOpenRouter, isComplexReasoningQuery, isRefusalResponse, OPENROUTER_MODELS } from "./_core/openrouter";
 import { generateImage } from "./_core/imageGeneration";
 // Venice image generation removed - using Runware instead
@@ -155,7 +155,7 @@ import {
   getPullRequestFiles,
 } from "./_core/githubOAuth";
 import { storagePut } from "./storage";
-import { auditLogApiCall, auditLogImageAccess, getUserAgent } from "./_core/auditLogger";
+// // // // // import { auditLogApiCall, auditLogImageAccess, getUserAgent } from "./_core/auditLogger";
 import Stripe from "stripe";
 import { SUBSCRIPTION_TIERS, getDailyLimit, isOverLimit, getSlowdownDelay, type SubscriptionTier } from "./stripe/products";
 import crypto from "crypto";
@@ -945,22 +945,7 @@ export const appRouter = router({
                   input.messages,
                   ctx.user.id
                 );
-              
-              // Audit log for ReAct agent
-              await auditLogApiCall({
-                userId: ctx.user.id,
-                userEmail: ctx.user.email || undefined,
-                userName: ctx.user.name || undefined,
-                actionType: 'chat',
-                modelUsed: 'react-agent',
-                prompt: promptContent,
-                response: reactResponse.content,
-                durationMs: Date.now() - startTime,
-                ipAddress: getClientIp(ctx.req),
-                userAgent: getUserAgent(ctx.req),
-                status: 'success',
-                isUncensored: false,
-              });
+      // Audit logging removed for privacy
               
             return {
               content: reactResponse.content,
@@ -1014,28 +999,7 @@ export const appRouter = router({
                   toolResult = await agentTools.generateImage(params as { prompt: string; count?: number });
                   const imageDuration = Date.now() - imageStartTime;
                   toolBadge = 'agent-image-gen';
-                  
-                  // Audit log for agent image generation
-                  await auditLogApiCall({
-                    userId: ctx.user.id,
-                    userEmail: ctx.user.email || undefined,
-                    userName: ctx.user.name || undefined,
-                    actionType: 'image_generation',
-                    modelUsed: 'agent-hidream',
-                    prompt: (params as { prompt: string }).prompt,
-                    systemPrompt: 'Agent mode image generation (1 image)',
-                    response: toolResult.urls ? JSON.stringify(toolResult.urls) : '',
-                    tokensInput: 0,
-                    tokensOutput: 0,
-                    durationMs: imageDuration,
-                    conversationId: input.conversationId || undefined,
-                    personaUsed: undefined,
-                    ipAddress: ctx.req?.ip || ctx.req?.socket?.remoteAddress || 'unknown',
-                    userAgent: ctx.req?.headers?.['user-agent'] || 'unknown',
-                    status: 'success',
-                    errorMessage: undefined,
-                    isUncensored: false,
-                  });
+      // Audit logging removed for privacy
                   break;
                 }
                 case 'imageBatch': {
@@ -1055,28 +1019,7 @@ export const appRouter = router({
                   toolResult = await agentTools.generateImage(params as { prompt: string; count?: number });
                   const batchDuration = Date.now() - batchStartTime;
                   toolBadge = 'agent-image-batch';
-                  
-                  // Audit log for agent batch image generation
-                  await auditLogApiCall({
-                    userId: ctx.user.id,
-                    userEmail: ctx.user.email || undefined,
-                    userName: ctx.user.name || undefined,
-                    actionType: 'image_generation',
-                    modelUsed: 'agent-hidream-batch',
-                    prompt: (params as { prompt: string }).prompt,
-                    systemPrompt: 'Agent mode image generation (4 images)',
-                    response: toolResult.urls ? JSON.stringify(toolResult.urls) : '',
-                    tokensInput: 0,
-                    tokensOutput: 0,
-                    durationMs: batchDuration,
-                    conversationId: input.conversationId || undefined,
-                    personaUsed: undefined,
-                    ipAddress: ctx.req?.ip || ctx.req?.socket?.remoteAddress || 'unknown',
-                    userAgent: ctx.req?.headers?.['user-agent'] || 'unknown',
-                    status: 'success',
-                    errorMessage: undefined,
-                    isUncensored: false,
-                  });
+      // Audit logging removed for privacy
                   break;
                 }
                 case 'search': {
@@ -1085,28 +1028,7 @@ export const appRouter = router({
                   toolResult = await agentTools.searchWeb(params as { query: string });
                   const searchDuration = Date.now() - searchStartTime;
                   toolBadge = 'agent-web-search';
-                  
-                  // Audit log for agent web search
-                  await auditLogApiCall({
-                    userId: ctx.user.id,
-                    userEmail: ctx.user.email || undefined,
-                    userName: ctx.user.name || undefined,
-                    actionType: 'web_search',
-                    modelUsed: 'agent-web-search',
-                    prompt: (params as { query: string }).query,
-                    systemPrompt: 'Agent mode web search',
-                    response: toolResult.results ? JSON.stringify(toolResult.results.slice(0, 3)) : '',
-                    tokensInput: 0,
-                    tokensOutput: 0,
-                    durationMs: searchDuration,
-                    conversationId: input.conversationId || undefined,
-                    personaUsed: undefined,
-                    ipAddress: ctx.req?.ip || ctx.req?.socket?.remoteAddress || 'unknown',
-                    userAgent: ctx.req?.headers?.['user-agent'] || 'unknown',
-                    status: 'success',
-                    errorMessage: undefined,
-                    isUncensored: false,
-                  });
+      // Audit logging removed for privacy
                   break;
                 }
                 case 'document': {
@@ -1115,28 +1037,7 @@ export const appRouter = router({
                   toolResult = await agentTools.createDocument(params as { title: string; content: string });
                   const docDuration = Date.now() - docStartTime;
                   toolBadge = 'agent-document';
-                  
-                  // Audit log for agent document creation
-                  await auditLogApiCall({
-                    userId: ctx.user.id,
-                    userEmail: ctx.user.email || undefined,
-                    userName: ctx.user.name || undefined,
-                    actionType: 'document_chat',
-                    modelUsed: 'agent-document',
-                    prompt: `Title: ${(params as { title: string; content: string }).title}`,
-                    systemPrompt: 'Agent mode document creation',
-                    response: (params as { title: string; content: string }).content.substring(0, 500),
-                    tokensInput: 0,
-                    tokensOutput: 0,
-                    durationMs: docDuration,
-                    conversationId: input.conversationId || undefined,
-                    personaUsed: undefined,
-                    ipAddress: ctx.req?.ip || ctx.req?.socket?.remoteAddress || 'unknown',
-                    userAgent: ctx.req?.headers?.['user-agent'] || 'unknown',
-                    status: 'success',
-                    errorMessage: undefined,
-                    isUncensored: false,
-                  });
+      // Audit logging removed for privacy
                   break;
                 }
                 case 'code': {
@@ -1145,28 +1046,7 @@ export const appRouter = router({
                   toolResult = await agentTools.executeCode(params as { code: string });
                   const codeDuration = Date.now() - codeStartTime;
                   toolBadge = 'agent-code';
-                  
-                  // Audit log for agent code execution
-                  await auditLogApiCall({
-                    userId: ctx.user.id,
-                    userEmail: ctx.user.email || undefined,
-                    userName: ctx.user.name || undefined,
-                    actionType: 'code_review',
-                    modelUsed: 'agent-code-execution',
-                    prompt: (params as { code: string }).code.substring(0, 500),
-                    systemPrompt: 'Agent mode code execution',
-                    response: toolResult.output ? toolResult.output.substring(0, 500) : '',
-                    tokensInput: 0,
-                    tokensOutput: 0,
-                    durationMs: codeDuration,
-                    conversationId: input.conversationId || undefined,
-                    personaUsed: undefined,
-                    ipAddress: ctx.req?.ip || ctx.req?.socket?.remoteAddress || 'unknown',
-                    userAgent: ctx.req?.headers?.['user-agent'] || 'unknown',
-                    status: 'success',
-                    errorMessage: undefined,
-                    isUncensored: false,
-                  });
+      // Audit logging removed for privacy
                   break;
                 }
               }
@@ -1768,40 +1648,8 @@ Provide a comprehensive, well-researched response.`;
             timestamp: new Date(),
           });
           
-          // Create detailed API call log (full content for admin review)
-          auditLogApiCall({
-            userId: ctx.user.id,
-            userEmail: ctx.user.email || undefined,
-            userName: ctx.user.name || undefined,
-            actionType: "chat",
-            modelUsed: actualModelUsed.id,
-            prompt: promptContent,
-            systemPrompt: baseSystemPrompt || undefined,
-            response: assistantContent,
-            usedFallback: usedFallback,
-            tokensInput: inputTokens,
-            tokensOutput: outputTokens,
-            durationMs: Date.now() - startTime,
-            ipAddress: getClientIp(ctx.req),
-            userAgent: getUserAgent(ctx.req),
-            status: "success",
-            isUncensored: false,
-          });
-          
-          // Track provider usage analytics
-          trackProviderUsage({
-            userId: ctx.user.id,
-            provider: actualModelUsed.provider,
-            model: actualModelUsed.id,
-            modelTier: actualModelUsed.tier as "free" | "standard" | "premium",
-            actionType: "chat",
-            inputTokens,
-            outputTokens,
-            totalTokens,
-            latencyMs: Date.now() - startTime,
-            success: true,
-            costSaved: actualModelUsed.tier === "free" ? estimateCostSaved(actualModelUsed.id, inputTokens, outputTokens) : undefined,
-          });
+          // Audit logging removed for privacy
+          // Provider analytics removed for privacy
 
           return {
             content: usedFallback ? `${fallbackMessage}\n\n${assistantContent}` : assistantContent,
@@ -2001,18 +1849,7 @@ Provide a comprehensive, well-researched response.`;
             }),
             timestamp: new Date(),
           });
-          
-          // Log image generation for admin review (with full prompt)
-          if (result.url) {
-            auditLogImageAccess({
-              userId: ctx.user.id,
-              userEmail: ctx.user.email || undefined,
-              imageUrl: result.url || '',
-              prompt: input.prompt,
-              actionType: "generate",
-              ipAddress: getClientIp(ctx.req),
-            });
-          }
+        // Image audit logging removed for privacy
 
           return {
             url: result.url,
@@ -2968,22 +2805,6 @@ Provide a comprehensive, well-researched response.`;
       return await getAuditLogStats();
     }),
     
-    // Kimi API usage analytics
-    kimiUsage: adminProcedure.query(async () => {
-      const { getAllUsageStats, getRecentLogs } = await import("./_core/apiUsageLogger");
-      const { getRateLimitStatus } = await import("./_core/apiRateLimiter");
-      
-      const usageStats = getAllUsageStats();
-      const recentLogs = getRecentLogs('kimi', 50);
-      const rateLimitStatus = getRateLimitStatus('kimi');
-      
-      return {
-        stats: usageStats,
-        recentLogs,
-        rateLimitStatus,
-      };
-    }),
-    
     // Dashboard stats - comprehensive metrics
     dashboardStats: adminProcedure.query(async () => {
       const allUsers = await getAllUsers();
@@ -3154,49 +2975,6 @@ Provide a comprehensive, well-researched response.`;
       }),
     
     // Provider Analytics endpoints
-    providerStats: adminProcedure
-      .input(z.object({
-        startDate: z.date().optional(),
-        endDate: z.date().optional(),
-      }).optional())
-      .query(async ({ input }) => {
-        const { getProviderStats } = await import("./_core/providerAnalytics");
-        const now = new Date();
-        const startDate = input?.startDate || new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-        const endDate = input?.endDate || now;
-        return await getProviderStats(startDate, endDate);
-      }),
-    
-    popularModels: adminProcedure
-      .input(z.object({
-        days: z.number().min(1).max(90).optional(),
-      }).optional())
-      .query(async ({ input }) => {
-        const { getPopularModels } = await import("./_core/providerAnalytics");
-        return await getPopularModels(input?.days || 7);
-      }),
-    
-    costSavings: adminProcedure
-      .input(z.object({
-        startDate: z.date().optional(),
-        endDate: z.date().optional(),
-      }).optional())
-      .query(async ({ input }) => {
-        const { getCostSavings } = await import("./_core/providerAnalytics");
-        const now = new Date();
-        const startDate = input?.startDate || new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-        const endDate = input?.endDate || now;
-        return await getCostSavings(startDate, endDate);
-      }),
-    
-    usageTrend: adminProcedure
-      .input(z.object({
-        days: z.number().min(1).max(90).optional(),
-      }).optional())
-      .query(async ({ input }) => {
-        const { getUsageTrend } = await import("./_core/providerAnalytics");
-        return await getUsageTrend(input?.days || 30);
-      }),
   }),
 
   // Web Search using Data API
@@ -3583,18 +3361,7 @@ IMPORTANT RULES:
             }),
             timestamp: new Date(),
           });
-          
-          // Log image edit for admin review (with full prompt)
-          if (result.url) {
-            auditLogImageAccess({
-              userId: ctx.user.id,
-              userEmail: ctx.user.email || undefined,
-              imageUrl: result.url || '',
-              prompt: input.prompt,
-              actionType: "generate",
-              ipAddress: getClientIp(ctx.req),
-            });
-          }
+        // Image audit logging removed for privacy
           
           return {
             url: result.url,

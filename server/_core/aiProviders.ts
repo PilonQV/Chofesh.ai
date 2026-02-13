@@ -11,8 +11,8 @@
 import { ENV } from "./env";
 import { interceptAndGenerateImages } from "./imageUrlInterceptorEnhanced";
 import { analyzeQuery, orchestrateWithKimi, executeOrchestration, type OrchestrationDecision } from "./kimiOrchestrator";
-import { logAPIUsage } from "./apiUsageLogger";
-import { checkRateLimit, recordRequest } from "./apiRateLimiter";
+// // // // // import { logAPIUsage } from "./apiUsageLogger";
+// // // // // import { checkRateLimit, recordRequest } from "./apiRateLimiter";
 
 // ============================================================================
 // Types
@@ -491,13 +491,7 @@ export async function invokeKimi(options: AICompletionOptions): Promise<AIComple
   if (!apiKey) throw new Error("KIMI_API_KEY not configured");
 
   const model = options.model || "kimi-k2.5";
-  
-  // Check rate limits before making the API call
-  const rateLimitCheck = checkRateLimit('kimi');
-  if (!rateLimitCheck.allowed) {
-    console.error('[Kimi] Rate limit exceeded:', rateLimitCheck.reason);
-    throw new Error(`Rate limit exceeded: ${rateLimitCheck.reason}. Retry after ${rateLimitCheck.retryAfter}s`);
-  }
+  // Rate limiting removed for privacy
   
   // Convert any image URLs to base64 for Kimi (Kimi doesn't support HTTP/HTTPS URLs)
   const processedMessages = await Promise.all(
@@ -580,27 +574,7 @@ export async function invokeKimi(options: AICompletionOptions): Promise<AIComple
   const inputCost = (inputTokens / 1000) * 0.0006;
   const outputCost = (outputTokens / 1000) * 0.0018;
   const totalCost = inputCost + outputCost;
-  
-  // Record request for rate limiting
-  recordRequest('kimi', totalCost);
-  
-  // Log usage and cost for production monitoring
-  logAPIUsage({
-    timestamp: new Date().toISOString(),
-    provider: 'kimi',
-    model,
-    tokens: {
-      input: inputTokens,
-      output: outputTokens,
-      total: totalTokens,
-    },
-    cost: {
-      input: inputCost,
-      output: outputCost,
-      total: totalCost,
-    },
-    success: true,
-  });
+  // API usage logging removed for privacy
   
   console.log('[Kimi API Usage]', {
     model,
