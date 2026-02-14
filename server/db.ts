@@ -225,6 +225,12 @@ export async function updateUserPassword(userId: number, newPasswordHash: string
 // ============ AUDIT LOG FUNCTIONS ============
 
 export async function createAuditLog(log: InsertAuditLog) {
+  const enableAuditLogs = process.env.ENABLE_AUDIT_LOGS === 'true';
+  
+  if (!enableAuditLogs) {
+    return;
+  }
+
   const db = await getDb();
   if (!db) {
     console.warn("[Database] Cannot create audit log: database not available");

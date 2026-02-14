@@ -93,7 +93,7 @@ GROQ_API_KEY=your_groq_api_key_here
 
 ### Optional Variables
 
-See [env-example-template.txt](./env-example-template.txt) for complete list of supported environment variables.
+See [.env.example](./.env.example) for complete list of supported environment variables.
 
 **Free AI Providers:**
 - [Groq](https://console.groq.com/) - Fast inference (recommended)

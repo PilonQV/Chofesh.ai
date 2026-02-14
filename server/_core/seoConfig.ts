@@ -13,7 +13,7 @@ export interface PageSEO {
   schema?: any;
 }
 
-const SITE_URL = 'https://chofesh.ai';
+const SITE_URL = process.env.VITE_APP_URL || 'http://localhost:3000';
 const DEFAULT_OG_IMAGE = `${SITE_URL}/chofesh-logo-og.webp`;
 
 /**
@@ -22,19 +22,18 @@ const DEFAULT_OG_IMAGE = `${SITE_URL}/chofesh-logo-og.webp`;
 export const organizationSchema = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  "name": "Chofesh.ai",
+  "name": "Chofesh AI",
   "url": SITE_URL,
   "logo": DEFAULT_OG_IMAGE,
   "description": "Privacy-first AI chat platform with local data storage and AES-256 encryption",
   "foundingDate": "2025",
   "sameAs": [
-    "https://twitter.com/chofeshai",
     "https://github.com/serever-coder357/Chofesh.ai"
   ],
   "contactPoint": {
     "@type": "ContactPoint",
     "contactType": "Customer Support",
-    "email": "support@chofesh.ai"
+    "email": "support@example.com"
   }
 };
 
