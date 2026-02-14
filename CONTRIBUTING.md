@@ -76,7 +76,8 @@ git remote add upstream https://github.com/serever-coder357/Chofesh.ai.git
 pnpm install
 
 # Set up environment variables
-# Copy env-example-template.txt and fill in your values
+# Copy .env.example and fill in your values
+cp .env.example .env
 
 # Set up database
 pnpm db:push

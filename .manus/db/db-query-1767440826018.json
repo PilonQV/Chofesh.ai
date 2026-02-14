@@ -1,9 +1,0 @@
-{
-  "query": "CREATE TABLE IF NOT EXISTS rate_limits (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  identifier VARCHAR(255) NOT NULL,\n  identifier_type ENUM('ip', 'email') NOT NULL,\n  attempts INT DEFAULT 1,\n  first_attempt_at DATETIME DEFAULT CURRENT_TIMESTAMP,\n  last_attempt_at DATETIME DEFAULT CURRENT_TIMESTAMP,\n  blocked_until DATETIME,\n  INDEX idx_identifier (identifier, identifier_type),\n  INDEX idx_blocked_until (blocked_until)\n);",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 48hnjcx4CHbyzt9.87573283f85b --database ffmn4BbJe88bt6JMq4xy2a --execute CREATE TABLE IF NOT EXISTS rate_limits (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  identifier VARCHAR(255) NOT NULL,\n  identifier_type ENUM('ip', 'email') NOT NULL,\n  attempts INT DEFAULT 1,\n  first_attempt_at DATETIME DEFAULT CURRENT_TIMESTAMP,\n  last_attempt_at DATETIME DEFAULT CURRENT_TIMESTAMP,\n  blocked_until DATETIME,\n  INDEX idx_identifier (identifier, identifier_type),\n  INDEX idx_blocked_until (blocked_until)\n);",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 168
-}

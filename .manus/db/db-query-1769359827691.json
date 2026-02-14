@@ -1,9 +1,0 @@
-{
-  "query": "ALTER TABLE image_access_logs \nADD COLUMN isFlagged BOOLEAN NOT NULL DEFAULT FALSE,\nADD COLUMN flagReason ENUM('nsfw_content', 'violence', 'hate_speech', 'illegal_activity', 'self_harm', 'spam', 'harassment', 'other') NULL,\nADD COLUMN flagDetails TEXT NULL;",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 48hnjcx4CHbyzt9.87573283f85b --database ffmn4BbJe88bt6JMq4xy2a --execute ALTER TABLE image_access_logs \nADD COLUMN isFlagged BOOLEAN NOT NULL DEFAULT FALSE,\nADD COLUMN flagReason ENUM('nsfw_content', 'violence', 'hate_speech', 'illegal_activity', 'self_harm', 'spam', 'harassment', 'other') NULL,\nADD COLUMN flagDetails TEXT NULL;",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 971
-}

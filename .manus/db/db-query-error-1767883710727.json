@@ -1,8 +1,0 @@
-{
-  "query": "SELECT COUNT(*) as total, owner_id FROM generated_images GROUP BY owner_id",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 48hnjcx4CHbyzt9.87573283f85b --database ffmn4BbJe88bt6JMq4xy2a --execute SELECT COUNT(*) as total, owner_id FROM generated_images GROUP BY owner_id",
-  "returncode": 1,
-  "logs": [
-    "ERROR 1054 (42S22) at line 1: Unknown column 'owner_id' in 'group statement'"
-  ]
-}
