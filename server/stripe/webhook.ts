@@ -9,14 +9,30 @@ import { sendCreditPurchaseEmail } from "../_core/creditPurchaseEmail";
 
 const router = Router();
 
-const stripe = new Stripe(process.env.Secretkey_live_stripe || process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2025-12-15.clover",
-});
+// Lazy initialization of Stripe - only create when API key is available
+let _stripe: Stripe | null = null;
+function getStripe(): Stripe | null {
+  if (!_stripe) {
+    const apiKey = process.env.Secretkey_live_stripe || process.env.STRIPE_SECRET_KEY;
+    if (!apiKey) {
+      return null;
+    }
+    _stripe = new Stripe(apiKey, {
+      apiVersion: "2025-12-15.clover",
+    });
+  }
+  return _stripe;
+}
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET_LIVE || process.env.STRIPE_WEBHOOK_SECRET || "";
 
 // Webhook endpoint - must use raw body for signature verification
 router.post("/", raw({ type: "application/json" }), async (req, res) => {
+  const stripe = getStripe();
+  if (!stripe) {
+    return res.status(503).json({ error: "Payment functionality not configured" });
+  }
+
   const sig = req.headers["stripe-signature"] as string;
 
   let event: Stripe.Event;

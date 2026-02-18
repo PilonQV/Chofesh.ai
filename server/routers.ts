@@ -764,7 +764,11 @@ export const appRouter = router({
       }))
       .mutation(async ({ ctx, input }) => {
         const Stripe = (await import("stripe")).default;
-        const stripe = new Stripe(process.env.Secretkey_live_stripe || process.env.STRIPE_SECRET_KEY || "");
+        const apiKey = process.env.Secretkey_live_stripe || process.env.STRIPE_SECRET_KEY;
+        if (!apiKey) {
+          throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Payment functionality not configured" });
+        }
+        const stripe = new Stripe(apiKey);
         
         // Get the pack details
         const packs = await getCreditPacks();
@@ -804,7 +808,11 @@ export const appRouter = router({
       }))
       .mutation(async ({ ctx, input }) => {
         const Stripe = (await import("stripe")).default;
-        const stripe = new Stripe(process.env.Secretkey_live_stripe || process.env.STRIPE_SECRET_KEY || "");
+        const apiKey = process.env.Secretkey_live_stripe || process.env.STRIPE_SECRET_KEY;
+        if (!apiKey) {
+          throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Payment functionality not configured" });
+        }
+        const stripe = new Stripe(apiKey);
         
         // Retrieve the checkout session
         const session = await stripe.checkout.sessions.retrieve(input.sessionId);
@@ -3430,7 +3438,11 @@ IMPORTANT RULES:
         tier: z.enum(["starter", "pro", "unlimited"]),
       }))
       .mutation(async ({ ctx, input }) => {
-        const stripe = new Stripe(process.env.Secretkey_live_stripe || process.env.STRIPE_SECRET_KEY || "", {
+        const apiKey = process.env.Secretkey_live_stripe || process.env.STRIPE_SECRET_KEY;
+        if (!apiKey) {
+          throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Payment functionality not configured" });
+        }
+        const stripe = new Stripe(apiKey, {
           apiVersion: "2025-12-15.clover",
         });
 
@@ -3477,7 +3489,11 @@ IMPORTANT RULES:
         });
       }
 
-      const stripe = new Stripe(process.env.Secretkey_live_stripe || process.env.STRIPE_SECRET_KEY || "", {
+      const apiKey = process.env.Secretkey_live_stripe || process.env.STRIPE_SECRET_KEY;
+      if (!apiKey) {
+        throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Payment functionality not configured" });
+      }
+      const stripe = new Stripe(apiKey, {
         apiVersion: "2025-12-15.clover",
       });
 
@@ -3497,7 +3513,11 @@ IMPORTANT RULES:
         });
       }
 
-      const stripe = new Stripe(process.env.Secretkey_live_stripe || process.env.STRIPE_SECRET_KEY || "", {
+      const apiKey = process.env.Secretkey_live_stripe || process.env.STRIPE_SECRET_KEY;
+      if (!apiKey) {
+        throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Payment functionality not configured" });
+      }
+      const stripe = new Stripe(apiKey, {
         apiVersion: "2025-12-15.clover",
       });
 
