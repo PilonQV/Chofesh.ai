@@ -12,9 +12,21 @@ import { SUBSCRIPTION_TIERS } from "./products";
 import { sdk } from "../_core/sdk";
 import * as db from "../db";
 
-const stripe = new Stripe(process.env.Secretkey_live_stripe || process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2025-04-30.basil" as any,
-});
+// Lazy initialization of Stripe - only create when API key is available
+let _stripe: Stripe | null = null;
+function getStripe(): Stripe | null {
+  if (!_stripe) {
+    const apiKey = process.env.Secretkey_live_stripe || process.env.STRIPE_SECRET_KEY;
+    if (!apiKey) {
+      console.warn("[Stripe] STRIPE_SECRET_KEY not set - payment functionality disabled");
+      return null;
+    }
+    _stripe = new Stripe(apiKey, {
+      apiVersion: "2025-04-30.basil" as any,
+    });
+  }
+  return _stripe;
+}
 
 const router = Router();
 
@@ -35,6 +47,11 @@ async function getUserFromRequest(req: Request) {
 // Create checkout session
 router.get("/checkout", async (req: Request, res: Response) => {
   try {
+    const stripe = getStripe();
+    if (!stripe) {
+      return res.status(503).json({ error: "Payment functionality not configured" });
+    }
+
     const tier = req.query.tier as string;
     const tierConfig = SUBSCRIPTION_TIERS[tier as keyof typeof SUBSCRIPTION_TIERS];
     
@@ -86,6 +103,11 @@ router.get("/checkout", async (req: Request, res: Response) => {
 // Customer portal - manage subscription
 router.get("/portal", async (req: Request, res: Response) => {
   try {
+    const stripe = getStripe();
+    if (!stripe) {
+      return res.status(503).json({ error: "Payment functionality not configured" });
+    }
+
     const user = await getUserFromRequest(req);
     if (!user) {
       // Redirect to Google OAuth login
