@@ -22,10 +22,10 @@ const DEFAULT_OG_IMAGE = `${SITE_URL}/chofesh-logo-og.webp`;
 export const organizationSchema = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  "name": "Chofesh AI",
+  "name": process.env.SITE_NAME || "AI Gateway",
   "url": SITE_URL,
   "logo": DEFAULT_OG_IMAGE,
-  "description": "Privacy-first AI chat platform with local data storage and AES-256 encryption",
+  "description": "Open source multi-provider AI infrastructure with privacy-first design",
   "foundingDate": "2025",
   "sameAs": [
     "https://github.com/serever-coder357/Chofesh.ai"
@@ -33,7 +33,7 @@ export const organizationSchema = {
   "contactPoint": {
     "@type": "ContactPoint",
     "contactType": "Customer Support",
-    "email": "support@example.com"
+    "email": process.env.SUPPORT_EMAIL || "support@localhost"
   }
 };
 
@@ -43,23 +43,18 @@ export const organizationSchema = {
 export const productSchema = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
-  "name": "Chofesh.ai",
+  "name": process.env.SITE_NAME || "AI Gateway",
   "applicationCategory": "BusinessApplication",
   "operatingSystem": "Web",
-  "description": "Privacy-first AI chat platform with 25+ AI models, local data storage, and AES-256 encryption",
+  "description": "Open source multi-provider AI infrastructure with privacy-first design",
   "url": SITE_URL,
   "image": DEFAULT_OG_IMAGE,
   "offers": {
     "@type": "AggregateOffer",
     "priceCurrency": "USD",
-    "lowPrice": "5",
-    "highPrice": "99",
-    "offerCount": "4"
-  },
-  "aggregateRating": {
-    "@type": "AggregateRating",
-    "ratingValue": "4.8",
-    "ratingCount": "127"
+    "lowPrice": "0",
+    "highPrice": "0",
+    "offerCount": "1"
   },
   "featureList": [
     "25+ AI Models",

@@ -18,7 +18,7 @@ Please do not create a public GitHub issue for security vulnerabilities.
 
 ### 2. Report privately
 
-Send an email to: **security@example.com** (replace with your security contact)
+Send an email to: **security@localhost** (or create a GitHub Security Advisory)
 
 Include:
 - Description of the vulnerability
@@ -175,8 +175,8 @@ We publish security updates through:
 ## Contact
 
 For security concerns:
-- Email: security@example.com
-- GitHub: Create a private security advisory
+- Email: Create a GitHub Security Advisory (preferred)
+- GitHub: https://github.com/serever-coder357/Chofesh.ai/security
 
 ## Acknowledgments
 

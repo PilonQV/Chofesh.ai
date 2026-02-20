@@ -5,23 +5,25 @@
  * Structured data helps search engines understand the content and enables rich snippets.
  */
 
+const SITE_URL = process.env.VITE_APP_URL || 'http://localhost:3000';
+const SITE_NAME = process.env.SITE_NAME || 'AI Gateway';
+
 // Organization schema - included on all pages
 const organizationSchema = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
-  name: 'Chofesh.ai',
-  url: 'https://chofesh.ai',
-  logo: 'https://chofesh.ai/chofesh-logo-og.webp',
-  description: 'Privacy-first AI chat platform with local data storage and AES-256 encryption',
+  name: SITE_NAME,
+  url: SITE_URL,
+  logo: `${SITE_URL}/chofesh-logo-og.webp`,
+  description: 'Open source multi-provider AI infrastructure with privacy-first design',
   foundingDate: '2025',
   sameAs: [
-    'https://twitter.com/chofeshai',
     'https://github.com/serever-coder357/Chofesh.ai'
   ],
   contactPoint: {
     '@type': 'ContactPoint',
     contactType: 'Customer Support',
-    email: 'support@chofesh.ai'
+    email: process.env.SUPPORT_EMAIL || 'support@localhost'
   }
 };
 
@@ -31,22 +33,17 @@ export const structuredData: Record<string, object | object[]> = {
     {
       '@context': 'https://schema.org',
       '@type': 'SoftwareApplication',
-      name: 'Chofesh',
+      name: SITE_NAME,
       applicationCategory: 'ProductivityApplication',
       operatingSystem: 'Web',
-      description: 'Privacy-first AI chat platform with local-first storage, end-to-end encryption, and access to 25+ AI models.',
-      url: 'https://chofesh.ai',
+      description: 'Open source multi-provider AI infrastructure with local-first storage, end-to-end encryption, and access to 25+ AI models.',
+      url: SITE_URL,
       offers: {
         '@type': 'AggregateOffer',
-        lowPrice: '5',
-        highPrice: '99',
+        lowPrice: '0',
+        highPrice: '0',
         priceCurrency: 'USD',
-        offerCount: '4',
-      },
-      aggregateRating: {
-        '@type': 'AggregateRating',
-        ratingValue: '4.8',
-        ratingCount: '127'
+        offerCount: '1',
       },
       featureList: [
         'Private AI Chat',

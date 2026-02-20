@@ -13,7 +13,7 @@ const GITHUB_API_URL = "https://api.github.com";
 
 // Encryption key derived from JWT_SECRET
 const getEncryptionKey = (): Buffer => {
-  const secret = process.env.JWT_SECRET || "default-secret-key-change-me";
+  const secret = process.env.JWT_SECRET || "CHANGE-ME-IN-PRODUCTION-MIN-32-CHARS";
   // Use first 32 bytes of secret as encryption key
   return Buffer.from(secret.padEnd(32, "0").slice(0, 32));
 };

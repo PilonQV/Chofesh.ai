@@ -1,8 +1,29 @@
 {
-  "name": "chofesh-ai",
+  "name": "chofesh-ai-gateway",
   "version": "1.58.0",
+  "description": "Open source multi-provider AI infrastructure - Self-hosted AI gateway with support for OpenAI, Anthropic, Google, Groq, and more",
+  "author": "Original creator, open for community maintenance",
   "type": "module",
   "license": "MIT",
+  "keywords": [
+    "ai-gateway",
+    "multi-llm",
+    "self-hosted",
+    "open-source",
+    "chatgpt-alternative",
+    "claude",
+    "openai",
+    "anthropic",
+    "gemini",
+    "groq",
+    "privacy-first",
+    "local-first",
+    "byok"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/serever-coder357/Chofesh.ai.git"
+  },
   "scripts": {
     "dev": "NODE_ENV=development tsx watch server/_core/index.ts",
     "build": "tsx scripts/generate-sitemap.ts && vite build && esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",

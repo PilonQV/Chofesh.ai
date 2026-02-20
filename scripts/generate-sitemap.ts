@@ -14,7 +14,7 @@ const __dirname = path.dirname(__filename);
 // Import route registry
 import { marketingRoutes } from '../client/src/routes';
 
-const SITE_URL = 'https://chofesh.ai';
+const SITE_URL = process.env.VITE_APP_URL || 'http://localhost:3000';
 
 function generateSitemap(): string {
   const today = new Date().toISOString().split('T')[0];
