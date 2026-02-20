@@ -11,8 +11,8 @@ if (RESEND_API_KEY) {
   console.warn("[Resend] API key not configured - email functionality disabled");
 }
 
-const FROM_EMAIL = "Chofesh AI <noreply@example.com>";
-const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || "support@example.com";
+const FROM_EMAIL = process.env.FROM_EMAIL || "AI Gateway <noreply@localhost>";
+const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || "support@localhost";
 
 export interface SendEmailOptions {
   to: string;

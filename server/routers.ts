@@ -4679,7 +4679,7 @@ Be thorough but practical. Focus on real issues, not nitpicks.`;
         // Send email notification to owner
         try {
           const { sendEmail } = await import("./_core/resend");
-          const ownerEmail = process.env.OWNER_EMAIL || "support@chofesh.ai";
+          const ownerEmail = process.env.OWNER_EMAIL || "admin@localhost";
           
           await sendEmail({
             to: ownerEmail,

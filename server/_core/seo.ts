@@ -20,73 +20,76 @@ interface PageMetadata {
   keywords?: string[];
 }
 
+const SITE_URL = process.env.VITE_APP_URL || 'http://localhost:3000';
+const SITE_NAME = process.env.SITE_NAME || 'AI Gateway';
+
 const pageMetadata: Record<string, PageMetadata> = {
   '/': {
-    title: 'Chofesh — Private AI Chat (Encrypted, Local-First, Multi-Model, BYOK)',
-    description: 'Chofesh.ai - The AI platform that respects your creativity. Generate text and images freely. Your conversations stay on your device, always.',
-    canonical: 'https://chofesh.ai/',
+    title: `${SITE_NAME} — Private AI Chat (Encrypted, Local-First, Multi-Model, BYOK)`,
+    description: 'Open source multi-provider AI infrastructure. Generate text and images freely. Your conversations stay on your device, always.',
+    canonical: `${SITE_URL}/`,
     keywords: ['private AI chat', 'local AI storage', 'encrypted AI', 'BYOK AI', 'privacy-first AI', 'AI chat platform', 'local-first AI', 'zero data collection'],
   },
   '/features': {
-    title: 'Features - Privacy-First AI Platform | Chofesh',
-    description: 'Explore Chofesh\'s powerful features: private AI chat, BYOK support, local-first storage, smart model routing, and deep research capabilities.',
-    canonical: 'https://chofesh.ai/features',
+    title: `Features - Privacy-First AI Platform | ${SITE_NAME}`,
+    description: 'Explore powerful features: private AI chat, BYOK support, local-first storage, smart model routing, and deep research capabilities.',
+    canonical: `${SITE_URL}/features`,
     keywords: ['AI features', 'private AI', 'local storage', 'encryption', 'BYOK', 'code execution', 'model routing'],
   },
   '/features/private-ai-chat': {
-    title: 'Private AI Chat - Encrypted & Local-First | Chofesh',
-    description: 'Learn how Chofesh\'s private AI chat keeps your conversations secure with end-to-end encryption and on-device storage. No data retention, ever.',
-    canonical: 'https://chofesh.ai/features/private-ai-chat',
+    title: `Private AI Chat - Encrypted & Local-First | ${SITE_NAME}`,
+    description: 'Private AI chat keeps your conversations secure with end-to-end encryption and on-device storage. No data retention, ever.',
+    canonical: `${SITE_URL}/features/private-ai-chat`,
     ogType: 'article',
     keywords: ['private AI chat', 'encrypted chat', 'zero data collection', 'privacy AI', 'secure AI chat', 'confidential AI'],
   },
   '/features/byok': {
-    title: 'Bring Your Own Key (BYOK) - Control Your AI Usage | Chofesh',
-    description: 'Use your own API keys from OpenAI, Google, Anthropic, and more. Full control over billing, usage, and data with Chofesh\'s BYOK model.',
-    canonical: 'https://chofesh.ai/features/byok',
+    title: `Bring Your Own Key (BYOK) - Control Your AI Usage | ${SITE_NAME}`,
+    description: 'Use your own API keys from OpenAI, Google, Anthropic, and more. Full control over billing, usage, and data with BYOK model.',
+    canonical: `${SITE_URL}/features/byok`,
     ogType: 'article',
     keywords: ['BYOK', 'bring your own keys', 'AI API keys', 'OpenAI API', 'Anthropic API', 'own API key'],
   },
   '/features/local-storage': {
-    title: 'Local-First Storage - Your Data Stays on Your Device | Chofesh',
+    title: `Local-First Storage - Your Data Stays on Your Device | ${SITE_NAME}`,
     description: 'All your data is encrypted and stored locally on your device. No cloud storage, no server-side retention. Complete data sovereignty.',
-    canonical: 'https://chofesh.ai/features/local-storage',
+    canonical: `${SITE_URL}/features/local-storage`,
     ogType: 'article',
   },
   '/features/model-routing': {
-    title: 'Smart Model Routing - Best AI for Every Task | Chofesh',
+    title: `Smart Model Routing - Best AI for Every Task | ${SITE_NAME}`,
     description: 'Our intelligent router automatically selects the optimal AI model for your task from 20+ options, optimizing for performance, cost, and capability.',
-    canonical: 'https://chofesh.ai/features/model-routing',
+    canonical: `${SITE_URL}/features/model-routing`,
     ogType: 'article',
   },
   '/features/deep-research': {
-    title: 'Deep Research - AI with Verifiable Sources | Chofesh',
+    title: `Deep Research - AI with Verifiable Sources | ${SITE_NAME}`,
     description: 'Get comprehensive answers with inline citations from multiple sources. Perfect for research, fact-checking, and in-depth analysis.',
-    canonical: 'https://chofesh.ai/features/deep-research',
+    canonical: `${SITE_URL}/features/deep-research`,
     ogType: 'article',
   },
   '/pricing': {
-    title: 'Pricing - Simple, Transparent, Fair | Chofesh',
+    title: `Pricing - Simple, Transparent, Fair | ${SITE_NAME}`,
     description: 'Pay-as-you-go pricing with no subscriptions. Use your own API keys or purchase credits that never expire. Full transparency and control.',
-    canonical: 'https://chofesh.ai/pricing',
+    canonical: `${SITE_URL}/pricing`,
     keywords: ['AI pricing', 'AI chat pricing', 'affordable AI', 'pay-as-you-go AI', 'AI credits', 'no subscription AI'],
   },
   '/compare/chofesh-vs-chatgpt': {
-    title: 'Chofesh vs ChatGPT - Privacy-First AI Comparison',
-    description: 'Compare Chofesh\'s local-first, encrypted AI chat with hosted services like ChatGPT. See why privacy-conscious users choose Chofesh.',
-    canonical: 'https://chofesh.ai/compare/chofesh-vs-chatgpt',
+    title: `${SITE_NAME} vs ChatGPT - Privacy-First AI Comparison`,
+    description: 'Compare local-first, encrypted AI chat with hosted services like ChatGPT. See why privacy-conscious users choose self-hosted solutions.',
+    canonical: `${SITE_URL}/compare/chofesh-vs-chatgpt`,
     ogType: 'article',
-    keywords: ['Chofesh vs ChatGPT', 'ChatGPT alternative', 'private ChatGPT', 'AI comparison', 'ChatGPT privacy'],
+    keywords: ['AI vs ChatGPT', 'ChatGPT alternative', 'private ChatGPT', 'AI comparison', 'ChatGPT privacy'],
   },
   '/privacy': {
-    title: 'Privacy Policy | Chofesh',
-    description: 'Learn about Chofesh\'s commitment to privacy and how we protect your data with local-first architecture and zero data retention.',
-    canonical: 'https://chofesh.ai/privacy',
+    title: `Privacy Policy | ${SITE_NAME}`,
+    description: 'Learn about our commitment to privacy and how we protect your data with local-first architecture and zero data retention.',
+    canonical: `${SITE_URL}/privacy`,
   },
   '/terms': {
-    title: 'Terms of Service | Chofesh',
-    description: 'Read Chofesh\'s terms of service and understand your rights and responsibilities when using our privacy-first AI platform.',
-    canonical: 'https://chofesh.ai/terms',
+    title: `Terms of Service | ${SITE_NAME}`,
+    description: 'Read our terms of service and understand your rights and responsibilities when using our privacy-first AI platform.',
+    canonical: `${SITE_URL}/terms`,
   },
 };
 

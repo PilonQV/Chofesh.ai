@@ -5,7 +5,7 @@ const GITLAB_TOKEN_URL = "https://gitlab.com/oauth/token";
 const GITLAB_API_URL = "https://gitlab.com/api/v4";
 
 const getEncryptionKey = (): Buffer => {
-  const secret = process.env.JWT_SECRET || "default-secret-key-change-me";
+  const secret = process.env.JWT_SECRET || "CHANGE-ME-IN-PRODUCTION-MIN-32-CHARS";
   return Buffer.from(secret.padEnd(32, "0").slice(0, 32));
 };
 
