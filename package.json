@@ -22,7 +22,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/serever-coder357/Chofesh.ai.git"
+    "url": "https://github.com/PilonQV/Chofesh.ai.git"
   },
   "scripts": {
     "dev": "NODE_ENV=development tsx watch server/_core/index.ts",

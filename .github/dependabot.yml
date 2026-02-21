@@ -1,0 +1,117 @@
+version: 2
+
+updates:
+  # ─── npm / pnpm (root package.json) ───────────────────────────────────────
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "America/New_York"
+    open-pull-requests-limit: 10
+    versioning-strategy: increase-if-necessary
+    labels:
+      - "dependencies"
+      - "npm"
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(dev-deps)"
+      include: "scope"
+    groups:
+      # Group all Radix UI updates into a single PR
+      radix-ui:
+        patterns:
+          - "@radix-ui/*"
+      # Group all AWS SDK updates
+      aws-sdk:
+        patterns:
+          - "@aws-sdk/*"
+      # Group all tRPC updates
+      trpc:
+        patterns:
+          - "@trpc/*"
+      # Group all React/React-DOM updates
+      react-core:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "@types/react"
+          - "@types/react-dom"
+      # Group all Vite/build tooling
+      build-tooling:
+        patterns:
+          - "vite"
+          - "esbuild"
+          - "tsx"
+          - "typescript"
+          - "@vitejs/*"
+      # Group all Tailwind CSS updates
+      tailwind:
+        patterns:
+          - "tailwindcss"
+          - "@tailwindcss/*"
+          - "tailwind-merge"
+          - "tailwindcss-animate"
+      # Group all Drizzle ORM updates
+      drizzle:
+        patterns:
+          - "drizzle-orm"
+          - "drizzle-kit"
+    ignore:
+      # Avoid major version bumps for core framework packages (review manually)
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "vite"
+        update-types: ["version-update:semver-major"]
+
+  # ─── Python (sdk/pyproject.toml) ──────────────────────────────────────────
+  - package-ecosystem: "pip"
+    directory: "/sdk"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "America/New_York"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "python"
+      - "sdk"
+    commit-message:
+      prefix: "chore(sdk-deps)"
+      include: "scope"
+
+  # ─── GitHub Actions ────────────────────────────────────────────────────────
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "America/New_York"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "chore(ci)"
+      include: "scope"
+
+  # ─── Docker (docker-compose.yml) ──────────────────────────────────────────
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "America/New_York"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "docker"
+    commit-message:
+      prefix: "chore(docker)"
+      include: "scope"

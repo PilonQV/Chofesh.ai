@@ -176,7 +176,7 @@ We publish security updates through:
 
 For security concerns:
 - Email: Create a GitHub Security Advisory (preferred)
-- GitHub: https://github.com/serever-coder357/Chofesh.ai/security
+- GitHub: https://github.com/PilonQV/Chofesh.ai/security
 
 ## Acknowledgments
 
