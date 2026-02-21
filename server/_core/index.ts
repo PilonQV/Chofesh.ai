@@ -121,7 +121,7 @@ async function startServer() {
   
   // SEO middleware for marketing pages
   app.use(seoMiddleware);
-  // OAuth callback under /api/oauth/callback (legacy Manus OAuth)
+  // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
   // Google OAuth routes
   registerGoogleOAuthRoutes(app);

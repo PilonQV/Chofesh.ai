@@ -13,9 +13,9 @@ const KIMI_BASE_URL = 'https://api.moonshot.ai/v1';
 
 // Diagnostic logging for API key
 if (!KIMI_API_KEY) {
-  console.error('[Kimi Orchestrator] CRITICAL: KIMI_API_KEY is not set!');
+  console.info('[Kimi Orchestrator] KIMI_API_KEY not set — Kimi/Moonshot routing disabled (optional).');
 } else {
-  console.log(`[Kimi Orchestrator] API key loaded (length: ${KIMI_API_KEY.length}, starts with: ${KIMI_API_KEY.substring(0, 8)}...)`);
+  console.info('[Kimi Orchestrator] API key loaded — Kimi/Moonshot routing enabled.');
 }
 
 // Model costs per 1M tokens (input/output)

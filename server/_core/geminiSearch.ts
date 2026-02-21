@@ -1,30 +1,46 @@
 /**
  * Gemini API with Google Search Grounding
- * 
+ *
  * Provides live web search using Gemini's built-in Google Search grounding.
- * 
+ * This feature is optional — the server starts normally without a Gemini key.
+ *
  * Free tier: 500 queries/day
  * Paid tier: $35/1000 queries for Gemini 2.5 Flash
+ *
+ * Set any of these env vars to enable:
+ *   GEMINI_API_KEY | GOOGLE_API_KEY | GOOGLE_AI_API_KEY
  */
 
 import { GoogleGenAI } from '@google/genai';
 
 // Check multiple possible environment variable names
-const GEMINI_API_KEY = 
-  process.env.GEMINI_API_KEY || 
-  process.env.GOOGLE_API_KEY || 
-  process.env.GOOGLE_AI_API_KEY || 
+const GEMINI_API_KEY =
+  process.env.GEMINI_API_KEY ||
+  process.env.GOOGLE_API_KEY ||
+  process.env.GOOGLE_AI_API_KEY ||
   '';
 
 if (!GEMINI_API_KEY) {
-  console.warn('⚠️ GEMINI_API_KEY not set - Gemini search grounding will not work');
-  console.warn('   Checked: GEMINI_API_KEY, GOOGLE_API_KEY, GOOGLE_AI_API_KEY');
+  console.info('[Gemini Search] No API key set — Gemini search grounding disabled.');
+  console.info('  Set GEMINI_API_KEY, GOOGLE_API_KEY, or GOOGLE_AI_API_KEY to enable.');
 } else {
-  console.log('✅ Gemini API key found (ending in:', GEMINI_API_KEY.slice(-8) + ')');
+  console.info('[Gemini Search] API key found — Gemini search grounding enabled.');
 }
 
-// Initialize with API key
-const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+// Lazy singleton — only created when a key is actually present
+let _ai: GoogleGenAI | null = null;
+
+function getAiClient(): GoogleGenAI {
+  if (!GEMINI_API_KEY) {
+    throw new Error(
+      'Gemini API key is not configured. Set GEMINI_API_KEY, GOOGLE_API_KEY, or GOOGLE_AI_API_KEY.'
+    );
+  }
+  if (!_ai) {
+    _ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+  }
+  return _ai;
+}
 
 export interface GeminiSearchResult {
   text: string;
@@ -35,37 +51,37 @@ export interface GeminiSearchResult {
 }
 
 /**
- * Search the web using Gemini with Google Search grounding
- * 
+ * Returns true when Gemini search is available (key is configured).
+ */
+export function isGeminiSearchAvailable(): boolean {
+  return !!GEMINI_API_KEY;
+}
+
+/**
+ * Search the web using Gemini with Google Search grounding.
+ * Throws a clear error if no API key is configured.
+ *
  * @param query - The search query
  * @param model - The Gemini model to use (default: gemini-2.5-flash)
- * @returns AI-generated response with search results
  */
 export async function searchWithGemini(
   query: string,
   model: string = 'gemini-2.5-flash'
 ): Promise<GeminiSearchResult> {
+  const ai = getAiClient(); // throws if no key
+
   try {
-    // Configure grounding tool (correct format from official docs)
-    const groundingTool = {
-      googleSearch: {},
-    };
+    const groundingTool = { googleSearch: {} };
+    const config = { tools: [groundingTool] };
 
-    const config = {
-      tools: [groundingTool],
-    };
-
-    // Make API call with correct structure
     const response = await ai.models.generateContent({
       model,
       contents: query,
       config,
     });
-    
-    // Extract text
+
     const text = response.text || '';
-    
-    // Extract grounding metadata if available
+
     let groundingMetadata: any = undefined;
     if (response.candidates && response.candidates.length > 0) {
       const candidate = response.candidates[0];
@@ -74,17 +90,15 @@ export async function searchWithGemini(
           webSearchQueries: candidate.groundingMetadata.webSearchQueries || [],
           searchEntryPoint: candidate.groundingMetadata.searchEntryPoint,
         };
-        
-        // Log successful grounding
-        console.log('[Gemini Search] Grounded response with', 
-          groundingMetadata.webSearchQueries?.length || 0, 'search queries');
+        console.log(
+          '[Gemini Search] Grounded response with',
+          groundingMetadata.webSearchQueries?.length || 0,
+          'search queries'
+        );
       }
     }
 
-    return {
-      text,
-      groundingMetadata,
-    };
+    return { text, groundingMetadata };
   } catch (error: any) {
     console.error('[Gemini Search] Error:', error.message);
     throw new Error(`Gemini search failed: ${error.message}`);
@@ -92,45 +106,33 @@ export async function searchWithGemini(
 }
 
 /**
- * Check if a query needs real-time web search
- * 
- * Detects queries about:
- * - Current events, news, prices
- * - Recent information (today, this week, latest, etc.)
- * - Real-time data (weather, stock prices, etc.)
+ * Check if a query needs real-time web search.
+ * Detects queries about current events, prices, weather, etc.
  */
 export function needsWebSearch(query: string): boolean {
   const lowerQuery = query.toLowerCase();
-  
-  // Time-sensitive keywords
+
   const timeKeywords = [
     'today', 'now', 'current', 'latest', 'recent', 'this week', 'this month',
-    'yesterday', 'last night', 'breaking', 'live', 'real-time', 'up to date'
+    'yesterday', 'last night', 'breaking', 'live', 'real-time', 'up to date',
   ];
-  
-  // Real-time data keywords
+
   const dataKeywords = [
     'price', 'cost', 'worth', 'value', 'quote', 'rate', 'exchange',
     'weather', 'forecast', 'temperature',
     'news', 'update', 'announcement', 'release',
-    'score', 'result', 'winner', 'standings'
+    'score', 'result', 'winner', 'standings',
   ];
-  
-  // Check for time-sensitive keywords
-  const hasTimeKeyword = timeKeywords.some(keyword => lowerQuery.includes(keyword));
-  
-  // Check for real-time data keywords
-  const hasDataKeyword = dataKeywords.some(keyword => lowerQuery.includes(keyword));
-  
-  // Needs web search if it has time-sensitive OR data keywords
-  return hasTimeKeyword || hasDataKeyword;
+
+  return (
+    timeKeywords.some(k => lowerQuery.includes(k)) ||
+    dataKeywords.some(k => lowerQuery.includes(k))
+  );
 }
 
 /**
- * Format Gemini search results for chat response
- * Returns clean text without revealing search mechanism
+ * Format Gemini search results for chat response.
  */
 export function formatSearchResults(result: GeminiSearchResult): string {
-  // Return clean text without metadata - keep search transparent to users
   return result.text;
 }

@@ -16,7 +16,7 @@ import * as db from "../db";
 let _stripe: Stripe | null = null;
 function getStripe(): Stripe | null {
   if (!_stripe) {
-    const apiKey = process.env.Secretkey_live_stripe || process.env.STRIPE_SECRET_KEY;
+    const apiKey = process.env.STRIPE_SECRET_LIVE_KEY || process.env.STRIPE_SECRET_KEY || process.env.Secretkey_live_stripe;
     if (!apiKey) {
       console.warn("[Stripe] STRIPE_SECRET_KEY not set - payment functionality disabled");
       return null;
