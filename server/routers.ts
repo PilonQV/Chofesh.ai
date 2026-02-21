@@ -764,7 +764,7 @@ export const appRouter = router({
       }))
       .mutation(async ({ ctx, input }) => {
         const Stripe = (await import("stripe")).default;
-        const apiKey = process.env.Secretkey_live_stripe || process.env.STRIPE_SECRET_KEY;
+        const apiKey = process.env.STRIPE_SECRET_LIVE_KEY || process.env.STRIPE_SECRET_KEY || process.env.Secretkey_live_stripe;
         if (!apiKey) {
           throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Payment functionality not configured" });
         }
@@ -808,7 +808,7 @@ export const appRouter = router({
       }))
       .mutation(async ({ ctx, input }) => {
         const Stripe = (await import("stripe")).default;
-        const apiKey = process.env.Secretkey_live_stripe || process.env.STRIPE_SECRET_KEY;
+        const apiKey = process.env.STRIPE_SECRET_LIVE_KEY || process.env.STRIPE_SECRET_KEY || process.env.Secretkey_live_stripe;
         if (!apiKey) {
           throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Payment functionality not configured" });
         }
@@ -3438,7 +3438,7 @@ IMPORTANT RULES:
         tier: z.enum(["starter", "pro", "unlimited"]),
       }))
       .mutation(async ({ ctx, input }) => {
-        const apiKey = process.env.Secretkey_live_stripe || process.env.STRIPE_SECRET_KEY;
+        const apiKey = process.env.STRIPE_SECRET_LIVE_KEY || process.env.STRIPE_SECRET_KEY || process.env.Secretkey_live_stripe;
         if (!apiKey) {
           throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Payment functionality not configured" });
         }
@@ -3489,7 +3489,7 @@ IMPORTANT RULES:
         });
       }
 
-      const apiKey = process.env.Secretkey_live_stripe || process.env.STRIPE_SECRET_KEY;
+      const apiKey = process.env.STRIPE_SECRET_LIVE_KEY || process.env.STRIPE_SECRET_KEY || process.env.Secretkey_live_stripe;
       if (!apiKey) {
         throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Payment functionality not configured" });
       }
@@ -3513,7 +3513,7 @@ IMPORTANT RULES:
         });
       }
 
-      const apiKey = process.env.Secretkey_live_stripe || process.env.STRIPE_SECRET_KEY;
+      const apiKey = process.env.STRIPE_SECRET_LIVE_KEY || process.env.STRIPE_SECRET_KEY || process.env.Secretkey_live_stripe;
       if (!apiKey) {
         throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Payment functionality not configured" });
       }

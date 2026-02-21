@@ -7,7 +7,7 @@ import { ENV } from './env';
 export async function generateEmbedding(text: string): Promise<number[]> {
   const apiUrl = ENV.forgeApiUrl && ENV.forgeApiUrl.trim().length > 0
     ? `${ENV.forgeApiUrl.replace(/\/$/, "")}/v1/embeddings`
-    : "https://forge.manus.im/v1/embeddings";
+    : "";
 
   if (!ENV.forgeApiKey) {
     throw new Error("FORGE_API_KEY is not configured");
@@ -42,7 +42,7 @@ export async function generateEmbeddings(texts: string[]): Promise<number[][]> {
   
   const apiUrl = ENV.forgeApiUrl && ENV.forgeApiUrl.trim().length > 0
     ? `${ENV.forgeApiUrl.replace(/\/$/, "")}/v1/embeddings`
-    : "https://forge.manus.im/v1/embeddings";
+    : "";
 
   if (!ENV.forgeApiKey) {
     throw new Error("FORGE_API_KEY is not configured");
