@@ -49,7 +49,7 @@ Smart model selection based on query complexity.
 ## Quick Start (Docker)
 
 ```bash
-git clone https://github.com/serever-coder357/Chofesh.ai.git
+git clone https://github.com/PilonQV/Chofesh.ai.git
 cd Chofesh.ai
 
 # Copy and edit your config
@@ -71,7 +71,7 @@ docker-compose up -d
 
 ```bash
 # Clone the repository
-git clone https://github.com/serever-coder357/Chofesh.ai.git
+git clone https://github.com/PilonQV/Chofesh.ai.git
 cd Chofesh.ai
 
 # Install dependencies
@@ -195,8 +195,8 @@ See [LICENSE](./LICENSE) for details.
 
 ## Support
 
-- **Issues:** [GitHub Issues](https://github.com/serever-coder357/Chofesh.ai/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/serever-coder357/Chofesh.ai/discussions)
+- **Issues:** [GitHub Issues](https://github.com/PilonQV/Chofesh.ai/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/PilonQV/Chofesh.ai/discussions)
 
 ---
 

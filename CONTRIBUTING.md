@@ -70,7 +70,7 @@ git clone https://github.com/YOUR_USERNAME/Chofesh.ai.git
 cd Chofesh.ai
 
 # Add upstream remote
-git remote add upstream https://github.com/serever-coder357/Chofesh.ai.git
+git remote add upstream https://github.com/PilonQV/Chofesh.ai.git
 
 # Install dependencies
 pnpm install
