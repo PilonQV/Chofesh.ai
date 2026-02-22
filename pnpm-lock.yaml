@@ -298,7 +298,7 @@ importers:
         version: 0.4.252(vite@7.3.1(@types/node@24.7.0)(jiti@2.6.1)(lightningcss@1.31.1)(tsx@4.21.0))
       wouter:
         specifier: ^3.3.5
-        version: 3.7.1(react@19.2.4)
+        version: 3.9.0(react@19.2.4)
       zod:
         specifier: ^4.1.12
         version: 4.1.12
@@ -5328,8 +5328,8 @@ packages:
     engines: {node: '>=8'}
     hasBin: true
 
-  wouter@3.7.1:
-    resolution: {integrity: sha512-od5LGmndSUzntZkE2R5CHhoiJ7YMuTIbiXsa0Anytc2RATekgv4sfWRAxLEULBrp7ADzinWQw8g470lkT8+fOw==}
+  wouter@3.9.0:
+    resolution: {integrity: sha512-sF/od/PIgqEQBQcrN7a2x3MX6MQE6nW0ygCfy9hQuUkuB28wEZuu/6M5GyqkrrEu9M6jxdkgE12yDFsQMKos4Q==}
     peerDependencies:
       react: '>=16.8.0'
 
@@ -11244,7 +11244,7 @@ snapshots:
       siginfo: 2.0.0
       stackback: 0.0.2
 
-  wouter@3.7.1(react@19.2.4):
+  wouter@3.9.0(react@19.2.4):
     dependencies:
       mitt: 3.0.1
       react: 19.2.4
