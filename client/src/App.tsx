@@ -28,7 +28,6 @@ const Characters = lazy(() => import("./pages/Characters"));
 const SharedChat = lazy(() => import("./pages/SharedChat"));
 const Memory = lazy(() => import("./pages/Memory"));
 const Artifacts = lazy(() => import("./pages/Artifacts"));
-const Subscription = lazy(() => import("./pages/Subscription"));
 const MyGallery = lazy(() => import("./pages/MyGallery"));
 const Register = lazy(() => import("./pages/Register"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
@@ -44,7 +43,6 @@ const Tools = lazy(() => import("./pages/Tools"));
 const AdminSupport = lazy(() => import("./pages/AdminSupport"));
 const MasterCommand = lazy(() => import("./pages/admin/MasterCommand"));
 const PrivacyVault = lazy(() => import("./pages/PrivacyVault"));
-const Credits = lazy(() => import("./pages/Credits"));
 const Support = lazy(() => import("./pages/Support"));
 const FeaturesHub = lazy(() => import("./pages/features/FeaturesHub"));
 const PrivateAiChat = lazy(() => import("./pages/features/PrivateAiChat"));
@@ -93,8 +91,6 @@ function Router() {
         <Route path="/share/:shareId" component={SharedChat} />
         <Route path="/memory" component={Memory} />
         <Route path="/artifacts" component={Artifacts} />
-        <Route path="/subscription" component={Subscription} />
-        <Route path="/credits" component={Credits} />
         <Route path="/gallery" component={MyGallery} />
         <Route path="/code" component={CodeWorkspace} />
         <Route path="/workflows" component={Workflows} />
