@@ -369,23 +369,32 @@ import { userApiKeys, InsertUserApiKey, usageRecords, InsertUsageRecord, userDoc
 import crypto from "crypto";
 
 // Simple encryption for API keys (in production, use a proper key management service)
-const ENCRYPTION_KEY = process.env.JWT_SECRET || "default-encryption-key-change-me";
+const ENCRYPTION_KEY = process.env.JWT_SECRET;
+if (!ENCRYPTION_KEY) {
+  throw new Error("JWT_SECRET environment variable is required for API key encryption");
+}
+
+// Generate a unique salt per encryption for better security
+function generateSalt(): string {
+  return crypto.randomBytes(16).toString("hex");
+}
 
 function encryptApiKey(apiKey: string): string {
   const iv = crypto.randomBytes(16);
-  const key = crypto.scryptSync(ENCRYPTION_KEY, "salt", 32);
+  const salt = generateSalt();
+  const key = crypto.scryptSync(ENCRYPTION_KEY, salt, 32);
   const cipher = crypto.createCipheriv("aes-256-gcm", key, iv);
   let encrypted = cipher.update(apiKey, "utf8", "hex");
   encrypted += cipher.final("hex");
   const authTag = cipher.getAuthTag();
-  return iv.toString("hex") + ":" + authTag.toString("hex") + ":" + encrypted;
+  return salt + ":" + iv.toString("hex") + ":" + authTag.toString("hex") + ":" + encrypted;
 }
 
 function decryptApiKey(encryptedData: string): string {
-  const [ivHex, authTagHex, encrypted] = encryptedData.split(":");
+  const [salt, ivHex, authTagHex, encrypted] = encryptedData.split(":");
   const iv = Buffer.from(ivHex, "hex");
   const authTag = Buffer.from(authTagHex, "hex");
-  const key = crypto.scryptSync(ENCRYPTION_KEY, "salt", 32);
+  const key = crypto.scryptSync(ENCRYPTION_KEY, salt, 32);
   const decipher = crypto.createDecipheriv("aes-256-gcm", key, iv);
   decipher.setAuthTag(authTag);
   let decrypted = decipher.update(encrypted, "hex", "utf8");
