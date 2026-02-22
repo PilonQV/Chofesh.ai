@@ -93,7 +93,10 @@ export default function Home() {
           
           <div className="hidden md:flex items-center gap-6">
             <a onClick={() => scrollTo("features")} className="cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors">Features</a>
-            <a onClick={() => scrollTo("pricing")} className="cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors">Pricing</a>
+            <a href="https://github.com/PilonQV/Chofesh.ai" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+              GitHub
+            </a>
             <Link href="/developers" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Developers</Link>
             <a onClick={() => scrollTo("privacy")} className="cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors">Privacy</a>
           </div>
@@ -128,10 +131,6 @@ export default function Home() {
                     <Image className="w-4 h-4 mr-2" />
                     My Gallery
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setLocation("/credits")}>
-                    <CreditCard className="w-4 h-4 mr-2" />
-                    Credits
-                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setLocation("/settings")}>
                     <Settings className="w-4 h-4 mr-2" />
                     Settings
@@ -154,15 +153,27 @@ export default function Home() {
         </div>
       </nav>
 
+      {/* Open Source Banner */}
+      <div className="fixed top-16 left-0 right-0 z-40 bg-gradient-to-r from-green-500/10 to-blue-500/10 border-b border-green-500/20">
+        <div className="container mx-auto px-4 py-2 text-center">
+          <p className="text-sm">
+            🎉 <strong className="text-green-500">Chofesh is now Open Source!</strong> 
+            <a href="https://github.com/PilonQV/Chofesh.ai" target="_blank" rel="noopener noreferrer" className="ml-2 text-primary hover:underline">
+              Star us on GitHub →
+            </a>
+          </p>
+        </div>
+      </div>
+
       {/* Hero Section */}
       <main role="main">
-        <section className="pt-24 pb-12 md:pt-32 md:pb-20 px-4 relative overflow-hidden" aria-labelledby="hero-heading">
+        <section className="pt-32 pb-12 md:pt-40 md:pb-20 px-4 relative overflow-hidden" aria-labelledby="hero-heading">
           <div className="container mx-auto text-center relative z-10">
             <h1 id="hero-heading" className="text-3xl md:text-6xl lg:text-7xl font-bold mb-4 md:mb-6 leading-tight">
               Your Complete AI Platform With <span className="gradient-text">12+ Powerful Features</span>
             </h1>
             <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-3xl mx-auto mb-6">
-              Agent Mode for autonomous tasks, Thinking Mode for complex reasoning, Vision Analysis, Code Execution in 60+ languages, Image Generation, Smart Model Routing, BYOK (Bring Your Own Keys), Local Models with Ollama, Memory System, Custom Characters, Artifacts, and more. All with pay-as-you-go pricing and credits that never expire.
+              Agent Mode for autonomous tasks, Thinking Mode for complex reasoning, Vision Analysis, Code Execution in 60+ languages, Image Generation, Smart Model Routing, BYOK (Bring Your Own Keys), Local Models with Ollama, Memory System, Custom Characters, Artifacts, and more. <span className="text-green-500 font-semibold">Now 100% Open Source!</span> Self-host for free or use our hosted version.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3 mb-8 max-w-3xl mx-auto">
               <Badge variant="secondary" className="gap-1.5 px-3 py-1.5">
@@ -343,26 +354,60 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Pricing Section */}
-        <section id="pricing" className="py-12 md:py-20 px-4" aria-labelledby="pricing-heading">
+        {/* Open Source Section */}
+        <section id="pricing" className="py-12 md:py-20 px-4 bg-card/50" aria-labelledby="pricing-heading">
           <div className="container mx-auto">
-            <h2 id="pricing-heading" className="text-3xl md:text-4xl font-bold text-center mb-4">
-              Simple, <span className="gradient-text">Pay-As-You-Go</span> Pricing
-            </h2>
-            <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-12">
-              30 free credits daily. Buy more when you need them. Credits never expire.
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-5 max-w-6xl mx-auto">
-              <CreditPackCard title="Free Daily" credits="30" price="$0" description="Refreshes every 24 hours" features={["30 credits/day", "All AI models", "Image generation"]} buttonText="Start Free" buttonVariant="outline" href="/chat" />
-              <CreditPackCard title="Starter" credits="300" price="$5" description="$1.67 per 100 credits" features={["One-time purchase", "Credits never expire"]} buttonText="Buy Now" href="/credits" />
-              <CreditPackCard title="Standard" credits="1,000" price="$12" description="$1.20 per 100 credits" features={["One-time purchase", "Credits never expire"]} buttonText="Buy Now" highlighted href="/credits" />
-              <CreditPackCard title="Pro" credits="3,500" price="$35" description="$1.00 per 100 credits" features={["One-time purchase", "Credits never expire"]} buttonText="Buy Now" href="/credits" />
-              <CreditPackCard title="Power" credits="12,000" price="$99" description="$0.83 per 100 credits" features={["One-time purchase", "Credits never expire"]} buttonText="Buy Now" href="/credits" />
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center gap-2 bg-green-500/10 border border-green-500/20 rounded-full px-4 py-2 mb-4">
+                <span className="text-green-500 text-xl">🎉</span>
+                <span className="text-green-500 font-semibold">Now Open Source!</span>
+              </div>
+              <h2 id="pricing-heading" className="text-3xl md:text-4xl font-bold mb-4">
+                Free & <span className="gradient-text">Open Source</span>
+              </h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto mb-8">
+                Chofesh is now 100% open source under the MIT license. Self-host your own instance or use our free hosted version.
+              </p>
             </div>
+            
+            <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+              <div className="p-6 rounded-xl border bg-card">
+                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                  <span className="text-green-500">✓</span> Free Hosted Version
+                </h3>
+                <ul className="space-y-3 text-sm mb-6">
+                  <li className="flex items-center gap-2"><span className="text-green-500">✓</span> 30 free credits daily</li>
+                  <li className="flex items-center gap-2"><span className="text-green-500">✓</span> All 25+ AI models</li>
+                  <li className="flex items-center gap-2"><span className="text-green-500">✓</span> Image generation</li>
+                  <li className="flex items-center gap-2"><span className="text-green-500">✓</span> Code execution</li>
+                  <li className="flex items-center gap-2"><span className="text-green-500">✓</span> BYOK (Bring Your Own Keys)</li>
+                </ul>
+                <Link href="/chat">
+                  <Button className="w-full">Start Free</Button>
+                </Link>
+              </div>
+              
+              <div className="p-6 rounded-xl border border-primary shadow-lg shadow-primary/10 bg-card">
+                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                  <span className="text-primary">⭐</span> Self-Host (Free Forever)
+                </h3>
+                <ul className="space-y-3 text-sm mb-6">
+                  <li className="flex items-center gap-2"><span className="text-green-500">✓</span> Unlimited usage</li>
+                  <li className="flex items-center gap-2"><span className="text-green-500">✓</span> Full control & privacy</li>
+                  <li className="flex items-center gap-2"><span className="text-green-500">✓</span> Your own servers</li>
+                  <li className="flex items-center gap-2"><span className="text-green-500">✓</span> MIT License (commercial OK)</li>
+                  <li className="flex items-center gap-2"><span className="text-green-500">✓</span> Community support</li>
+                </ul>
+                <a href="https://github.com/PilonQV/Chofesh.ai" target="_blank" rel="noopener noreferrer">
+                  <Button className="w-full">View on GitHub</Button>
+                </a>
+              </div>
+            </div>
+            
             <div className="text-center mt-8">
-              <Link href="/credits" className="inline-block mt-4 text-sm text-primary hover:underline">
-                View full pricing details →
-              </Link>
+              <p className="text-sm text-muted-foreground">
+                Want to contribute? <a href="https://github.com/PilonQV/Chofesh.ai/discussions" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Join the community →</a>
+              </p>
             </div>
           </div>
         </section>
@@ -404,7 +449,7 @@ export default function Home() {
               <h4 className="font-semibold mb-4">Product</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><a onClick={() => scrollTo("features")} className="cursor-pointer hover:text-foreground transition-colors">Features</a></li>
-                <li><a onClick={() => scrollTo("pricing")} className="cursor-pointer hover:text-foreground transition-colors">Pricing</a></li>
+                <li><a href="https://github.com/PilonQV/Chofesh.ai" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">GitHub</a></li>
                 <li><Link href="/developers" className="hover:text-foreground transition-colors">Developers</Link></li>
                 <li><Link href="/compare/chofesh-vs-chatgpt" className="hover:text-foreground transition-colors">Compare</Link></li>
               </ul>
@@ -478,37 +523,6 @@ function PrivacyItem({ icon, title, text }: { icon: React.ReactNode; title: stri
         <h4 className="font-semibold">{title}</h4>
         <p className="text-sm text-muted-foreground">{text}</p>
       </div>
-    </div>
-  );
-}
-
-function CreditPackCard({ title, credits, price, description, features, buttonText, buttonVariant, highlighted, href }: { title: string; credits: string; price: string; description: string; features: string[]; buttonText: string; buttonVariant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | null | undefined; highlighted?: boolean; href?: string }) {
-  return (
-    <div className={`p-4 rounded-xl border ${highlighted ? "border-primary shadow-lg shadow-primary/10" : "border-border"}`}>
-      <h3 className="text-lg font-semibold mb-2">{title}</h3>
-      <div className="mb-2">
-        <span className="text-2xl font-bold text-primary">{price}</span>
-      </div>
-      <div className="mb-3">
-        <span className="text-xl font-semibold">{credits}</span>
-        <span className="text-muted-foreground text-sm"> credits</span>
-      </div>
-      <p className="text-sm text-muted-foreground mb-4">{description}</p>
-      <ul className="space-y-2 text-sm mb-4">
-        {features.map((feature) => (
-          <li key={feature} className="flex items-center gap-2">
-            <Check className="w-4 h-4 text-green-500" />
-            {feature}
-          </li>
-        ))}
-      </ul>
-      {href ? (
-        <Link href={href}>
-          <Button variant={buttonVariant || "default"} className="w-full">{buttonText}</Button>
-        </Link>
-      ) : (
-        <Button variant={buttonVariant || "default"} className="w-full">{buttonText}</Button>
-      )}
     </div>
   );
 }
