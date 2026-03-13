@@ -53,16 +53,23 @@ export async function scrapeUrl(url: string): Promise<ScrapedContent | null> {
     const siteNameMatch = html.match(/<meta[^>]*property=["']og:site_name["'][^>]*content=["']([^"']+)["']/i);
     
     // Extract main content (remove scripts, styles, etc.)
+    // Security: Use iterative multi-pass stripping to prevent bypass via nested/malformed tags
+    // (e.g. <sc<script>ript> tricks single-pass regex). We strip known dangerous blocks first,
+    // then repeatedly strip all remaining tags until no more are found.
     let content = html
-      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-      .replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, '')
-      .replace(/<header[^>]*>[\s\S]*?<\/header>/gi, '')
-      .replace(/<footer[^>]*>[\s\S]*?<\/footer>/gi, '')
-      .replace(/<aside[^>]*>[\s\S]*?<\/aside>/gi, '')
-      .replace(/<[^>]+>/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
+      .replace(/<script[\s\S]*?<\/script>/gi, '')
+      .replace(/<style[\s\S]*?<\/style>/gi, '')
+      .replace(/<nav[\s\S]*?<\/nav>/gi, '')
+      .replace(/<header[\s\S]*?<\/header>/gi, '')
+      .replace(/<footer[\s\S]*?<\/footer>/gi, '')
+      .replace(/<aside[\s\S]*?<\/aside>/gi, '');
+    // Iteratively strip remaining HTML tags until fully clean (prevents bypass via nested tags)
+    let prev = '';
+    while (prev !== content) {
+      prev = content;
+      content = content.replace(/<[^>]*>/g, ' ');
+    }
+    content = content.replace(/\s+/g, ' ').trim();
 
     // Limit content length
     content = content.slice(0, 10000);

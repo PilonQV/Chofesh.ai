@@ -36,7 +36,8 @@ const creditPacks = [
 
 async function createProducts() {
   console.log('Creating LIVE Stripe products for credit packs...\n');
-  console.log('Using key starting with:', process.env.Secretkey_live_stripe?.substring(0, 12) + '...\n');
+  // Security: Do not log any portion of API keys to prevent accidental exposure in logs.
+  console.log('Stripe key loaded from environment variable.\n');
   
   const results = [];
   

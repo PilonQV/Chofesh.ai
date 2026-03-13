@@ -41,7 +41,15 @@ router.post("/", raw({ type: "application/json" }), async (req, res) => {
     event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
   } catch (err: any) {
     console.error("[Stripe Webhook] Signature verification failed:", err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+    // Security: Escape error message before including in HTTP response to prevent
+    // exception text from being reinterpreted as HTML (XSS via error messages).
+    const safeMessage = String(err.message)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#x27;');
+    return res.status(400).type('text/plain').send(`Webhook Error: ${safeMessage}`);
   }
 
   // Handle test events

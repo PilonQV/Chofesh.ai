@@ -53,11 +53,23 @@ async function scrapeDuckDuckGoHtml(query: string): Promise<SearchResult[]> {
       const title = match[2].trim();
       
       // Filter out DDG internal links and duplicates
+      // Security: Use URL parsing to check hostname, not substring matching.
+      // Substring matching (url.includes('duckduckgo.com')) can be bypassed
+      // with URLs like 'https://evil.com/path?q=duckduckgo.com'.
+      let parsedHostname = '';
+      try {
+        parsedHostname = new URL(url).hostname.toLowerCase();
+      } catch {
+        // Skip malformed URLs
+      }
       if (
-        url && 
-        title && 
-        !url.includes('duckduckgo.com') &&
-        !url.includes('duck.co') &&
+        url &&
+        parsedHostname &&
+        title &&
+        parsedHostname !== 'duckduckgo.com' &&
+        !parsedHostname.endsWith('.duckduckgo.com') &&
+        parsedHostname !== 'duck.co' &&
+        !parsedHostname.endsWith('.duck.co') &&
         !seenUrls.has(url) &&
         title.length > 3
       ) {
